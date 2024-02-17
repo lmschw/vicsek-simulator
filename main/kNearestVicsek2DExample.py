@@ -10,9 +10,10 @@ import DefaultValues as dv
 
 n = 100
 k = 3
-noise = 0.1
+noise = 0
+leavingAllowed = False
 
-simulator = VicsekWithKNeighbours.VicsekWithKNeighbours(domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, numberOfParticles=n, k=k, noise=noise)
+simulator = VicsekWithKNeighbours.VicsekWithKNeighbours(domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, numberOfParticles=n, k=k, noise=noise, particlesAllowedToLeave=leavingAllowed)
 simulationData = simulator.simulate()
 
 # Initalise the animator
@@ -20,7 +21,7 @@ animator = MatplotlibAnimator.MatplotlibAnimator(simulationData, (100,100,100))
 
 # prepare the animator
 preparedAnimator = animator.prepare(Animator2D.Animator2D())
-preparedAnimator.setParameters(n=n, k=k, noise=noise)
+preparedAnimator.setParameters(n=n, k=k, noise=noise, particlesAllowedToLeave=leavingAllowed)
 
 # Display Animation
 preparedAnimator.showAnimation()

@@ -5,7 +5,7 @@ import matplotlib.animation as animator
 import DefaultValues as dv
 
 class Animator(object):
-        
+
     def prepareAnimation(self, matplotlibFigure, frames=100, frameInterval = 10):
         """
         Prepares the 2D animator object for animation.
@@ -38,12 +38,13 @@ class Animator(object):
 
         return self
     
-    def setParameters(self, n=dv.DEFAULT_NUMBER_EXAMPLE_PARTICLES, k=dv.DEFAULT_K_NEIGHBOURS, noise=dv.DEFAULT_NOISE, radius=dv.DEFAULT_RADIUS, speed=dv.DEFAULT_SPEED):
+    def setParameters(self, n=dv.DEFAULT_NUMBER_EXAMPLE_PARTICLES, k=dv.DEFAULT_K_NEIGHBOURS, noise=dv.DEFAULT_NOISE, radius=dv.DEFAULT_RADIUS, speed=dv.DEFAULT_SPEED, particlesAllowedToLeave=dv.DEFAULT_PARTICLES_ALLOWED_TO_LEAVE):
         self._n = n
         self._k = k
         self._noise = noise
         self._radius = radius
         self._speed = speed
+        self._particlesAllowedToLeave = particlesAllowedToLeave
 
 
     def showAnimation(self):

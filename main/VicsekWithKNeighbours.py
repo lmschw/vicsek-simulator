@@ -8,7 +8,7 @@ import random
 import DefaultValues as dv
 
 class VicsekWithKNeighbours:
-    def __init__(self, domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, speed=dv.DEFAULT_SPEED, radius=dv.DEFAULT_RADIUS, noise=dv.DEFAULT_NOISE, numberOfParticles=dv.DEFAULT_NUM_PARTICLES, k=dv.DEFAULT_K_NEIGHBOURS):
+    def __init__(self, domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, speed=dv.DEFAULT_SPEED, radius=dv.DEFAULT_RADIUS, noise=dv.DEFAULT_NOISE, numberOfParticles=dv.DEFAULT_NUM_PARTICLES, k=dv.DEFAULT_K_NEIGHBOURS, particlesAllowedToLeave=dv.DEFAULT_PARTICLES_ALLOWED_TO_LEAVE):
         """
         Initialize the model. Note that the domainSize does not have a default value as this model is used for both 2D and 3D
         """
@@ -18,6 +18,7 @@ class VicsekWithKNeighbours:
         self.noise = noise
         self.numberOfParticles = numberOfParticles
         self.k = k
+        self.particlesAllowedToLeave = particlesAllowedToLeave
 
     def simulate(self, initialState=(None, None), dt=None, tmax=None):
         """
@@ -45,9 +46,13 @@ class VicsekWithKNeighbours:
         
         for it in range(num_intervals):
             print("Time step: ", t)
-            positions += dt*(self.speed*orientations)
-            positions += -self.domainSize*np.floor(positions/self.domainSize)
+            #print("Positions: ", positions)
+            #print("Positions: ", [pos for pos in positions if pos[0] < 0 or pos[0] > self.domainSize[0] or pos[1] < 0 or pos[1] > self.domainSize[1]])
 
+            positions += dt*(self.speed*orientations)
+            if not self.particlesAllowedToLeave:
+                self.__repelLeavingParticles(positions, orientations)
+                    
             orientations = self.calculateMeanOrientations(positions, orientations)
             orientations = self.__normalizeOrientations(orientations+self.generateNoise())
 
@@ -117,6 +122,21 @@ class VicsekWithKNeighbours:
             return False
         return ((candidate[0] - particle[0])**2 + (candidate[1] - particle[1])**2) <= self.radius
 
-    def __computeOrientation(particleIndex, neighbourIndices, orientations):
-        neighbourOrientations = [orientations[i] for i in neighbourIndices]
-        return (np.average(neighbourOrientations, axis=0), np.average(neighbourOrientations, axis=1))
+    def __repelLeavingParticles(self, positions, orientations):
+        for posIdx in range(len(positions)):
+            xMax = self.domainSize[0]
+            xPos = positions[posIdx][0]
+            yMax = self.domainSize[1]
+            yPos = positions[posIdx][1]
+            if xPos > xMax:
+                orientations[posIdx][0] *= -1
+                positions[posIdx][0] = xMax
+            elif xPos < 0:
+                orientations[posIdx][0] *= -1
+                positions[posIdx][0] = 0
+            if yPos > yMax:
+                orientations[posIdx][1] *= -1
+                positions[posIdx][1] = yMax
+            elif yPos < 0:
+                orientations[posIdx][1] *= -1
+                positions[posIdx][1] = 0
