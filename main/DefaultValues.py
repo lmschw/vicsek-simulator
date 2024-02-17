@@ -12,6 +12,9 @@ DEFAULT_NUM_PARTICLES = 100
 DEFAULT_K_NEIGHBOURS = -1 # all neighbours. set to 0 to completely ignore neighbours
 DEFAULT_PARTICLES_ALLOWED_TO_LEAVE = True
 
+# display options
+DEFAULT_SHOW_PARAMETERS = True
+
 
 # 2D
 DEFAULT_DOMAIN_SIZE_2D = (100, 100)
