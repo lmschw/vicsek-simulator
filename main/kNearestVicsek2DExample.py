@@ -8,16 +8,23 @@ import Animator2D
 
 import DefaultValues as dv
 
-simulator = VicsekWithKNeighbours.VicsekWithKNeighbours(domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, numberOfParticles=500, k=2)
+n = 100
+k = 3
+noise = 0.1
+
+simulator = VicsekWithKNeighbours.VicsekWithKNeighbours(domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, numberOfParticles=n, k=k, noise=noise)
 simulationData = simulator.simulate()
 
 # Initalise the animator
-animator = MatplotlibAnimator.MatplotlibAnimator(simulationData, (50,50,50))
+animator = MatplotlibAnimator.MatplotlibAnimator(simulationData, (100,100,100))
 
 # prepare the animator
 preparedAnimator = animator.prepare(Animator2D.Animator2D())
+preparedAnimator.setParameters(n=n, k=k, noise=noise)
 
 # Display Animation
 preparedAnimator.showAnimation()
+
+# TODO save values after simulation + option to read existing values
 
 # TODO evaluate result

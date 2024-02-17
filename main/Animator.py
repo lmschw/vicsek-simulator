@@ -2,8 +2,10 @@ from matplotlib.animation import FuncAnimation
 import matplotlib.pyplot as plt
 import matplotlib.animation as animator
 
+import DefaultValues as dv
+
 class Animator(object):
-    
+        
     def prepareAnimation(self, matplotlibFigure, frames=100, frameInterval = 10):
         """
         Prepares the 2D animator object for animation.
@@ -35,6 +37,13 @@ class Animator(object):
         self._domainSize = domainSize
 
         return self
+    
+    def setParameters(self, n=dv.DEFAULT_NUMBER_EXAMPLE_PARTICLES, k=dv.DEFAULT_K_NEIGHBOURS, noise=dv.DEFAULT_NOISE, radius=dv.DEFAULT_RADIUS, speed=dv.DEFAULT_SPEED):
+        self._n = n
+        self._k = k
+        self._noise = noise
+        self._radius = radius
+        self._speed = speed
 
 
     def showAnimation(self):
