@@ -2,13 +2,13 @@
 Contains a simulation for the standard 2D Vicsek model
 """
 
-import VicsekModel
+import StandardVicsekModel
 import MatplotlibAnimator
 import Animator3D
 
 import DefaultValues as dv
 
-simulator = VicsekModel.VicsekModel(domainSize=dv.DEFAULT_DOMAIN_SIZE_3D)
+simulator = StandardVicsekModel.VicsekModel(domainSize=dv.DEFAULT_DOMAIN_SIZE_3D)
 simulationData = simulator.simulate()
 
 # Initalise the animator

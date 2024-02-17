@@ -1,13 +1,14 @@
 """
-This class serves to instantiate a simulated Vicsek model with or without modifications.
+This class serves to instantiate a simulated standard Vicsek model.
 """
 
 import numpy as np
+import random
 
 import DefaultValues as dv
 
 class VicsekModel:
-    def __init__(self, domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, speed=dv.DEFAULT_SPEED, radius=dv.DEFAULT_RADIUS, noise=dv.DEFAULT_NOISE, numberOfParticles=dv.DEFAULT_NUM_PARTICLES):
+    def __init__(self, domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, speed=dv.DEFAULT_SPEED, radius=dv.DEFAULT_RADIUS, noise=dv.DEFAULT_NOISE, numberOfParticles=dv.DEFAULT_NUM_PARTICLES, k=dv.DEFAULT_K_NEIGHBOURS):
         """
         Initialize the model. Note that the domainSize does not have a default value as this model is used for both 2D and 3D
         """
@@ -34,16 +35,15 @@ class VicsekModel:
             tmax = (10**3)*dt
 
         t=0
-        nt=int(tmax/dt+1)
+        num_intervals=int(tmax/dt+1)
         
-        positionsHistory = np.zeros((nt,self.numberOfParticles,len(self.domainSize)))
-        orientationsHistory = np.zeros((nt,self.numberOfParticles,len(self.domainSize)))
+        positionsHistory = np.zeros((num_intervals,self.numberOfParticles,len(self.domainSize)))
+        orientationsHistory = np.zeros((num_intervals,self.numberOfParticles,len(self.domainSize)))
         
         positionsHistory[0,:,:]=positions
         orientationsHistory[0,:,:]=orientations
         
-        for it in range(nt):
-
+        for it in range(num_intervals):
             positions += dt*(self.speed*orientations)
             positions += -self.domainSize*np.floor(positions/self.domainSize)
 
@@ -55,7 +55,8 @@ class VicsekModel:
 
             t+=dt
 
-        return dt*np.arange(nt), positionsHistory, orientationsHistory
+
+        return dt*np.arange(num_intervals), positionsHistory, orientationsHistory
 
     def calculateMeanOrientations(self, positions, orientations):
         rij=positions[:,np.newaxis,:]-positions
