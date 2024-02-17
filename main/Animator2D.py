@@ -19,8 +19,12 @@ class Animator2D(Animator.Animator):
         keyword arguments:
         i -- Loop index.
         """
+
         plt.clf()
-        plt.quiver(self._positions[i,:,0],self._positions[i,:,1],self._orientations[i,:,0],self._orientations[i,:,1])
+        plt.quiver(self._positions[i,:,0],self._positions[i,:,1],self._orientations[i,:,0],self._orientations[i,:,1],color=self._colours[i])
         plt.xlim(0,self._domainSize[0])
         plt.ylim(0,self._domainSize[1])
-        plt.title(f"n={self._n}, k={self._k}, noise={self._noise}, radius={self._radius}, speed={self._speed}, particles allowed to leave={self._particlesAllowedToLeave}\n$t$={self._time[i]:.2f}")
+        if self._showParameters:
+            plt.title(f"n={self._n}, k={self._k}, noise={self._noise}, radius={self._radius}, speed={self._speed}, \nparticles allowed to leave={self._particlesAllowedToLeave}\n$t$={self._time[i]:.2f}")
+        else:
+            plt.title(f"$t$={self._time[i]:.2f}")
