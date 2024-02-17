@@ -36,35 +36,40 @@ class VicsekWithKNeighbours:
             tmax = (10**3)*dt
 
         t=0
-        num_intervals=int(tmax/dt+1)
+        numIntervals=int(tmax/dt+1)
+
+        self._exampleIdx = random.randint(0, self.numberOfParticles-1)
         
-        positionsHistory = np.zeros((num_intervals,self.numberOfParticles,len(self.domainSize)))
-        orientationsHistory = np.zeros((num_intervals,self.numberOfParticles,len(self.domainSize)))
+        positionsHistory = np.zeros((numIntervals,self.numberOfParticles,len(self.domainSize)))
+        orientationsHistory = np.zeros((numIntervals,self.numberOfParticles,len(self.domainSize)))
+        coloursHistory = numIntervals * [self.numberOfParticles * ['k']]
         
         positionsHistory[0,:,:]=positions
         orientationsHistory[0,:,:]=orientations
         
-        for it in range(num_intervals):
+        for it in range(numIntervals):
             print("Time step: ", t)
             #print("Positions: ", positions)
             #print("Positions: ", [pos for pos in positions if pos[0] < 0 or pos[0] > self.domainSize[0] or pos[1] < 0 or pos[1] > self.domainSize[1]])
 
+            colours=self.numberOfParticles * ['k']
             positions += dt*(self.speed*orientations)
             if not self.particlesAllowedToLeave:
                 self.__repelLeavingParticles(positions, orientations)
                     
-            orientations = self.calculateMeanOrientations(positions, orientations)
+            orientations = self.calculateMeanOrientations(positions, orientations, colours)
             orientations = self.__normalizeOrientations(orientations+self.generateNoise())
 
             positionsHistory[it,:,:]=positions
             orientationsHistory[it,:,:]=orientations
+            coloursHistory[it]=colours
 
             t+=dt
 
 
-        return dt*np.arange(num_intervals), positionsHistory, orientationsHistory
+        return dt*np.arange(numIntervals), positionsHistory, orientationsHistory, coloursHistory
 
-    def calculateMeanOrientations(self, positions, orientations):
+    def calculateMeanOrientations(self, positions, orientations, colours):
         rij=positions[:,np.newaxis,:]-positions
     
         newOrientations = []
@@ -76,6 +81,11 @@ class VicsekWithKNeighbours:
                 newOrientations.append(np.average(neighbourOrientations, axis=0))
             else:
                 newOrientations.append(orientations[particleIdx])
+
+            if self._exampleIdx == particleIdx:
+                colours[particleIdx] = 'r'
+                for neighbourIdx in neighbourIndices:
+                    colours[neighbourIdx] = 'y'
         #return self.__normalizeOrientations(newOrientations)
         return newOrientations
 

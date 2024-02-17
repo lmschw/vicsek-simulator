@@ -33,7 +33,7 @@ class Animator(object):
         return:
         self
         """        
-        self._time, self._positions, self._orientations = simulationData
+        self._time, self._positions, self._orientations, self._colours = simulationData
         self._domainSize = domainSize
 
         return self

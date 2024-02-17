@@ -19,8 +19,9 @@ class Animator2D(Animator.Animator):
         keyword arguments:
         i -- Loop index.
         """
+
         plt.clf()
-        plt.quiver(self._positions[i,:,0],self._positions[i,:,1],self._orientations[i,:,0],self._orientations[i,:,1])
+        plt.quiver(self._positions[i,:,0],self._positions[i,:,1],self._orientations[i,:,0],self._orientations[i,:,1],color=self._colours[i])
         plt.xlim(0,self._domainSize[0])
         plt.ylim(0,self._domainSize[1])
         if self._showParameters:
