@@ -8,7 +8,7 @@ import random
 import DefaultValues as dv
 
 class VicsekWithKNeighbours:
-    def __init__(self, domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, speed=dv.DEFAULT_SPEED, radius=dv.DEFAULT_RADIUS, noise=dv.DEFAULT_NOISE, numberOfParticles=dv.DEFAULT_NUM_PARTICLES, k=dv.DEFAULT_K_NEIGHBOURS, particlesAllowedToLeave=dv.DEFAULT_PARTICLES_ALLOWED_TO_LEAVE):
+    def __init__(self, domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, speed=dv.DEFAULT_SPEED, radius=dv.DEFAULT_RADIUS, noise=dv.DEFAULT_NOISE, numberOfParticles=dv.DEFAULT_NUM_PARTICLES, k=dv.DEFAULT_K_NEIGHBOURS, particlesAllowedToLeave=dv.DEFAULT_PARTICLES_ALLOWED_TO_LEAVE, showExample=dv.DEFAULT_SHOW_EXAMPLE_PARTICLE):
         """
         Initialize the model. Note that the domainSize does not have a default value as this model is used for both 2D and 3D
         """
@@ -19,6 +19,7 @@ class VicsekWithKNeighbours:
         self.numberOfParticles = numberOfParticles
         self.k = k
         self.particlesAllowedToLeave = particlesAllowedToLeave
+        self.showExample = showExample
 
     def simulate(self, initialState=(None, None), dt=None, tmax=None):
         """
@@ -38,7 +39,8 @@ class VicsekWithKNeighbours:
         t=0
         numIntervals=int(tmax/dt+1)
 
-        self._exampleIdx = random.randint(0, self.numberOfParticles-1)
+        if self.showExample:
+            self._exampleIdx = random.randint(0, self.numberOfParticles-1)
         
         positionsHistory = np.zeros((numIntervals,self.numberOfParticles,len(self.domainSize)))
         orientationsHistory = np.zeros((numIntervals,self.numberOfParticles,len(self.domainSize)))
@@ -75,18 +77,17 @@ class VicsekWithKNeighbours:
         newOrientations = []
         for particleIdx in range(len(rij)):
             neighbourIndices = self.__chooseNeighbours(particleIdx, positions)
-            #newOrientations.append(self.__computeOrientation(particleIdx, neighbourIndices, orientations))
             if neighbourIndices != []:
                 neighbourOrientations = [orientations[i] for i in neighbourIndices]
                 newOrientations.append(np.average(neighbourOrientations, axis=0))
             else:
                 newOrientations.append(orientations[particleIdx])
 
-            if self._exampleIdx == particleIdx:
+            # set colours in case we want to see a highlighted example
+            if self.showExample and self._exampleIdx == particleIdx:
                 colours[particleIdx] = 'r'
                 for neighbourIdx in neighbourIndices:
                     colours[neighbourIdx] = 'y'
-        #return self.__normalizeOrientations(newOrientations)
         return newOrientations
 
 
