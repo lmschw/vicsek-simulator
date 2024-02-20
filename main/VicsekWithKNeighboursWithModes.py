@@ -58,7 +58,7 @@ class VicsekWithKNeighboursWithModes:
 
         for it in range(numIntervals):
             print("Time step: ", t)
-            print("Excitations:", excitations)
+            #print("Excitations:", excitations)
             #print("Positions: ", positions)
             #print("Positions: ", [pos for pos in positions if pos[0] < 0 or pos[0] > self.domainSize[0] or pos[1] < 0 or pos[1] > self.domainSize[1]])
             colours=self.numberOfParticles * ['k']
