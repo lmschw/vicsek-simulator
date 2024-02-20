@@ -8,10 +8,10 @@ import Animator2D
 
 import DefaultValues as dv
 
-n = 50
-k = 5
+n = 200
+k = 2
 noise = 0
-radius= 50
+radius= 20
 leavingAllowed = False
 
 simulator = VicsekWithKNeighbours.VicsekWithKNeighbours(domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, numberOfParticles=n, k=k, noise=noise, radius=radius, particlesAllowedToLeave=leavingAllowed)
