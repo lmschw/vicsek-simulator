@@ -1,4 +1,4 @@
-import MatplotlibAnimator
+import main.AnimatorMatplotlib as AnimatorMatplotlib
 import SavedModelService
 import Animator2D
 
@@ -12,7 +12,7 @@ leavingAllowed = False
 simulationData = SavedModelService.loadModel("sample.json")
 
 # Initalise the animator
-animator = MatplotlibAnimator.MatplotlibAnimator(simulationData, (100,100,100))
+animator = AnimatorMatplotlib.MatplotlibAnimator(simulationData, (100,100,100))
 
 # prepare the animator
 preparedAnimator = animator.prepare(Animator2D.Animator2D())

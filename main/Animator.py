@@ -38,13 +38,13 @@ class Animator(object):
 
         return self
     
-    def setParameters(self, n=dv.DEFAULT_NUM_PARTICLES, k=dv.DEFAULT_K_NEIGHBOURS, noise=dv.DEFAULT_NOISE, radius=dv.DEFAULT_RADIUS, speed=dv.DEFAULT_SPEED, particlesAllowedToLeave=dv.DEFAULT_PARTICLES_ALLOWED_TO_LEAVE, showParameters=dv.DEFAULT_SHOW_PARAMETERS):
+    def setParameters(self, n=dv.DEFAULT_NUM_PARTICLES, k=dv.DEFAULT_K_NEIGHBOURS, noise=dv.DEFAULT_NOISE, radius=dv.DEFAULT_RADIUS, speed=dv.DEFAULT_SPEED, particleContainmentMode=dv.DEFAULT_PARTICLES_CONTAINMENT_MODE, showParameters=dv.DEFAULT_SHOW_PARAMETERS):
         self._n = n
         self._k = k
         self._noise = noise
         self._radius = radius
         self._speed = speed
-        self._particlesAllowedToLeave = particlesAllowedToLeave
+        self._particleContainmentMode = particleContainmentMode
         self._showParameters = showParameters
 
 

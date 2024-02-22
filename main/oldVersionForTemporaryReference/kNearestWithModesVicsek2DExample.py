@@ -3,7 +3,7 @@ Contains a simulation for the standard 2D Vicsek model
 """
 
 import VicsekWithKNeighboursWithModes
-import MatplotlibAnimator
+import main.AnimatorMatplotlib as AnimatorMatplotlib
 import Animator2D
 import SavedModelService
 
@@ -23,7 +23,7 @@ simulationData = simulator.simulate(tmax=6000)
 SavedModelService.saveModel(simulationData, "modes_n=500,radius=100,tmax=6000.json")
 
 # Initalise the animator
-animator = MatplotlibAnimator.MatplotlibAnimator(simulationData, (100,100,100))
+animator = AnimatorMatplotlib.MatplotlibAnimator(simulationData, (100,100,100))
 
 # prepare the animator
 preparedAnimator = animator.prepare(Animator2D.Animator2D())

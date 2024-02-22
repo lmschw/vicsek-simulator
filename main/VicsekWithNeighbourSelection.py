@@ -2,11 +2,11 @@ import numpy as np
 import random
 
 import DefaultValues as dv
-import NeighbourSelectionModeEnum
+import EnumNeighbourSelectionMode
 
 class VicsekWithNeighbourSelection:
 
-    def __init__(self, neighbourSelectionModel, domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, speed=dv.DEFAULT_SPEED, radius=dv.DEFAULT_RADIUS, noise=dv.DEFAULT_NOISE, numberOfParticles=dv.DEFAULT_NUM_PARTICLES, k=dv.DEFAULT_K_NEIGHBOURS, particlesAllowedToLeave=dv.DEFAULT_PARTICLES_ALLOWED_TO_LEAVE, showExample=dv.DEFAULT_SHOW_EXAMPLE_PARTICLE):
+    def __init__(self, neighbourSelectionModel, domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, speed=dv.DEFAULT_SPEED, radius=dv.DEFAULT_RADIUS, noise=dv.DEFAULT_NOISE, numberOfParticles=dv.DEFAULT_NUM_PARTICLES, k=dv.DEFAULT_K_NEIGHBOURS, particleContainmentMode=dv.DEFAULT_PARTICLES_CONTAINMENT_MODE, showExample=dv.DEFAULT_SHOW_EXAMPLE_PARTICLE):
         """
         Initialize the model
         """
@@ -17,7 +17,7 @@ class VicsekWithNeighbourSelection:
         self.noise = noise
         self.numberOfParticles = numberOfParticles
         self.k = k
-        self.particlesAllowedToLeave = particlesAllowedToLeave
+        self.particleContainmentMode = particleContainmentMode
         self.showExample = showExample
 
     def __normalizeOrientations(self,orientations):
@@ -90,7 +90,7 @@ class VicsekWithNeighbourSelection:
         for i in range(0, self.numberOfParticles):
             candidates = [candIdx for candIdx in range(len(positions)) if neighbourCandidates[i][candIdx] == True]
             match self.neighbourSelectionMode:
-                case NeighbourSelectionModeEnum.NeighbourSelectionModeEnum.RANDOM:
+                case EnumNeighbourSelectionMode.NeighbourSelectionMode.RANDOM:
                     iNeighbours = self.numberOfParticles * [False]
                     random.shuffle(candidates)
                     pickedNeighbours = candidates[:self.k]

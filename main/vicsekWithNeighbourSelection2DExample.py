@@ -3,18 +3,18 @@ Contains a simulation for the standard 2D Vicsek model
 """
 
 import VicsekWithNeighbourSelection
-import MatplotlibAnimator
+import AnimatorMatplotlib
 import Animator2D
 import SavedModelService
-import NeighbourSelectionModeEnum
+import EnumNeighbourSelectionMode
 
 import DefaultValues as dv
 
-n = 500
+n = 200
 k = 3
 noise = 0
 radius= 20
-neighbourSelectionMode = NeighbourSelectionModeEnum.NeighbourSelectionModeEnum.RANDOM
+neighbourSelectionMode = EnumNeighbourSelectionMode.NeighbourSelectionMode.RANDOM
 
 simulator = VicsekWithNeighbourSelection.VicsekWithNeighbourSelection(neighbourSelectionMode, 
                                                                       domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, 
@@ -38,7 +38,7 @@ simulationData2 = simulator2.simulate()
 #SavedModelService.saveModel(simulationData, "neighbour_selection_mode_n=20.json")
 
 # Initalise the animator
-animator = MatplotlibAnimator.MatplotlibAnimator(simulationData, (100,100,100))
+animator = AnimatorMatplotlib.MatplotlibAnimator(simulationData, (100,100,100))
 
 # prepare the animator
 preparedAnimator = animator.prepare(Animator2D.Animator2D())

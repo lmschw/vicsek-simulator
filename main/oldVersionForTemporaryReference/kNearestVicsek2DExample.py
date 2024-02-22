@@ -3,7 +3,7 @@ Contains a simulation for the standard 2D Vicsek model
 """
 
 import VicsekWithKNeighbours
-import MatplotlibAnimator
+import main.AnimatorMatplotlib as AnimatorMatplotlib
 import Animator2D
 
 import DefaultValues as dv
@@ -18,7 +18,7 @@ simulator = VicsekWithKNeighbours.VicsekWithKNeighbours(domainSize=dv.DEFAULT_DO
 simulationData = simulator.simulate()
 
 # Initalise the animator
-animator = MatplotlibAnimator.MatplotlibAnimator(simulationData, (100,100,100))
+animator = AnimatorMatplotlib.MatplotlibAnimator(simulationData, (100,100,100))
 
 # prepare the animator
 preparedAnimator = animator.prepare(Animator2D.Animator2D())

@@ -6,10 +6,10 @@ import numpy as np
 import random
 
 import DefaultValues as dv
-import DisplayModes
+import main.EnumDisplayModes as EnumDisplayModes
 
 class VicsekWithKNeighboursWithModes:
-    def __init__(self, domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, speed=dv.DEFAULT_SPEED, radius=dv.DEFAULT_RADIUS, noise=dv.DEFAULT_NOISE, numberOfParticles=dv.DEFAULT_NUM_PARTICLES, k1=dv.DEFAULT_K_MODE1, k2=dv.DEFAULT_K_MODE2, particlesAllowedToLeave=dv.DEFAULT_PARTICLES_ALLOWED_TO_LEAVE, displayMode=DisplayModes.DisplayModes.EXCITEMENT):
+    def __init__(self, domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, speed=dv.DEFAULT_SPEED, radius=dv.DEFAULT_RADIUS, noise=dv.DEFAULT_NOISE, numberOfParticles=dv.DEFAULT_NUM_PARTICLES, k1=dv.DEFAULT_K_MODE1, k2=dv.DEFAULT_K_MODE2, particlesAllowedToLeave=dv.DEFAULT_PARTICLES_ALLOWED_TO_LEAVE, displayMode=EnumDisplayModes.DisplayModes.EXCITEMENT):
         """
         Initialize the model. Note that the domainSize does not have a default value as this model is used for both 2D and 3D
         """
@@ -43,7 +43,7 @@ class VicsekWithKNeighboursWithModes:
         t=0
         numIntervals=int(tmax/dt+1)
 
-        if self.displayMode == DisplayModes.DisplayModes.EXAMPLE:
+        if self.displayMode == EnumDisplayModes.DisplayModes.EXAMPLE:
             self._exampleIdx = random.randint(0, self.numberOfParticles-1)
         
         positionsHistory = np.zeros((numIntervals,self.numberOfParticles,len(self.domainSize)))
@@ -103,11 +103,11 @@ class VicsekWithKNeighboursWithModes:
                 newOrientations.append(orientations[particleIdx])
 
             # set colours in case we want to see a highlighted example
-            if self.displayMode == DisplayModes.DisplayModes.EXAMPLE and self._exampleIdx == particleIdx:
+            if self.displayMode == EnumDisplayModes.DisplayModes.EXAMPLE and self._exampleIdx == particleIdx:
                 colours[particleIdx] = 'r'
                 for neighbourIdx in neighbourIndices:
                     colours[neighbourIdx] = 'y'
-            elif self.displayMode == DisplayModes.DisplayModes.EXCITEMENT and excitations[particleIdx] > self.threshold:
+            elif self.displayMode == EnumDisplayModes.DisplayModes.EXCITEMENT and excitations[particleIdx] > self.threshold:
                 colours[particleIdx] = 'y'
         return newOrientations
 
