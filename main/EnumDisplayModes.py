@@ -1,6 +1,6 @@
 from enum import Enum
 
-class DisplayModes(Enum):
-    NONE = 1,
-    EXAMPLE = 2,
-    EXCITEMENT = 3
+class DisplayModes(str, Enum):
+    NONE = "NONE",
+    EXAMPLE = "EXAMPLE",
+    EXCITEMENT = "EXCITEMENT"
