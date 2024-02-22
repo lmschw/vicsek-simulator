@@ -89,22 +89,16 @@ class VicsekWithNeighbourSelection:
         neighbours = []
         for i in range(0, self.numberOfParticles):
             candidates = [candIdx for candIdx in range(len(positions)) if neighbourCandidates[i][candIdx] == True]
+            iNeighbours = self.numberOfParticles * [False]
             match self.neighbourSelectionMode:
                 case EnumNeighbourSelectionMode.NeighbourSelectionMode.RANDOM:
-                    iNeighbours = self.numberOfParticles * [False]
                     random.shuffle(candidates)
                     pickedNeighbours = candidates[:self.k]
-                    for neighbour in pickedNeighbours:
-                        iNeighbours[neighbour] = True
-                    neighbours.append(iNeighbours)
-                    return np.array(neighbours)
-                case _:
-                    return neighbourCandidates
-            """      case NeighbourSelectionModeEnum.NeighbourSelectionModeEnum.NEAREST:
-                    [candidate((candidate[0] - particle[0])**2 + (candidate[1] - particle[1])**2) for candidate in candidates]
-         case NeighbourSelectionModeEnum.NeighbourSelectionModeEnum.FARTHEST:
-            break
-        case NeighbourSelectionModeEnum.NeighbourSelectionModeEnum.LOWEST_CHANGE:
-            break
-            """
-        #return np.array(neighbours)
+                #case EnumNeighbourSelectionMode.NeighbourSelectionMode.NEAREST:
+                    #[candidate((candidate[0] - particle[0])**2 + (candidate[1] - particle[1])**2) for candidate in candidates]
+                case _:  # select all neighbours
+                    pickedNeighbours = candidates
+            for neighbour in pickedNeighbours:
+                iNeighbours[neighbour] = True
+            neighbours.append(iNeighbours)
+        return np.array(neighbours)
