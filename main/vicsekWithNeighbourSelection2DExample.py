@@ -10,11 +10,11 @@ import EnumNeighbourSelectionMode
 
 import DefaultValues as dv
 
-n = 200
+n = 120
 k = 3
 noise = 0
-radius= 20
-neighbourSelectionMode = EnumNeighbourSelectionMode.NeighbourSelectionMode.RANDOM
+radius= 50
+neighbourSelectionMode = EnumNeighbourSelectionMode.NeighbourSelectionMode.NEAREST
 
 simulator = VicsekWithNeighbourSelection.VicsekWithNeighbourSelection(neighbourSelectionMode, 
                                                                       domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, 
@@ -22,20 +22,10 @@ simulator = VicsekWithNeighbourSelection.VicsekWithNeighbourSelection(neighbourS
                                                                       k=k, 
                                                                       noise=noise, 
                                                                       radius=radius)
-simulationData = simulator.simulate()
-
-"""
-simulator2 = VicsekWithNeighbourSelection.VicsekWithNeighbourSelection(NeighbourSelectionModeEnum.NeighbourSelectionModeEnum.FARTHEST, 
-                                                                      domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, 
-                                                                      numberOfParticles=n, 
-                                                                      k=k, 
-                                                                      noise=noise, 
-                                                                      radius=radius)
-simulationData2 = simulator2.simulate()
-"""
+simulationData = simulator.simulate(tmax=100)
 
 # Save model values for future use
-#SavedModelService.saveModel(simulationData, "neighbour_selection_mode_n=20.json")
+SavedModelService.saveModel(simulationData, "neighbour_selection_mode.json", simulator.getParameterSummary())
 
 # Initalise the animator
 animator = AnimatorMatplotlib.MatplotlibAnimator(simulationData, (100,100,100))

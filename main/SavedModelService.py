@@ -1,9 +1,14 @@
 import codecs, json
 import numpy as np
 
-def saveModel(simulationData, path="sample.json"):
+def saveModel(simulationData, path="sample.json", modelParams=None):
     time, positions, orientations, colours = simulationData
     dict = {"time": time.tolist(), "positions": positions.tolist(), "orientations": orientations.tolist(), "colours": colours}
+
+    if modelParams != None:
+        paramsDict = {"modelParams": modelParams}
+        paramsDict.update(dict)
+        dict = paramsDict
     with open(path, "w") as outfile:
         json.dump(dict, outfile)
 

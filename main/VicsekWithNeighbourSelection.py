@@ -23,15 +23,21 @@ class VicsekWithNeighbourSelection:
         self.particleContainmentMode = particleContainmentMode
         self.showExample = showExample
 
-    def __normalizeOrientations(self,orientations):
-        return orientations/(np.sqrt(np.sum(orientations**2,axis=1))[:,np.newaxis])
-
-    def __initializeState(self, domainSize, numberOfParticles):
-        positions = domainSize*np.random.rand(numberOfParticles,len(domainSize))
-        orientations = self.__normalizeOrientations(np.random.rand(numberOfParticles, len(domainSize))-0.5)
-        
-        return positions, orientations
-
+    def getParameterSummary(self, asString=False):
+        summary = {"n": self.numberOfParticles,
+                    "k": self.k,
+                    "noise": self.noise,
+                    "speed": self.speed,
+                    "radius": self.radius,
+                    "neighbourSelectionMode": self.neighbourSelectionMode,
+                    "domainSize": self.domainSize.tolist(),
+                    "particleContainmentMode": self.particleContainmentMode}
+        if asString:
+            strPrep = [tup[0] + ": " + tup[1] for tup in summary.values()]
+            return ", ".join(strPrep)
+        return summary
+    
+    
     def calculateMeanOrientations(self, positions, orientations):
         rij=positions[:,np.newaxis,:]-positions
     
@@ -88,6 +94,15 @@ class VicsekWithNeighbourSelection:
 
         return dt*np.arange(numIntervals), positionsHistory, orientationsHistory, coloursHistory
     
+    def __normalizeOrientations(self,orientations):
+        return orientations/(np.sqrt(np.sum(orientations**2,axis=1))[:,np.newaxis])
+
+    def __initializeState(self, domainSize, numberOfParticles):
+        positions = domainSize*np.random.rand(numberOfParticles,len(domainSize))
+        orientations = self.__normalizeOrientations(np.random.rand(numberOfParticles, len(domainSize))-0.5)
+        
+        return positions, orientations
+
     def __selectNeighbours(self, positions, neighbourCandidates):        
         neighbours = []
         for i in range(0, self.numberOfParticles):
@@ -101,6 +116,10 @@ class VicsekWithNeighbourSelection:
                     currentParticlePosition = positions[i]
                     candidateDistances = {candidateIdx: math.dist(currentParticlePosition, positions[candidateIdx]) for candidateIdx in candidates}
                     pickedNeighbours = nsmallest(self.k, candidateDistances, candidateDistances.get)
+                case EnumNeighbourSelectionMode.NeighbourSelectionMode.FARTHEST:
+                    currentParticlePosition = positions[i]
+                    candidateDistances = {candidateIdx: math.dist(currentParticlePosition, positions[candidateIdx]) for candidateIdx in candidates}
+                    pickedNeighbours = nlargest(self.k, candidateDistances, candidateDistances.get)
                 case _:  # select all neighbours
                     pickedNeighbours = candidates
             iNeighbours[i] = True # should always consider the current orientation regardless of k or the neighbour selection method
