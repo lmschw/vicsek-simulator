@@ -10,11 +10,11 @@ import EnumNeighbourSelectionMode
 
 import DefaultValues as dv
 
-n = 120
+n = 500
 k = 3
 noise = 0
-radius= 50
-neighbourSelectionMode = EnumNeighbourSelectionMode.NeighbourSelectionMode.NEAREST
+radius= 20
+neighbourSelectionMode = EnumNeighbourSelectionMode.NeighbourSelectionMode.HIGHEST_ORIENTATION_DIFFERENCE
 
 simulator = VicsekWithNeighbourSelection.VicsekWithNeighbourSelection(neighbourSelectionMode, 
                                                                       domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, 
@@ -22,7 +22,7 @@ simulator = VicsekWithNeighbourSelection.VicsekWithNeighbourSelection(neighbourS
                                                                       k=k, 
                                                                       noise=noise, 
                                                                       radius=radius)
-simulationData = simulator.simulate(tmax=100)
+simulationData = simulator.simulate(tmax=500)
 
 # Save model values for future use
 SavedModelService.saveModel(simulationData, "neighbour_selection_mode.json", simulator.getParameterSummary())
@@ -36,7 +36,5 @@ preparedAnimator.setParameters(n=n, k=k, noise=noise, radius=radius)
 
 # Display Animation
 preparedAnimator.showAnimation()
-
-# TODO save values after simulation + option to read existing values
 
 # TODO evaluate result

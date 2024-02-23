@@ -46,7 +46,7 @@ class VicsekWithNeighbourSelection:
         rij2 = np.sum(rij**2,axis=2)
         neighbourCandidates = (rij2 <= self.radius**2)
 
-        neighbours = self.__selectNeighbours(positions, neighbourCandidates)
+        neighbours = self.__selectNeighbours(neighbourCandidates, positions, orientations)
         summedOrientations = np.sum(neighbours[:,:,np.newaxis]*orientations[np.newaxis,:,:],axis=1)
         return self.__normalizeOrientations(summedOrientations)
 
@@ -103,22 +103,28 @@ class VicsekWithNeighbourSelection:
         
         return positions, orientations
 
-    def __selectNeighbours(self, positions, neighbourCandidates):        
+    def __selectNeighbours(self, neighbourCandidates, positions, orientations):        
         neighbours = []
         for i in range(0, self.numberOfParticles):
             candidates = [candIdx for candIdx in range(len(positions)) if neighbourCandidates[i][candIdx] == True and candIdx != i]
             iNeighbours = self.numberOfParticles * [False]
+            currentParticlePosition = positions[i]
+            currentParticleOrientation = orientations[i]
             match self.neighbourSelectionMode:
                 case EnumNeighbourSelectionMode.NeighbourSelectionMode.RANDOM:
                     random.shuffle(candidates)
                     pickedNeighbours = candidates[:self.k]
                 case EnumNeighbourSelectionMode.NeighbourSelectionMode.NEAREST:
-                    currentParticlePosition = positions[i]
                     candidateDistances = {candidateIdx: math.dist(currentParticlePosition, positions[candidateIdx]) for candidateIdx in candidates}
                     pickedNeighbours = nsmallest(self.k, candidateDistances, candidateDistances.get)
                 case EnumNeighbourSelectionMode.NeighbourSelectionMode.FARTHEST:
-                    currentParticlePosition = positions[i]
                     candidateDistances = {candidateIdx: math.dist(currentParticlePosition, positions[candidateIdx]) for candidateIdx in candidates}
+                    pickedNeighbours = nlargest(self.k, candidateDistances, candidateDistances.get)
+                case EnumNeighbourSelectionMode.NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE:
+                    candidateDistances = {candidateIdx: math.dist(currentParticleOrientation, orientations[candidateIdx]) for candidateIdx in candidates}
+                    pickedNeighbours = nsmallest(self.k, candidateDistances, candidateDistances.get)
+                case EnumNeighbourSelectionMode.NeighbourSelectionMode.HIGHEST_ORIENTATION_DIFFERENCE:
+                    candidateDistances = {candidateIdx: math.dist(currentParticleOrientation, orientations[candidateIdx]) for candidateIdx in candidates}
                     pickedNeighbours = nlargest(self.k, candidateDistances, candidateDistances.get)
                 case _:  # select all neighbours
                     pickedNeighbours = candidates
