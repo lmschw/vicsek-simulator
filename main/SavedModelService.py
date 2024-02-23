@@ -15,9 +15,11 @@ def saveModel(simulationData, path="sample.json", modelParams=None):
 def loadModel(path):
     obj_text = codecs.open(path, 'r', encoding='utf-8').read()
     loadedJson = json.loads(obj_text)
+
+    modelParams = np.array(loadedJson["modelParams"])
     time = np.array(loadedJson["time"])
     positions = np.array(loadedJson["positions"])
     orientations = np.array(loadedJson["orientations"])
     colours = np.array(loadedJson["colours"])
-    return time, positions, orientations, colours
+    return modelParams, (time, positions, orientations, colours)
     
