@@ -22,7 +22,7 @@ simulator = VicsekWithNeighbourSelection.VicsekWithNeighbourSelection(neighbourS
                                                                       k=k, 
                                                                       noise=noise, 
                                                                       radius=radius)
-simulationData = simulator.simulate(tmax=tmax)
+simulationData = simulator.simulate(tmax=120)
 
 # Save model values for future use
 SavedModelService.saveModel(simulationData, "neighbour_selection_mode.json", simulator.getParameterSummary())
