@@ -47,6 +47,16 @@ class Animator(object):
         self._particleContainmentMode = particleContainmentMode
         self._showParameters = showParameters
 
+    def setParams(self, modelParams):
+        self._n = modelParams["n"]
+        self._k = modelParams["k"]
+        self._noise = modelParams["noise"]
+        self._radius = modelParams["radius"]
+        self._speed = modelParams["speed"]
+        self._neighbourSelectionMode = modelParams["neighbourSelectionMode"]
+        self._domainSize = modelParams["domainSize"]
+        self._particleContainmentMode = modelParams["particleContainmentMode"]
+        
 
     def showAnimation(self):
         """

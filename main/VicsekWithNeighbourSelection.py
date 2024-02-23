@@ -29,7 +29,7 @@ class VicsekWithNeighbourSelection:
                     "noise": self.noise,
                     "speed": self.speed,
                     "radius": self.radius,
-                    "neighbourSelectionMode": self.neighbourSelectionMode,
+                    "neighbourSelectionMode": self.neighbourSelectionMode.name,
                     "domainSize": self.domainSize.tolist(),
                     "particleContainmentMode": self.particleContainmentMode}
         if asString:

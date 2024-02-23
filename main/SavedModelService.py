@@ -16,7 +16,7 @@ def loadModel(path):
     obj_text = codecs.open(path, 'r', encoding='utf-8').read()
     loadedJson = json.loads(obj_text)
 
-    modelParams = np.array(loadedJson["modelParams"])
+    modelParams = loadedJson["modelParams"]
     time = np.array(loadedJson["time"])
     positions = np.array(loadedJson["positions"])
     orientations = np.array(loadedJson["orientations"])

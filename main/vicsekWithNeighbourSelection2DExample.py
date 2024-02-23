@@ -10,7 +10,7 @@ import EnumNeighbourSelectionMode
 
 import DefaultValues as dv
 
-n = 500
+n = 100
 k = 3
 noise = 0
 radius= 20
@@ -22,7 +22,7 @@ simulator = VicsekWithNeighbourSelection.VicsekWithNeighbourSelection(neighbourS
                                                                       k=k, 
                                                                       noise=noise, 
                                                                       radius=radius)
-simulationData = simulator.simulate(tmax=500)
+simulationData = simulator.simulate(tmax=tmax)
 
 # Save model values for future use
 SavedModelService.saveModel(simulationData, "neighbour_selection_mode.json", simulator.getParameterSummary())
@@ -32,7 +32,7 @@ animator = AnimatorMatplotlib.MatplotlibAnimator(simulationData, (100,100,100))
 
 # prepare the animator
 preparedAnimator = animator.prepare(Animator2D.Animator2D())
-preparedAnimator.setParameters(n=n, k=k, noise=noise, radius=radius)
+preparedAnimator.setParams(simulator.getParameterSummary())
 
 # Display Animation
 preparedAnimator.showAnimation()

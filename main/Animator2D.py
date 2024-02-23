@@ -25,6 +25,6 @@ class Animator2D(Animator.Animator):
         plt.xlim(0,self._domainSize[0])
         plt.ylim(0,self._domainSize[1])
         if self._showParameters:
-            plt.title(f"n={self._n}, k={self._k}, noise={self._noise}, radius={self._radius}, speed={self._speed}, \nparticles allowed to leave={self._particleContainmentMode}\n$t$={self._time[i]:.2f}")
+            plt.title(f"n={self._n}, k={self._k}, noise={self._noise}, radius={self._radius}, speed={self._speed}, \nneighbour selection={self._neighbourSelectionMode}\n$t$={self._time[i]:.2f}")
         else:
             plt.title(f"$t$={self._time[i]:.2f}")
