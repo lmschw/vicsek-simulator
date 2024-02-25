@@ -26,6 +26,15 @@ def loadModel(path):
     orientations = np.array(loadedJson["orientations"])
     colours = np.array(loadedJson["colours"])
     return modelParams, (time, positions, orientations, colours)
+
+def loadModels(paths):
+    data = []
+    params = []
+    for path in paths:
+        modelParams, simulationData = loadModel(path)
+        params.append(modelParams)
+        data.append(simulationData)
+    return params, data
     
 def __getSpecifiedIntervals(interval, lst):
     return [lst[idx] for idx in range(0, len(lst)) if idx % interval == 0]
