@@ -1,7 +1,5 @@
 # vicsek-simulator
 
-Features:
+Implements the Vicsek model. Allows specification of which and how many neighbours of a particle will influence the update of its orientation at every time step.
 
-- Optional display of parameters in the simulation (n, k, noise, speed, radius, particle allowed to leave)
-- Option to allow/disallow leaving of particles, i.e. have particles bounce off borders or leave when their trajectory demands it
-- Optional highlighting of a single random example particle and the neighbour it interacts with at the current timestep
+Features: - Optional specification of neighbour selection mode - RANDOM, NEAREST, FARTHEST, LEAST_ORIENTATION_DIFFERENCE, HIGHEST_ORIENTATION_DIFFERENCE - Saving and loading of experiment results - Evaluation of model results using an Evaluator for a single model or for comparative purposes - metrics: ORDER
