@@ -11,7 +11,21 @@ class VicsekWithNeighbourSelection:
 
     def __init__(self, neighbourSelectionModel, domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, speed=dv.DEFAULT_SPEED, radius=dv.DEFAULT_RADIUS, noise=dv.DEFAULT_NOISE, numberOfParticles=dv.DEFAULT_NUM_PARTICLES, k=dv.DEFAULT_K_NEIGHBOURS, particleContainmentMode=dv.DEFAULT_PARTICLES_CONTAINMENT_MODE, showExample=dv.DEFAULT_SHOW_EXAMPLE_PARTICLE):
         """
-        Initialize the model
+        Initialize the model with all its parameters
+
+        Params:
+            - neighbourSelectionMode (EnumNeighbourSelectionMode.NeighbourSelectionMode): how the particles select which of the other particles within their perception radius influence their orientation at any given time step
+            - domainSize (tuple x,y) [optional]: the size of the domain for the particle movement
+            - speed (int) [optional]: how fast the particles move
+            - radius (int) [optional]: defines the perception field of the individual particles, i.e. the area in which it can perceive other particles
+            - noise (float) [optional]: noise amplitude. adds noise to the orientation adaptation
+            - numberOfParticles (int) [optional]: the number of particles within the domain, n
+            - k (int) [optional]: the number of neighbours a particle considers when updating its orientation at every time step
+            - particleContainmentMode (EnumParticleContainmentMode.ParticleContainmentMode) [optional]: how the particles react upon reaching the border of the domain
+            - showExample (bool) [optional]: whether a random example particle should be coloured in red with its influencing neighbours in yellow
+
+        Returns:
+            No return.
         """
         self.neighbourSelectionMode = neighbourSelectionModel
         self.domainSize = np.asarray(domainSize)
@@ -24,6 +38,15 @@ class VicsekWithNeighbourSelection:
         self.showExample = showExample
 
     def getParameterSummary(self, asString=False):
+        """
+        Creates a summary of all the model parameters ready for use for conversion to JSON or strings.
+
+        Parameters:
+            - asString (bool, default False) [optional]: if the summary should be returned as a dictionary or as a single string
+        
+        Returns:
+            A dictionary or a single string containing all model parameters.
+        """
         summary = {"n": self.numberOfParticles,
                     "k": self.k,
                     "noise": self.noise,
@@ -39,6 +62,16 @@ class VicsekWithNeighbourSelection:
     
     
     def calculateMeanOrientations(self, positions, orientations):
+        """
+        Updates the orientations of all particles based on the model parameters.
+
+        Parameters:
+            - positions (arr): the positions of all particles at the current timestep
+            - orientations (arr): the orientations of all particles at the current timestep
+
+        Returns:
+            An array of the adapted orientations.
+        """
         rij=positions[:,np.newaxis,:]-positions
     
         rij = rij - self.domainSize*np.rint(rij/self.domainSize) #minimum image convention
@@ -51,9 +84,29 @@ class VicsekWithNeighbourSelection:
         return self.__normalizeOrientations(summedOrientations)
 
     def generateNoise(self):
+        """
+        Generates noise to dislodge the system from local optima.
+
+        Returns:
+            A single noise value.
+        """
         return np.random.normal(scale=self.noise, size=(self.numberOfParticles, len(self.domainSize)))
 
     def simulate(self, initialState=(None, None), dt=None, tmax=None):
+        """
+        Runs the simulation experiment.
+        First the parameters are computed if they are not passed. Then the positions, orientations and colours are computed for each particle at each time step.
+
+        Parameters:
+            - initialState (tuple of arrays) [optional]: A tuple containing the initial positions of all particles and their initial orientations
+            - dt (int) [optional]: time step
+            - tmax (int) [optional]: the total number of time steps of the experiment
+
+        Returns:
+            time points, positionsHistory, orientationsHistory, coloursHistory. All of them as ordered arrays so that they can be matched by index matching
+        """
+
+        # Preparations and setting of parameters if they are not passed to the method
         positions, orientations = initialState
         
         if None in initialState:
@@ -65,6 +118,7 @@ class VicsekWithNeighbourSelection:
         if tmax is None:
             tmax = (10**3)*dt
 
+        # Initialisations for the loop and the return variables
         t=0
         numIntervals=int(tmax/dt+1)
         
@@ -75,6 +129,7 @@ class VicsekWithNeighbourSelection:
         positionsHistory[0,:,:]=positions
         orientationsHistory[0,:,:]=orientations
         
+        # for every time step, the positions, orientations and colours for each particle are updated and added to the histories
         for it in range(numIntervals):
             print(f"t={t}/{numIntervals-1}")
 
@@ -95,15 +150,46 @@ class VicsekWithNeighbourSelection:
         return dt*np.arange(numIntervals), positionsHistory, orientationsHistory, coloursHistory
     
     def __normalizeOrientations(self,orientations):
+        """
+        Normalises the orientations of all particles for the current time step
+
+        Parameters:
+            - orientations (array): The current orientations of all particles
+
+        Returns:
+            The normalised orientations of all particles as an array.
+        """
         return orientations/(np.sqrt(np.sum(orientations**2,axis=1))[:,np.newaxis])
 
+
     def __initializeState(self, domainSize, numberOfParticles):
+        """
+        Initialises random positions and orientations for all particles within the domain.
+
+        Parameters.
+            - domainSize (numpy array): the size of the domain, i.e. all possible positions must be within this domain
+            - numberOfParticles (int): the number of particles to be placed within the domain
+        
+        Returns:
+            2 arrays, the first containing the positions, the second containing the orientations. Initialised randomly.
+        """
         positions = domainSize*np.random.rand(numberOfParticles,len(domainSize))
         orientations = self.__normalizeOrientations(np.random.rand(numberOfParticles, len(domainSize))-0.5)
         
         return positions, orientations
 
-    def __selectNeighbours(self, neighbourCandidates, positions, orientations):        
+    def __selectNeighbours(self, neighbourCandidates, positions, orientations):
+        """
+        Decides which neighbours will be considered for the orientation update. Always includes the particle's own orientation.
+
+        Parameters:
+            - neighbourCandidates (array of arrays of bools): for every particle, contains a boolean specifying if the other particle is within the perception radius
+            - positions (array of [int, int]): the current position of every particle
+            - orientations (array of [int, int]): the current orientation of every particle
+        
+        Returns:
+            An array of arrays of booleans specifying which other particles have been selected as the relevant neighbours for every particle.
+        """        
         neighbours = []
         for i in range(0, self.numberOfParticles):
             candidates = [candIdx for candIdx in range(len(positions)) if neighbourCandidates[i][candIdx] == True and candIdx != i]
