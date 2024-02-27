@@ -10,31 +10,30 @@ import EnumNeighbourSelectionMode
 
 import DefaultValues as dv
 
-n = 100
-k = 3
+n = 500
+k = 5
 noise = 0
-radius= 20
-neighbourSelectionMode = EnumNeighbourSelectionMode.NeighbourSelectionMode.HIGHEST_ORIENTATION_DIFFERENCE
+radius= 10
+neighbourSelectionMode = EnumNeighbourSelectionMode.NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE
+tmax = 100000
 
 simulator = VicsekWithNeighbourSelection.VicsekWithNeighbourSelection(neighbourSelectionMode, 
-                                                                      domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, 
-                                                                      numberOfParticles=n, 
-                                                                      k=k, 
-                                                                      noise=noise, 
-                                                                      radius=radius)
-simulationData = simulator.simulate(tmax=120)
+                                                                domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, 
+                                                                numberOfParticles=n, 
+                                                                k=k, 
+                                                                noise=noise, 
+                                                                radius=radius)
+simulationData = simulator.simulate(tmax=tmax)
 
 # Save model values for future use
-SavedModelService.saveModel(simulationData, "neighbour_selection_mode.json", simulator.getParameterSummary())
+SavedModelService.saveModel(simulationData, f"{neighbourSelectionMode.name}_tmax={tmax}_n={n}_k={k}_noise={noise}_radius={radius}.json", simulator.getParameterSummary())
 
 # Initalise the animator
 animator = AnimatorMatplotlib.MatplotlibAnimator(simulationData, (100,100,100))
 
 # prepare the animator
-preparedAnimator = animator.prepare(Animator2D.Animator2D())
+preparedAnimator = animator.prepare(Animator2D.Animator2D(), frames=tmax, frameInterval=1)
 preparedAnimator.setParams(simulator.getParameterSummary())
 
 # Display Animation
 preparedAnimator.showAnimation()
-
-# TODO evaluate result

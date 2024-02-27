@@ -18,7 +18,7 @@ class MatplotlibAnimator:
 
         self._initialize()
 
-    def prepare(self, animator):
+    def prepare(self, animator, frames=100, frameInterval=10):
         """
         Prepares the appropriate animator.
 
@@ -28,7 +28,7 @@ class MatplotlibAnimator:
         return:
         Prepared animator feeded with simulation data.
         """
-        preparedAnimator =  animator.prepareAnimation(self._figure)
+        preparedAnimator =  animator.prepareAnimation(self._figure, frames, frameInterval)
 
         return preparedAnimator.setSimulationData(self._simulationData, self._domainSize)
 
