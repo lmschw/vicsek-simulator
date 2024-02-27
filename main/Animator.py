@@ -1,6 +1,5 @@
 from matplotlib.animation import FuncAnimation
 import matplotlib.pyplot as plt
-import matplotlib.animation as animator
 
 import DefaultValues as dv
 
