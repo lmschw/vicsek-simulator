@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-import MetricService
+import ServiceMetric
 
 class Evaluator(object):
     """
@@ -34,7 +34,7 @@ class Evaluator(object):
         for i in range(len(self.time)):
             if i % 1000 == 0:
                 print(f"evaluating {i}/{len(self.time)}")
-            valuesPerTimeStep[self.time[i]] = MetricService.evaluateSingleTimestep(self.positions[i], self.orientations[i], self.metric)
+            valuesPerTimeStep[self.time[i]] = ServiceMetric.evaluateSingleTimestep(self.positions[i], self.orientations[i], self.metric)
         print("Evaluation completed.")
         return valuesPerTimeStep
     
