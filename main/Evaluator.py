@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-import EnumMetrics as metrics
+import MetricService
 
 class Evaluator(object):
     """
@@ -31,14 +31,11 @@ class Evaluator(object):
             A dictionary with the results for the model at every time step.
         """
         valuesPerTimeStep = {}
-        n = self.modelParams["n"]
         for i in range(len(self.time)):
-            match self.metric:
-                case metrics.Metrics.ORDER:
-                    sumOrientation = self.orientations[i][0]
-                    for j in range(1, n):
-                        sumOrientation += self.orientations[i][j]
-                    valuesPerTimeStep[self.time[i]] = np.sqrt(sumOrientation[0]**2 + sumOrientation[1]**2) / n
+            if i % 1000 == 0:
+                print(f"evaluating {i}/{len(self.time)}")
+            valuesPerTimeStep[self.time[i]] = MetricService.evaluateSingleTimestep(self.positions[i], self.orientations[i], self.metric)
+        print("Evaluation completed.")
         return valuesPerTimeStep
     
     def visualize(self, data, savePath=None):
@@ -54,6 +51,7 @@ class Evaluator(object):
         """
         x, y = zip(*sorted(data.items()))
         plt.plot(x, y)
+        plt.ylim(0,1)
         plt.title(f"""Model: n={self.modelParams["n"]}, k={self.modelParams["k"]}, noise={self.modelParams["noise"]}, radius={self.modelParams["radius"]}, speed={self.modelParams["speed"]}, \nneighbour selection: {self.modelParams["neighbourSelectionMode"]}\nMetric: {self.metric.name}""")
         
         if savePath != None:

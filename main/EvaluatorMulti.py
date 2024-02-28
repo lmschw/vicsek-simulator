@@ -32,6 +32,8 @@ class EvaluatorMulti(object):
         """
         results = []
         for i in range(len(self.simulationData)):
+            if i % 1000 == 0:
+                print(f"evaluating {i}/{len(self.simulationData)}")
             evaluator = Evaluator.Evaluator(self.simulationData[i], self.modelParams[i], self.metric)
             results.append(evaluator.evaluate())
         
@@ -39,7 +41,7 @@ class EvaluatorMulti(object):
         for d in results: 
             for key, value in d.items():
                 dd[key].append(value)
-
+        print("Evaluation complete.")
         return dd
 
     
@@ -58,6 +60,7 @@ class EvaluatorMulti(object):
         """
         x, y = zip(*sorted(data.items()))
         plt.plot(x, y)
+        plt.ylim(0,1)
         plt.gca().legend(labels)
         plt.title(f"""Model comparison: \n{subtitle}""")
 
