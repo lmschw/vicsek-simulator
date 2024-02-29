@@ -10,7 +10,7 @@ def evaluateAllModes(n, k, noise, radius, metric=EnumMetrics.Metrics.ORDER):
     """
     Compares the results for each of the neighbour selection modes for the same values of n, k, noise, radius and the same metric.
     """
-    modelParams, simulationData = ServiceSavedModel.loadModels([f"examples/RANDOM_n={n}_k={k}_noise={noise}_radius={radius}.json",
+    modelParams, simulationData, colours = ServiceSavedModel.loadModels([f"examples/RANDOM_n={n}_k={k}_noise={noise}_radius={radius}.json",
                                                             f"examples/NEAREST_n={n}_k={k}_noise={noise}_radius={radius}.json",
                                                             f"examples/FARTHEST_n={n}_k={k}_noise={noise}_radius={radius}.json",
                                                             f"examples/LEAST_ORIENTATION_DIFFERENCE_n={n}_k={k}_noise={noise}_radius={radius}.json",
@@ -24,7 +24,7 @@ def evaluateN(mode, k, noise, radius, metric=EnumMetrics.Metrics.ORDER):
     """
     Compares the results for each value of n for the same values of k, noise, radius, the same neighbour selection mode and the same metric.
     """
-    modelParams, simulationData = ServiceSavedModel.loadModels([f"examples/{mode.name}_n=100_k={k}_noise={noise}_radius={radius}.json",
+    modelParams, simulationData, colours = ServiceSavedModel.loadModels([f"examples/{mode.name}_n=100_k={k}_noise={noise}_radius={radius}.json",
                                                             f"examples/{mode.name}_n=200_k={k}_noise={noise}_radius={radius}.json",
                                                             f"examples/{mode.name}_n=500_k={k}_noise={noise}_radius={radius}.json"])
 
@@ -36,7 +36,7 @@ def evaluateK(mode, n, noise, radius, metric=EnumMetrics.Metrics.ORDER):
     """
     Compares the results for each value of k for the same values of n, noise, radius, the same neighbour selection mode and the same metric.
     """
-    modelParams, simulationData = ServiceSavedModel.loadModels([f"examples/{mode.name}_n={n}_k=1_noise={noise}_radius={radius}.json",
+    modelParams, simulationData, colours = ServiceSavedModel.loadModels([f"examples/{mode.name}_n={n}_k=1_noise={noise}_radius={radius}.json",
                                                             f"examples/{mode.name}_n={n}_k=2_noise={noise}_radius={radius}.json",
                                                             f"examples/{mode.name}_n={n}_k=3_noise={noise}_radius={radius}.json",
                                                             f"examples/{mode.name}_n={n}_k=4_noise={noise}_radius={radius}.json",
@@ -50,7 +50,7 @@ def evaluateNoise(mode, n, k, radius, metric=EnumMetrics.Metrics.ORDER):
     """
     Compares the results for each value of noise for the same values of n, k, radius, the same neighbour selection mode and the same metric.
     """
-    modelParams, simulationData = ServiceSavedModel.loadModels([f"examples/{mode.name}_n={n}_k={k}_noise=0_radius={radius}.json",
+    modelParams, simulationData, colours = ServiceSavedModel.loadModels([f"examples/{mode.name}_n={n}_k={k}_noise=0_radius={radius}.json",
                                                             f"examples/{mode.name}_n={n}_k={k}_noise=0.3_radius={radius}.json"])
 
 
@@ -61,7 +61,7 @@ def evaluateRadius(mode, n, k, noise, metric=EnumMetrics.Metrics.ORDER):
     """
     Compares the results for each value of radius for the same values of n, k, noise, the same neighbour selection mode and the same metric.
     """
-    modelParams, simulationData = ServiceSavedModel.loadModels([f"examples/{mode.name}_n={n}_k={k}_noise={noise}_radius=10.json",
+    modelParams, simulationData, colours = ServiceSavedModel.loadModels([f"examples/{mode.name}_n={n}_k={k}_noise={noise}_radius=10.json",
                                                             f"examples/{mode.name}_n={n}_k={k}_noise={noise}_radius=20.json",
                                                             f"examples/{mode.name}_n={n}_k={k}_noise={noise}_radius=50.json"])
 

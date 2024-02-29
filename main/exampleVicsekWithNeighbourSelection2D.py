@@ -23,16 +23,16 @@ simulator = VicsekWithNeighbourSelection.VicsekWithNeighbourSelection(neighbourS
                                                                 k=k, 
                                                                 noise=noise, 
                                                                 radius=radius)
-simulationData = simulator.simulate(tmax=tmax)
+simulationData, colours = simulator.simulate(tmax=tmax)
 
 # Save model values for future use
-ServiceSavedModel.saveModel(simulationData, f"{neighbourSelectionMode.name}_tmax={tmax}_n={n}_k={k}_noise={noise}_radius={radius}.json", simulator.getParameterSummary())
+ServiceSavedModel.saveModel(simulationData, colours, f"{neighbourSelectionMode.name}_tmax={tmax}_n={n}_k={k}_noise={noise}_radius={radius}.json", simulator.getParameterSummary())
 
 # Initalise the animator
-animator = AnimatorMatplotlib.MatplotlibAnimator(simulationData, (100,100,100))
+animator = AnimatorMatplotlib.MatplotlibAnimator(simulationData, (100,100,100), colours)
 
 # prepare the animator
-preparedAnimator = animator.prepare(Animator2D.Animator2D(), frames=tmax, frameInterval=1)
+preparedAnimator = animator.prepare(Animator2D.Animator2D(), frames=tmax)
 preparedAnimator.setParams(simulator.getParameterSummary())
 
 # Display Animation

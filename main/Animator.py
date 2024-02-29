@@ -22,7 +22,7 @@ class Animator(object):
 
         return self
 
-    def setSimulationData(self, simulationData, domainSize):
+    def setSimulationData(self, simulationData, domainSize, colours=None):
         """
         Sets
         keyword arguments:
@@ -32,8 +32,13 @@ class Animator(object):
         return:
         self
         """        
-        self._time, self._positions, self._orientations, self._colours = simulationData
+        self._time, self._positions, self._orientations = simulationData
         self._domainSize = domainSize
+
+        if colours is None:
+            self._colours = len(self._time) * [len(self._positions[0]) * ['k']]
+        else:
+            self._colours = colours
 
         return self
     

@@ -147,7 +147,7 @@ class VicsekWithNeighbourSelection:
 
             t+=dt
 
-        return dt*np.arange(numIntervals), positionsHistory, orientationsHistory, coloursHistory
+        return (dt*np.arange(numIntervals), positionsHistory, orientationsHistory), coloursHistory
     
     def __normalizeOrientations(self,orientations):
         """

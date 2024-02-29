@@ -4,7 +4,7 @@ import numpy as np
 Service contains static methods to save and load models to/from json files.
 """
 
-def saveModel(simulationData, path="sample.json", modelParams=None, saveInterval=1):
+def saveModel(simulationData, colours, path="sample.json", modelParams=None, saveInterval=1):
     """
     Saves a model trained by the Viscek simulator implementation.
 
@@ -16,7 +16,7 @@ def saveModel(simulationData, path="sample.json", modelParams=None, saveInterval
     Returns:
         Nothing. Creates or overwrites a file.
     """
-    time, positions, orientations, colours = simulationData
+    time, positions, orientations = simulationData
     dict = {"time": __getSpecifiedIntervals(saveInterval, time.tolist()), 
             "positions": __getSpecifiedIntervals(saveInterval, positions.tolist()), 
             "orientations": __getSpecifiedIntervals(saveInterval, orientations.tolist()), 
@@ -48,7 +48,7 @@ def loadModel(path):
     positions = np.array(loadedJson["positions"])
     orientations = np.array(loadedJson["orientations"])
     colours = np.array(loadedJson["colours"])
-    return modelParams, (time, positions, orientations, colours)
+    return modelParams, (time, positions, orientations), colours
 
 def loadModels(paths):
     """
@@ -62,11 +62,13 @@ def loadModels(paths):
     """
     data = []
     params = []
+    coloursArr = []
     for path in paths:
-        modelParams, simulationData = loadModel(path)
+        modelParams, simulationData, colours = loadModel(path)
         params.append(modelParams)
         data.append(simulationData)
-    return params, data
+        coloursArr.append(colours)
+    return params, data, coloursArr
     
 def __getSpecifiedIntervals(interval, lst):
     """

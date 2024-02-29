@@ -19,7 +19,7 @@ class Evaluator(object):
         Returns:
             Nothing.
         """
-        self.time, self.positions, self.orientations, self.colours = simulationData
+        self.time, self.positions, self.orientations = simulationData
         self.modelParams = modelParams
         self.metric = metric
 
