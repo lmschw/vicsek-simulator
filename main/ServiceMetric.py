@@ -15,8 +15,8 @@ def evaluateSingleTimestep(positions, orientations, metric, radius=None):
                 sumOrientation += orientations[j]
             return np.sqrt(sumOrientation[0]**2 + sumOrientation[1]**2) / n
         case metrics.Metrics.CLUSTER_NUMBER:
-             _, nClusters = findClusters(positions, orientations, radius)
-             return nClusters
+            nClusters, _ = findClusters(positions, orientations, radius)
+            return nClusters
          
 def findClusters(positions, orientations, radius):
     """
@@ -25,30 +25,8 @@ def findClusters(positions, orientations, radius):
     - to belong to a cluster, the orientation has to be similar
     """
     if radius == None:
-        print("Radius needs to be provided for clustering.")
+        print("ERROR: Radius needs to be provided for clustering.")
 
-    """
-    n = len(positions)
-    clusterCounter = 0
-    clusters = np.zeros(n)
-    for i in range(n):
-        neighbourIndices = findNeighbours(i, positions, radius)
-        print(f"i={i}, neighbourIndices: {neighbourIndices}")
-        sameClusterNeighbours = []
-        for neighbourIdx in neighbourIndices:
-            if cosAngle(orientations[i], orientations[neighbourIdx] > 0.9):
-                if clusters[neighbourIdx] != 0:
-                    clusters[i] = clusters[neighbourIdx]
-                else:
-                    sameClusterNeighbours.append(neighbourIdx)
-        if clusters[i] == 0:
-            clusterCounter += 1
-            clusters[i] = clusterCounter
-            for j in sameClusterNeighbours:
-                clusters[j] = clusterCounter
-    print(f"{clusterCounter} clusters: {clusters}")
-    return clusterCounter, clusters
-      """
     n = len(positions)
     clusters = np.zeros(n)
     clusterMembers = np.zeros((n,n))
@@ -60,8 +38,9 @@ def findClusters(positions, orientations, radius):
     
     clusterCounter = 1
     for i in range(n):
-        markClusters(i, clusterCounter, clusters, clusterMembers, n)
-        clusterCounter += 1
+        if markClusters(i, clusterCounter, clusters, clusterMembers, n) == True:
+            clusterCounter += 1
+
     return clusterCounter, clusters
        
             
@@ -80,8 +59,9 @@ def cosAngle(vec1, vec2):
 
 def markClusters(currentIdx, clusterCounter, clusters, clusterMembers, n):
     if clusters[currentIdx] != 0:
-        return
+        return False
     clusters[currentIdx] = clusterCounter
     for i in range(n):
         if clusterMembers[currentIdx][i] == 1:
             markClusters(i, clusterCounter, clusters, clusterMembers, n)
+    return True

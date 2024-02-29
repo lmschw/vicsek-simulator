@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 from collections import defaultdict
 
 import Evaluator
+import EnumMetrics
 
 class EvaluatorMulti(object):
     """
@@ -32,8 +33,7 @@ class EvaluatorMulti(object):
         """
         results = []
         for i in range(len(self.simulationData)):
-            if i % 1000 == 0:
-                print(f"evaluating {i}/{len(self.simulationData)}")
+            print(f"evaluating {i}/{len(self.simulationData)}")
             evaluator = Evaluator.Evaluator(self.simulationData[i], self.modelParams[i], self.metric)
             results.append(evaluator.evaluate())
         
@@ -58,10 +58,12 @@ class EvaluatorMulti(object):
         Returns:
             Nothing.
         """
-        x, y = zip(*sorted(data.items()))
-        plt.plot(x, y)
-        plt.ylim(0,1)
-        plt.gca().legend(labels)
+        match self.metric:
+            case EnumMetrics.Metrics.ORDER:
+                self.__createOrderPlot(data)
+            case EnumMetrics.Metrics.CLUSTER_NUMBER:
+                self.__createClusterNumberPlot(data)
+
         plt.title(f"""Model comparison: \n{subtitle}""")
 
         if savePath != None:
@@ -84,3 +86,18 @@ class EvaluatorMulti(object):
         """
         self.visualize(self.evaluate(), labels, subtitle=subtitle, savePath=savePath)
 
+    def __createOrderPlot(self, data):
+        x, y = zip(*sorted(data.items()))
+        plt.plot(x, y)
+        plt.ylim(0,1)
+        
+    def __createClusterNumberPlot(self, data):
+        width = 0.25  # the width of the bars
+        multiplier = 0
+        sorted(data.items())
+        for time, vals in data.items():
+            for val in vals:
+                offset = width * multiplier
+                rects = plt.bar(time + offset, val, width, label=val)
+                #plt.bar_label(rects, padding=3)
+                multiplier += 1    

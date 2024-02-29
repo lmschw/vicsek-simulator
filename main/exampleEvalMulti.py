@@ -5,7 +5,7 @@ import EnumNeighbourSelectionMode
 import EnumMetrics
 
 # All by MODE 
-#ServiceEvaluationMethod.evaluateAllModes(n=500, k=5, noise=0.3, radius=10)
+#ServiceEvaluationMethod.evaluateAllModes(n=500, k=5, noise=0.3, radius=10, metric=EnumMetrics.Metrics.CLUSTER_NUMBER)
 
 
 # mode by N 
@@ -38,3 +38,15 @@ modelParams, simulationData, colours = ServiceSavedModel.loadModels([f"noiseExam
 evaluator = EvaluatorMulti.EvaluatorMulti(simulationData, modelParams, metric)
 evaluator.evaluateAndVisualize(labels=["noise=0", "noise=0.01", "noise=0.05", "noise=0.1", "noise=0.15", "noise=0.2", "noise=0.25", "noise=0.3"], subtitle=f"Comparing noise for {mode.name}, \nn={n}, k={k}, radius={radius}", savePath=f"{mode}_n={n}_k={k}_all-noise_radius={radius}.png")
 """
+
+mode = EnumNeighbourSelectionMode.NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE
+n = 200
+k = 5
+radius =10
+metric = EnumMetrics.Metrics.CLUSTER_NUMBER
+modelParams, simulationData, colours = ServiceSavedModel.loadModels([f"examples/{mode.name}_n={n}_k={k}_noise=0_radius={radius}.json",
+                                                            f"examples/{mode.name}_n={n}_k={k}_noise=0.3_radius={radius}.json"])
+
+
+evaluator = EvaluatorMulti.EvaluatorMulti(simulationData, modelParams, metric)
+evaluator.evaluateAndVisualize(labels=["noise=0", "noise=0.01"], subtitle=f"Comparing noise for {mode.name}, \nn={n}, k={k}, radius={radius}", savePath=f"{mode}_n={n}_k={k}_all-noise_radius={radius}.png")

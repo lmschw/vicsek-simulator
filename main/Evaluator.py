@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import ServiceMetric
+import EnumMetrics
 
 class Evaluator(object):
     """
@@ -23,6 +24,12 @@ class Evaluator(object):
         self.modelParams = modelParams
         self.metric = metric
 
+        if metric in [EnumMetrics.Metrics.CLUSTER_NUMBER]:
+            self.radius = modelParams["radius"]
+        else:
+            self.radius = None
+            
+
     def evaluate(self):
         """
         Evaluates the model according to the metric specified for the evaluator.
@@ -32,9 +39,9 @@ class Evaluator(object):
         """
         valuesPerTimeStep = {}
         for i in range(len(self.time)):
-            if i % 1000 == 0:
+            if i % 100 == 0:
                 print(f"evaluating {i}/{len(self.time)}")
-            valuesPerTimeStep[self.time[i]] = ServiceMetric.evaluateSingleTimestep(self.positions[i], self.orientations[i], self.metric)
+            valuesPerTimeStep[self.time[i]] = ServiceMetric.evaluateSingleTimestep(self.positions[i], self.orientations[i], self.metric, self.radius)
         print("Evaluation completed.")
         return valuesPerTimeStep
     
@@ -49,16 +56,19 @@ class Evaluator(object):
         Returns:
             Nothing.
         """
-        x, y = zip(*sorted(data.items()))
-        plt.plot(x, y)
-        plt.ylim(0,1)
+        match self.metric:
+            case EnumMetrics.Metrics.ORDER:
+                self.__createOrderPlot(data)
+            case EnumMetrics.Metrics.CLUSTER_NUMBER:
+                self.__createClusterNumberPlot(data)
+
         plt.title(f"""Model: n={self.modelParams["n"]}, k={self.modelParams["k"]}, noise={self.modelParams["noise"]}, radius={self.modelParams["radius"]}, speed={self.modelParams["speed"]}, \nneighbour selection: {self.modelParams["neighbourSelectionMode"]}\nMetric: {self.metric.name}""")
         
+
         if savePath != None:
             plt.savefig(savePath)
         
         plt.show()
-    
     def evaluateAndVisualize(self, savePath=None):
         """
         Evaluates and subsequently visualises the results for a single model.
@@ -70,4 +80,14 @@ class Evaluator(object):
             Nothing.
         """
         self.visualize(self.evaluate(), savePath)
+
+    def __createOrderPlot(self, data):
+        x, y = zip(*sorted(data.items()))
+        plt.plot(x, y)
+        plt.ylim(0,1)
+        
+    def __createClusterNumberPlot(self, data):
+        time, num = zip(*sorted(data.items()))
+        plt.bar(time, num)
+    
 
