@@ -94,6 +94,15 @@ class Evaluator(object):
 
     def __createClusterSizePlot(self, data):
         time, num = zip(*sorted(data.items()))
+        minAvgMax = len(time) * [[0,0,0]]
+        for i in range(len(time)):
+            minAvgMax[i] = [np.min(num[i][1:]), np.average(num[i][1:]), np.max(num[i][1:])]
+        plt.plot(time, minAvgMax)
+        plt.gca().legend(("min", "avg", "max"))
+
+
+    def __createClusterSizePlotBoxplot(self, data):
+        time, num = zip(*sorted(data.items()))
 
         plt.boxplot(num)
     
