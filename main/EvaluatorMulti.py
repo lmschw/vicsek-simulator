@@ -66,6 +66,8 @@ class EvaluatorMulti(object):
                 self.__createClusterNumberPlot(data)
             case EnumMetrics.Metrics.CLUSTER_SIZE:
                 self.__createClusterSizePlot(data)
+            case EnumMetrics.Metrics.CLUSTER_NUMBER_OVER_PARTICLE_LIFETIME:
+                self.__createClusterNumberOverParticleLifetimePlot(data)
 
         plt.title(f"""Model comparison: \n{subtitle}""")
         plt.gca().legend((labels))
@@ -114,3 +116,14 @@ class EvaluatorMulti(object):
                 stepAvgs.append(np.average(val))
             avgs.append(stepAvgs)
         plt.plot(x, avgs)
+
+    def __createClusterNumberOverParticleLifetimePlot(self, data):
+        width = 0.25  # the width of the bars
+        multiplier = 0
+        sorted(data.items())
+        for time, vals in data.items():
+            for val in vals:
+                offset = width * multiplier
+                rects = plt.bar(time + offset, val, width, label=val)
+                #plt.bar_label(rects, padding=3)
+                multiplier += 1   

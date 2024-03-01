@@ -24,7 +24,9 @@ class Evaluator(object):
         self.modelParams = modelParams
         self.metric = metric
 
-        if metric in [EnumMetrics.Metrics.CLUSTER_NUMBER, EnumMetrics.Metrics.CLUSTER_SIZE]:
+        if metric in [EnumMetrics.Metrics.CLUSTER_NUMBER, 
+                      EnumMetrics.Metrics.CLUSTER_SIZE, 
+                      EnumMetrics.Metrics.CLUSTER_NUMBER_OVER_PARTICLE_LIFETIME]:
             self.radius = modelParams["radius"]
         else:
             self.radius = None
@@ -43,6 +45,8 @@ class Evaluator(object):
                 print(f"evaluating {i}/{len(self.time)}")
             valuesPerTimeStep[self.time[i]] = ServiceMetric.evaluateSingleTimestep(self.positions[i], self.orientations[i], self.metric, self.radius)
         print("Evaluation completed.")
+        if(self.metric == EnumMetrics.Metrics.CLUSTER_NUMBER_OVER_PARTICLE_LIFETIME):
+            valuesPerTimeStep = ServiceMetric.computeClusterNumberOverParticleLifetime(valuesPerTimeStep)
         return valuesPerTimeStep
     
     def visualize(self, data, savePath=None):
@@ -63,6 +67,8 @@ class Evaluator(object):
                 self.__createClusterNumberPlot(data)
             case EnumMetrics.Metrics.CLUSTER_SIZE:
                 self.__createClusterSizePlot(data)
+            case EnumMetrics.Metrics.CLUSTER_NUMBER_OVER_PARTICLE_LIFETIME:
+                self.__createClusterNumberOverParticleLifetimePlot(data)
 
         plt.title(f"""Model: n={self.modelParams["n"]}, k={self.modelParams["k"]}, noise={self.modelParams["noise"]}, radius={self.modelParams["radius"]}, speed={self.modelParams["speed"]}, \nneighbour selection: {self.modelParams["neighbourSelectionMode"]}\nMetric: {self.metric.name}""")
         
@@ -101,3 +107,6 @@ class Evaluator(object):
         plt.gca().legend(("min", "avg", "max"))
     
 
+    def __createClusterNumberOverParticleLifetimePlot(self, data):
+        particles, num = zip(*sorted(data.items()))
+        plt.bar(particles, num)

@@ -1,6 +1,7 @@
 
 import numpy as np
 import math
+from collections import defaultdict
 import EnumMetrics as metrics
 
 def evaluateSingleTimestep(positions, orientations, metric, radius=None):
@@ -21,6 +22,9 @@ def evaluateSingleTimestep(positions, orientations, metric, radius=None):
             nClusters, clusters = findClusters(positions, orientations, radius)
             clusterSizes = computeClusterSizes(nClusters, clusters)
             return clusterSizes
+        case metrics.Metrics.CLUSTER_NUMBER_OVER_PARTICLE_LIFETIME:
+            _, clusters = findClusters(positions, orientations, radius)
+            return clusters
 
          
 def findClusters(positions, orientations, radius):
@@ -76,4 +80,14 @@ def computeClusterSizes(clusterCounter, clusters):
     for cluster in clusters:
         clusterSizes[int(cluster)] += 1
     return clusterSizes
+
+def computeClusterNumberOverParticleLifetime(clusters):
+    dd = defaultdict(list)
+    for i in range(len(clusters[0])):
+        for key, value in clusters.items():
+            dd[i].append(value[i])
+    countsPerParticle = {}
+    for key, values in dd.items():
+        countsPerParticle[key] = len(np.unique(values))
+    return countsPerParticle
 
