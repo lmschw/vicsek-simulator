@@ -17,6 +17,11 @@ def evaluateSingleTimestep(positions, orientations, metric, radius=None):
         case metrics.Metrics.CLUSTER_NUMBER:
             nClusters, _ = findClusters(positions, orientations, radius)
             return nClusters
+        case metrics.Metrics.CLUSTER_SIZE:
+            nClusters, clusters = findClusters(positions, orientations, radius)
+            clusterSizes = computeClusterSizes(nClusters, clusters)
+            return clusterSizes
+
          
 def findClusters(positions, orientations, radius):
     """
@@ -65,3 +70,10 @@ def markClusters(currentIdx, clusterCounter, clusters, clusterMembers, n):
         if clusterMembers[currentIdx][i] == 1:
             markClusters(i, clusterCounter, clusters, clusterMembers, n)
     return True
+
+def computeClusterSizes(clusterCounter, clusters):
+    clusterSizes = clusterCounter * [0]
+    for cluster in clusters:
+        clusterSizes[int(cluster)] += 1
+    return clusterSizes
+

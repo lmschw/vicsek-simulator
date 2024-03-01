@@ -24,7 +24,7 @@ class Evaluator(object):
         self.modelParams = modelParams
         self.metric = metric
 
-        if metric in [EnumMetrics.Metrics.CLUSTER_NUMBER]:
+        if metric in [EnumMetrics.Metrics.CLUSTER_NUMBER, EnumMetrics.Metrics.CLUSTER_SIZE]:
             self.radius = modelParams["radius"]
         else:
             self.radius = None
@@ -61,6 +61,8 @@ class Evaluator(object):
                 self.__createOrderPlot(data)
             case EnumMetrics.Metrics.CLUSTER_NUMBER:
                 self.__createClusterNumberPlot(data)
+            case EnumMetrics.Metrics.CLUSTER_SIZE:
+                self.__createClusterSizePlot(data)
 
         plt.title(f"""Model: n={self.modelParams["n"]}, k={self.modelParams["k"]}, noise={self.modelParams["noise"]}, radius={self.modelParams["radius"]}, speed={self.modelParams["speed"]}, \nneighbour selection: {self.modelParams["neighbourSelectionMode"]}\nMetric: {self.metric.name}""")
         
@@ -89,5 +91,10 @@ class Evaluator(object):
     def __createClusterNumberPlot(self, data):
         time, num = zip(*sorted(data.items()))
         plt.bar(time, num)
+
+    def __createClusterSizePlot(self, data):
+        time, num = zip(*sorted(data.items()))
+
+        plt.boxplot(num)
     
 
