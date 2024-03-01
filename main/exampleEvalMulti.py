@@ -43,7 +43,7 @@ mode = EnumNeighbourSelectionMode.NeighbourSelectionMode.LEAST_ORIENTATION_DIFFE
 n = 200
 k = 5
 radius =10
-metric = EnumMetrics.Metrics.CLUSTER_NUMBER
+metric = EnumMetrics.Metrics.CLUSTER_SIZE
 modelParams, simulationData, colours = ServiceSavedModel.loadModels([f"examples/{mode.name}_n={n}_k={k}_noise=0_radius={radius}.json",
                                                             f"examples/{mode.name}_n={n}_k={k}_noise=0.3_radius={radius}.json"])
 

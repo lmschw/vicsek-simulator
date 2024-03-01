@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 from collections import defaultdict
+import numpy as np
 
 import Evaluator
 import EnumMetrics
@@ -63,9 +64,11 @@ class EvaluatorMulti(object):
                 self.__createOrderPlot(data)
             case EnumMetrics.Metrics.CLUSTER_NUMBER:
                 self.__createClusterNumberPlot(data)
+            case EnumMetrics.Metrics.CLUSTER_SIZE:
+                self.__createClusterSizePlot(data)
 
         plt.title(f"""Model comparison: \n{subtitle}""")
-
+        plt.gca().legend((labels))
         if savePath != None:
             plt.savefig(savePath)
 
@@ -101,3 +104,13 @@ class EvaluatorMulti(object):
                 rects = plt.bar(time + offset, val, width, label=val)
                 #plt.bar_label(rects, padding=3)
                 multiplier += 1    
+
+    def __createClusterSizePlot(self, data):
+        x, y = zip(*sorted(data.items()))
+        avgs = []
+        for vals in y:
+            stepAvgs = []
+            for val in vals:
+                stepAvgs.append(np.average(val))
+            avgs.append(stepAvgs)
+        plt.plot(x, avgs)
