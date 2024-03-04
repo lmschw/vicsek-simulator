@@ -54,7 +54,8 @@ class VicsekWithNeighbourSelection:
                     "radius": self.radius,
                     "neighbourSelectionMode": self.neighbourSelectionMode.name,
                     "domainSize": self.domainSize.tolist(),
-                    "particleContainmentMode": self.particleContainmentMode}
+                    "tmax": self.tmax,
+                    "dt": self.dt}
         if asString:
             strPrep = [tup[0] + ": " + tup[1] for tup in summary.values()]
             return ", ".join(strPrep)
@@ -112,11 +113,16 @@ class VicsekWithNeighbourSelection:
         if None in initialState:
             positions, orientations = self.__initializeState(self.domainSize, self.numberOfParticles);
             
-        if dt is None:
-            dt = 10**(-2)*(np.max(self.domainSize)/self.speed)
+        if dt is None and tmax is not None:
+            dt = 1
         
         if tmax is None:
             tmax = (10**3)*dt
+            dt = 10**(-2)*(np.max(self.domainSize)/self.speed)
+
+        self.tmax = tmax
+        self.dt = dt
+
 
         # Initialisations for the loop and the return variables
         t=0
