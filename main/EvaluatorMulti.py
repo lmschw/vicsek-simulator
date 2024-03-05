@@ -92,11 +92,29 @@ class EvaluatorMulti(object):
         self.visualize(self.evaluate(), labels, subtitle=subtitle, savePath=savePath)
 
     def __createOrderPlot(self, data):
+        """
+        Creates a line plot for the order in the system at every timestep for every model
+
+        Parameters:
+            - data (dictionary): a dictionary with the time step as its key and a list of the order value for all models as its value
+
+        Returns:
+            Nothing.
+        """
         x, y = zip(*sorted(data.items()))
         plt.plot(x, y)
         plt.ylim(0,1)
         
     def __createClusterNumberPlot(self, data):
+        """
+        Creates a bar plot for the number of clusters in the system for every model at every timestep
+
+        Parameters:
+            - data (dictionary): a dictionary with the time step as its key and a list of the number of clusters for every model as its value
+
+        Returns:
+            Nothing.
+        """
         width = 0.25  # the width of the bars
         multiplier = 0
         sorted(data.items())
@@ -108,6 +126,15 @@ class EvaluatorMulti(object):
                 multiplier += 1    
 
     def __createClusterSizePlot(self, data):
+        """
+        Creates a line plot for the average size of clusters in the system at every timestep for every model
+
+        Parameters:
+            - data (dictionary): a dictionary with the time step as its key and the size of every cluster of every model as its value
+
+        Returns:
+            Nothing.
+        """
         x, y = zip(*sorted(data.items()))
         avgs = []
         for vals in y:
@@ -118,6 +145,15 @@ class EvaluatorMulti(object):
         plt.plot(x, avgs)
 
     def __createClusterNumberOverParticleLifetimePlot(self, data):
+        """
+        Creates a bat plot for the number of clusters that every particle of every model has belonged to over the course of the whole run
+
+        Parameters:
+            - data (dictionary): a dictionary with the particle index as its key and number of clusters it has belonged to as its value
+
+        Returns:
+            Nothing.
+        """
         width = 0.25  # the width of the bars
         multiplier = 0
         sorted(data.items())

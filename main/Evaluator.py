@@ -97,15 +97,42 @@ class Evaluator(object):
         self.visualize(self.evaluate(saveTimestepsResults), savePath)
 
     def __createOrderPlot(self, data):
+        """
+        Creates a line plot for the order in the system at every timestep
+
+        Parameters:
+            - data (dictionary): a dictionary with the time step as its key and the order value as its value
+
+        Returns:
+            Nothing.
+        """
         x, y = zip(*sorted(data.items()))
         plt.plot(x, y)
         plt.ylim(0,1)
         
     def __createClusterNumberPlot(self, data):
+        """
+        Creates a bar plot for the number of clusters in the system at every timestep
+
+        Parameters:
+            - data (dictionary): a dictionary with the time step as its key and the number of clusters as its value
+
+        Returns:
+            Nothing.
+        """
         time, num = zip(*sorted(data.items()))
         plt.bar(time, num)
 
     def __createClusterSizePlot(self, data):
+        """
+        Creates a line plot for the minimum, average and maximum size of clusters in the system at every timestep
+
+        Parameters:
+            - data (dictionary): a dictionary with the time step as its key and the size of every cluster as its value
+
+        Returns:
+            Nothing.
+        """
         time, num = zip(*sorted(data.items()))
         minAvgMax = len(time) * [[0,0,0]]
         for i in range(len(time)):
@@ -113,7 +140,15 @@ class Evaluator(object):
         plt.plot(time, minAvgMax)
         plt.gca().legend(("min", "avg", "max"))
     
-
     def __createClusterNumberOverParticleLifetimePlot(self, data):
+        """
+        Creates a bat plot for the number of clusters that every particle has belonged to over the course of the whole run
+
+        Parameters:
+            - data (dictionary): a dictionary with the particle index as its key and number of clusters it has belonged to as its value
+
+        Returns:
+            Nothing.
+        """
         particles, num = zip(*sorted(data.items()))
         plt.bar(particles, num)

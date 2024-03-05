@@ -63,11 +63,32 @@ def loadModels(paths):
     return params, data, coloursArr
 
 def saveTimestepsResults(results, path, modelParams=None, saveInterval=1):
+    """
+    Saves evaluator results for all timesteps.
+
+    Parameters:
+        - results (dictionary): the evaluation results per timestep
+        - path (string): the location and name of the target file
+        - modelParams (dict) [optional]: a summary of the model's params such as n, k, neighbourSelectionMode etc.
+        - saveInterval (int) [optional]: specifies the interval at which the saving should occur, i.e. if any time steps should be skipped
+    
+    Returns:
+        Nothing. Creates or overwrites a file.
+    """
     dict = {"time": __getSpecifiedIntervals(saveInterval, list(results.keys())),
             "results": __getSpecifiedIntervals(saveInterval, list(results.values()))}
     __saveDict(path, dict, modelParams)
 
 def loadTimestepsResults(path):
+    """
+    Loads the evaluation results from a single file.
+
+    Parameters:
+        - path (string): the location and file name of the file containing the model data
+
+    Returns:
+        The model's params as well as the evaluation data as a {time: results} dictionary
+    """
     loadedJson = __loadJson(path)
     modelParams = loadedJson["modelParams"]
     time = np.array(loadedJson["time"])
@@ -89,6 +110,17 @@ def __getSpecifiedIntervals(interval, lst):
     return [lst[idx] for idx in range(0, len(lst)) if idx % interval == 0]
 
 def __saveDict(path, dict, modelParams=None):
+    """
+    Saves the values of a dictionary to a file at the specified path.
+
+    Parameters:
+        - path (string): the location and name of the target file
+        - dict (dictionary): the dictionary containing the data to be saved
+        - modelParams (dict) [optional]: a summary of the model's params such as n, k, neighbourSelectionMode etc.
+
+    Returns:
+        Nothing. Creates or overwrites a file.
+    """
     if modelParams != None:
         paramsDict = {"modelParams": modelParams}
         paramsDict.update(dict)
@@ -98,5 +130,14 @@ def __saveDict(path, dict, modelParams=None):
         json.dump(dict, outfile)
 
 def __loadJson(path):
+    """
+    Loads data as JSON from a single file.
+
+    Parameters:
+        - path (string): the location and file name of the file containing the data
+
+    Returns:
+        All the data from the file as JSON.
+    """
     obj_text = codecs.open(path, 'r', encoding='utf-8').read()
     return json.loads(obj_text)
