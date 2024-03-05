@@ -35,7 +35,7 @@ modelParams, simulationData, colours = ServiceSavedModel.loadModels([f"noiseExam
                                                             f"noiseExamples/{mode.name}_tmax=10000_n={n}_k={k}_noise=0.3_radius={radius}.json"])
 
 
-evaluator = EvaluatorMulti.EvaluatorMulti(simulationData, modelParams, metric)
+evaluator = EvaluatorMulti.EvaluatorMulti(modelParams, metric, simulationData)
 evaluator.evaluateAndVisualize(labels=["noise=0", "noise=0.01", "noise=0.05", "noise=0.1", "noise=0.15", "noise=0.2", "noise=0.25", "noise=0.3"], subtitle=f"Comparing noise for {mode.name}, \nn={n}, k={k}, radius={radius}", savePath=f"{mode}_n={n}_k={k}_all-noise_radius={radius}.png")
 """
 
@@ -55,6 +55,6 @@ modelParams, simulationData, colours = ServiceSavedModel.loadModels([f"examples/
                                                                      f"examples/densityExamples/{mode.name}_tmax={tmax}_n={n}_k={k}_noise={noise}_radius={radius}_density=0.09.json",
                                                                      f"examples/densityExamples/{mode.name}_tmax={tmax}_n={n}_k={k}_noise={noise}_radius={radius}_density=0.1.json"])
 
-evaluator = EvaluatorMulti.EvaluatorMulti(simulationData, modelParams, metric)
+evaluator = EvaluatorMulti.EvaluatorMulti(modelParams, metric, simulationData)
 evaluator.evaluateAndVisualize(labels=["density=0.005", "density=0.0075", "density=0.01", "density=0.02", "density=0.03", "density=0.04", "density=0.05", "density=0.06", "density=0.07", "density=0.08", "density=0.09", "density=0.1"], subtitle=f"Comparing density for {mode.name}, \nn={n}, k={k}, radius={radius}", savePath=f"{mode.name}_n={n}_k={k}_noise={noise}_radius={radius}_density-comparison_fewer-comps.png")
 """

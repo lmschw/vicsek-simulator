@@ -21,14 +21,7 @@ def saveModel(simulationData, colours, path="sample.json", modelParams=None, sav
             "positions": __getSpecifiedIntervals(saveInterval, positions.tolist()), 
             "orientations": __getSpecifiedIntervals(saveInterval, orientations.tolist()), 
             "colours": __getSpecifiedIntervals(saveInterval, colours)}
-
-    if modelParams != None:
-        paramsDict = {"modelParams": modelParams}
-        paramsDict.update(dict)
-        dict = paramsDict
-        
-    with open(path, "w") as outfile:
-        json.dump(dict, outfile)
+    __saveDict(path, dict, modelParams)
 
 def loadModel(path):
     """
@@ -40,8 +33,7 @@ def loadModel(path):
     Returns:
         The model's params as well as the simulation data containing the time, positions, orientations and colours.
     """
-    obj_text = codecs.open(path, 'r', encoding='utf-8').read()
-    loadedJson = json.loads(obj_text)
+    loadedJson = __loadJson(path)
 
     modelParams = loadedJson["modelParams"]
     time = np.array(loadedJson["time"])
@@ -69,6 +61,19 @@ def loadModels(paths):
         data.append(simulationData)
         coloursArr.append(colours)
     return params, data, coloursArr
+
+def saveTimestepsResults(results, path, modelParams=None, saveInterval=1):
+    dict = {"time": __getSpecifiedIntervals(saveInterval, list(results.keys())),
+            "results": __getSpecifiedIntervals(saveInterval, list(results.values()))}
+    __saveDict(path, dict, modelParams)
+
+def loadTimestepsResults(path):
+    loadedJson = __loadJson(path)
+    modelParams = loadedJson["modelParams"]
+    time = np.array(loadedJson["time"])
+    results = np.array(loadedJson["results"])
+    data = {time[i]: results[i] for i in range(len(time))}
+    return modelParams, data
     
 def __getSpecifiedIntervals(interval, lst):
     """
@@ -82,3 +87,16 @@ def __getSpecifiedIntervals(interval, lst):
         A reduced list containing only the data points of the original list at the specified intervals.
     """
     return [lst[idx] for idx in range(0, len(lst)) if idx % interval == 0]
+
+def __saveDict(path, dict, modelParams=None):
+    if modelParams != None:
+        paramsDict = {"modelParams": modelParams}
+        paramsDict.update(dict)
+        dict = paramsDict
+        
+    with open(path, "w") as outfile:
+        json.dump(dict, outfile)
+
+def __loadJson(path):
+    obj_text = codecs.open(path, 'r', encoding='utf-8').read()
+    return json.loads(obj_text)

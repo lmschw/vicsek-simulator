@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+import ServiceSavedModel
 import ServiceMetric
 import EnumMetrics
 
@@ -8,7 +9,7 @@ class Evaluator(object):
     """
     Implementation of the evaluation mechanism for the Vicsek model for a single model.
     """
-    def __init__(self, simulationData, modelParams, metric):
+    def __init__(self, modelParams, metric, simulationData=None):
         """
         Initialises the evaluator.
 
@@ -20,7 +21,8 @@ class Evaluator(object):
         Returns:
             Nothing.
         """
-        self.time, self.positions, self.orientations = simulationData
+        if simulationData != None:
+            self.time, self.positions, self.orientations = simulationData
         self.modelParams = modelParams
         self.metric = metric
 
@@ -32,13 +34,16 @@ class Evaluator(object):
             self.radius = None
             
 
-    def evaluate(self):
+    def evaluate(self, saveTimestepsResultsPath=None):
         """
         Evaluates the model according to the metric specified for the evaluator.
 
         Returns:
             A dictionary with the results for the model at every time step.
         """
+        if self.time == None:
+            print("ERROR: cannot evaluate without simulationData. Please supply simulationData, modelParams and metric at Evaluator instantiation.")
+            return
         valuesPerTimeStep = {}
         for i in range(len(self.time)):
             if i % 100 == 0:
@@ -47,6 +52,8 @@ class Evaluator(object):
         print("Evaluation completed.")
         if(self.metric == EnumMetrics.Metrics.CLUSTER_NUMBER_OVER_PARTICLE_LIFETIME):
             valuesPerTimeStep = ServiceMetric.computeClusterNumberOverParticleLifetime(valuesPerTimeStep)
+        if saveTimestepsResultsPath != None:
+            ServiceSavedModel.saveTimestepsResults(valuesPerTimeStep, saveTimestepsResultsPath, self.modelParams)
         return valuesPerTimeStep
     
     def visualize(self, data, savePath=None):
@@ -77,7 +84,7 @@ class Evaluator(object):
             plt.savefig(savePath)
         
         plt.show()
-    def evaluateAndVisualize(self, savePath=None):
+    def evaluateAndVisualize(self, savePath=None, saveTimestepsResults=None):
         """
         Evaluates and subsequently visualises the results for a single model.
 
@@ -87,7 +94,7 @@ class Evaluator(object):
         Returns:
             Nothing.
         """
-        self.visualize(self.evaluate(), savePath)
+        self.visualize(self.evaluate(saveTimestepsResults), savePath)
 
     def __createOrderPlot(self, data):
         x, y = zip(*sorted(data.items()))

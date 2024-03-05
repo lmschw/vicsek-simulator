@@ -9,7 +9,7 @@ class EvaluatorMulti(object):
     """
     Implementation of the evaluation mechanism for the Vicsek model for comparison of multiple models.
     """
-    def __init__(self, simulationData, modelParams, metric):
+    def __init__(self, modelParams, metric, simulationData=None):
         """
         Initialises the evaluator.
 
