@@ -1,6 +1,4 @@
 import random
-import numpy as np
-from random import randbytes
 import matplotlib.colors as mcolors
 
 import ServiceSavedModel
