@@ -110,7 +110,7 @@ class VicsekWithNeighbourSelection:
         # Preparations and setting of parameters if they are not passed to the method
         positions, orientations = initialState
         
-        if None in initialState:
+        if any(ele is None for ele in initialState):
             positions, orientations = self.__initializeState(self.domainSize, self.numberOfParticles);
             
         if dt is None and tmax is not None:
