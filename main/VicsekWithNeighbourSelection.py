@@ -9,7 +9,7 @@ import EnumNeighbourSelectionMode
 
 class VicsekWithNeighbourSelection:
 
-    def __init__(self, neighbourSelectionModel, domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, speed=dv.DEFAULT_SPEED, radius=dv.DEFAULT_RADIUS, noise=dv.DEFAULT_NOISE, numberOfParticles=dv.DEFAULT_NUM_PARTICLES, k=dv.DEFAULT_K_NEIGHBOURS, particleContainmentMode=dv.DEFAULT_PARTICLES_CONTAINMENT_MODE, showExample=dv.DEFAULT_SHOW_EXAMPLE_PARTICLE):
+    def __init__(self, neighbourSelectionModel, domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, speed=dv.DEFAULT_SPEED, radius=dv.DEFAULT_RADIUS, noise=dv.DEFAULT_NOISE, numberOfParticles=dv.DEFAULT_NUM_PARTICLES, k=dv.DEFAULT_K_NEIGHBOURS, showExample=dv.DEFAULT_SHOW_EXAMPLE_PARTICLE):
         """
         Initialize the model with all its parameters
 
@@ -21,7 +21,6 @@ class VicsekWithNeighbourSelection:
             - noise (float) [optional]: noise amplitude. adds noise to the orientation adaptation
             - numberOfParticles (int) [optional]: the number of particles within the domain, n
             - k (int) [optional]: the number of neighbours a particle considers when updating its orientation at every time step
-            - particleContainmentMode (EnumParticleContainmentMode.ParticleContainmentMode) [optional]: how the particles react upon reaching the border of the domain
             - showExample (bool) [optional]: whether a random example particle should be coloured in red with its influencing neighbours in yellow
 
         Returns:
@@ -34,7 +33,6 @@ class VicsekWithNeighbourSelection:
         self.noise = noise
         self.numberOfParticles = numberOfParticles
         self.k = k
-        self.particleContainmentMode = particleContainmentMode
         self.showExample = showExample
 
     def getParameterSummary(self, asString=False):
