@@ -68,9 +68,22 @@ class Animator(object):
         """
         self._getAnimation()
         plt.show()
-
+        
         return self
+    
+    def saveAnimation(self, filename, fpsVar=25, codecVar="avi"):
+        """
+        Saves the animation. Requires FFMPEG
 
+        returns
+        Animator
+        """
+        print("Saving commenced...")
+        animation = self._getAnimation()
+        animation.save(filename=filename, writer="ffmpeg")
+        print("Saving completed.")
+        return self
+    
     def _getAnimation(self):
         return self.animation if 'animation' in self.__dict__ else self._generateAnimation()
 
