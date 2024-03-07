@@ -41,7 +41,7 @@ class Evaluator(object):
         Returns:
             A dictionary with the results for the model at every time step.
         """
-        if self.time == None:
+        if len(self.time) < 1:
             print("ERROR: cannot evaluate without simulationData. Please supply simulationData, modelParams and metric at Evaluator instantiation.")
             return
         valuesPerTimeStep = {}
