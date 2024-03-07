@@ -5,7 +5,7 @@ import numpy as np
 import Evaluator
 import EnumMetrics
 
-class EvaluatorMulti(object):
+class EvaluatorMultiAvgComp(object):
     """
     Implementation of the evaluation mechanism for the Vicsek model for comparison of multiple models.
     """
@@ -32,17 +32,21 @@ class EvaluatorMulti(object):
         Returns:
             A dictionary with the results for each model at every time step.
         """
-        results = []
+        dd = defaultdict(list)
         for i in range(len(self.simulationData)):
             print(f"evaluating {i}/{len(self.simulationData)}")
-            evaluator = Evaluator.Evaluator(self.modelParams[i], self.metric, self.simulationData[i])
-            results.append(evaluator.evaluate())
-        
-        dd = defaultdict(list)
-        for d in results: 
-            for key, value in d.items():
-                dd[key].append(value)
-        print("Evaluation complete.")
+            results = []
+            for j in range(len(self.simulationData[i])):
+                print(f"step {j}/{len(self.simulationData[i])}")
+                evaluator = Evaluator.Evaluator(self.modelParams[i][j], self.metric, self.simulationData[i][j])
+                results.append(evaluator.evaluate())
+            
+            ddi = defaultdict(list)
+            for d in results: 
+                for key, value in d.items():
+                    ddi[key].append(value)
+            for m in range(len(self.simulationData[i][0])):
+                dd[m].append(np.average(ddi[m]))
         return dd
 
     
@@ -74,7 +78,7 @@ class EvaluatorMulti(object):
         if savePath != None:
             plt.savefig(savePath)
 
-        plt.show()
+        #plt.show()
 
     
     def evaluateAndVisualize(self, labels, subtitle='', savePath=None):
