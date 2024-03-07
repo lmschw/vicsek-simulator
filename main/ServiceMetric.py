@@ -4,7 +4,7 @@ import math
 from collections import defaultdict
 import EnumMetrics as metrics
 
-def evaluateSingleTimestep(positions, orientations, metric, radius=None):
+def evaluateSingleTimestep(positions, orientations, metric, radius=None, threshold=0.99):
      """
         Evaluates the simulation data for a single timestep according to the selected metric.
 
@@ -25,22 +25,22 @@ def evaluateSingleTimestep(positions, orientations, metric, radius=None):
                 sumOrientation += orientations[j]
             return np.sqrt(sumOrientation[0]**2 + sumOrientation[1]**2) / n
         case metrics.Metrics.CLUSTER_NUMBER:
-            nClusters, _ = findClusters(positions, orientations, radius)
+            nClusters, _ = findClusters(positions, orientations, radius, threshold)
             return nClusters
         case metrics.Metrics.CLUSTER_SIZE:
-            nClusters, clusters = findClusters(positions, orientations, radius)
+            nClusters, clusters = findClusters(positions, orientations, radius, threshold)
             clusterSizes = computeClusterSizes(nClusters, clusters)
             return clusterSizes
         case metrics.Metrics.CLUSTER_NUMBER_OVER_PARTICLE_LIFETIME:
-            _, clusters = findClusters(positions, orientations, radius)
+            _, clusters = findClusters(positions, orientations, radius, threshold)
             return clusters
 
          
-def findClusters(positions, orientations, radius):
+def findClusters(positions, orientations, radius, threshold=0.99):
     """
     Finds clusters in the particle distribution. The clustering is performed according to the following constraints:
         - to belong to a cluster, a particle needs to be within the radius of at least one other member of the same cluster
-        - to belong to a cluster, the orientation has to be similar or equal (<= 8.1° orientation difference)
+        - to belong to a cluster, the orientation has to be similar or equal (<= 1.29° orientation difference by default)
     
     Parameters:
         - positions (array): the position of every particle at the current timestep
@@ -59,7 +59,7 @@ def findClusters(positions, orientations, radius):
     for i in range(n):
         neighbourIndices = findNeighbours(i, positions, radius)
         for neighbourIdx in neighbourIndices:
-            if cosAngle(orientations[i], orientations[neighbourIdx]) >= 0.99:
+            if cosAngle(orientations[i], orientations[neighbourIdx]) >= threshold:
                 clusterMembers[i][neighbourIdx] = 1
     
     clusterCounter = 1

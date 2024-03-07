@@ -6,7 +6,7 @@ import ServiceMetric
 import AnimatorMatplotlib
 import Animator2D
 
-def visualiseClusters(path, numberIntervals=-1, numberOfColouredClusters=-1):
+def visualiseClusters(path, numberIntervals=-1, numberOfColouredClusters=-1, threshold=0.99, savePathVisualisation=None):
     """
     Visualises the clusters in a model saved in a JSON file. Colours are chosen randomly. Therefore, it can be wise not to
     colour all clusters if the simulation data contains a lot of clusters.
@@ -29,7 +29,7 @@ def visualiseClusters(path, numberIntervals=-1, numberOfColouredClusters=-1):
         numberIntervals = len(time)
     for i in range(numberIntervals):
         print(f"{i}/{len(time)}")
-        numClusters, clusters = ServiceMetric.findClusters(positions[i], orientations[i], radius=10)
+        numClusters, clusters = ServiceMetric.findClusters(positions[i], orientations[i], radius=10, threshold=threshold)
         if numberOfColouredClusters == -1 or numberOfColouredClusters > numClusters:
             nColouredClusters = numClusters
         else:
@@ -50,6 +50,9 @@ def visualiseClusters(path, numberIntervals=-1, numberOfColouredClusters=-1):
     # prepare the animator
     preparedAnimator = animator.prepare(Animator2D.Animator2D(), frames=numberIntervals)
     preparedAnimator.setParams(modelParams)
+
+    if savePathVisualisation != None:
+        preparedAnimator.saveAnimation(savePathVisualisation)
 
     # Display Animation
     preparedAnimator.showAnimation()
