@@ -10,12 +10,12 @@ import EnumNeighbourSelectionMode
 
 import DefaultValues as dv
 
-n = 100
+n = 500
 k = 5
 noise = 0
 radius= 10
 neighbourSelectionMode = EnumNeighbourSelectionMode.NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE
-tmax = 100
+tmax = 1000
 
 simulator = VicsekWithNeighbourSelection.VicsekWithNeighbourSelection(neighbourSelectionMode, 
                                                                 domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, 

@@ -9,7 +9,7 @@ class Evaluator(object):
     """
     Implementation of the evaluation mechanism for the Vicsek model for a single model.
     """
-    def __init__(self, modelParams, metric, simulationData=None):
+    def __init__(self, modelParams, metric, simulationData=None, evaluationTimestepInterval=1):
         """
         Initialises the evaluator.
 
@@ -25,6 +25,7 @@ class Evaluator(object):
             self.time, self.positions, self.orientations = simulationData
         self.modelParams = modelParams
         self.metric = metric
+        self.evaluationTimestepInterval = evaluationTimestepInterval
 
         if metric in [EnumMetrics.Metrics.CLUSTER_NUMBER, 
                       EnumMetrics.Metrics.CLUSTER_SIZE, 
@@ -48,7 +49,8 @@ class Evaluator(object):
         for i in range(len(self.time)):
             if i % 100 == 0:
                 print(f"evaluating {i}/{len(self.time)}")
-            valuesPerTimeStep[self.time[i]] = ServiceMetric.evaluateSingleTimestep(self.positions[i], self.orientations[i], self.metric, self.radius)
+            if i % self.evaluationTimestepInterval == 0:
+                valuesPerTimeStep[self.time[i]] = ServiceMetric.evaluateSingleTimestep(self.positions[i], self.orientations[i], self.metric, self.radius)
         print("Evaluation completed.")
         if(self.metric == EnumMetrics.Metrics.CLUSTER_NUMBER_OVER_PARTICLE_LIFETIME):
             valuesPerTimeStep = ServiceMetric.computeClusterNumberOverParticleLifetime(valuesPerTimeStep)

@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 from collections import defaultdict
 import numpy as np
+import pandas as pd
 
 import Evaluator
 import EnumMetrics
@@ -9,7 +10,7 @@ class EvaluatorMulti(object):
     """
     Implementation of the evaluation mechanism for the Vicsek model for comparison of multiple models.
     """
-    def __init__(self, modelParams, metric, simulationData=None):
+    def __init__(self, modelParams, metric, simulationData=None, evaluationTimestepInterval=1):
         """
         Initialises the evaluator.
 
@@ -24,6 +25,7 @@ class EvaluatorMulti(object):
         self.simulationData = simulationData
         self.modelParams = modelParams
         self.metric = metric
+        self.evaluationTimestepInterval = evaluationTimestepInterval
 
     def evaluate(self):
         """
@@ -33,9 +35,9 @@ class EvaluatorMulti(object):
             A dictionary with the results for each model at every time step.
         """
         results = []
-        for i in range(len(self.simulationData)):
-            print(f"evaluating {i}/{len(self.simulationData)}")
-            evaluator = Evaluator.Evaluator(self.modelParams[i], self.metric, self.simulationData[i])
+        for model in range(len(self.simulationData)):
+            print(f"evaluating {model}/{len(self.simulationData)}")
+            evaluator = Evaluator.Evaluator(self.modelParams[model], self.metric, self.simulationData[model], self.evaluationTimestepInterval)
             results.append(evaluator.evaluate())
         
         dd = defaultdict(list)
@@ -105,25 +107,20 @@ class EvaluatorMulti(object):
         plt.plot(x, y)
         plt.ylim(0,1)
         
-    def __createClusterNumberPlot(self, data):
+    def __createClusterNumberPlot(self, data, labels):
         """
         Creates a bar plot for the number of clusters in the system for every model at every timestep
 
         Parameters:
             - data (dictionary): a dictionary with the time step as its key and a list of the number of clusters for every model as its value
+            - labels (list of strings): labels for the models
 
         Returns:
             Nothing.
         """
-        width = 0.25  # the width of the bars
-        multiplier = 0
         sorted(data.items())
-        for time, vals in data.items():
-            for val in vals:
-                offset = width * multiplier
-                rects = plt.bar(time + offset, val, width, label=val)
-                #plt.bar_label(rects, padding=3)
-                multiplier += 1    
+        df = pd.DataFrame(data, index=labels).T
+        df.plot(kind='bar')
 
     def __createClusterSizePlot(self, data):
         """
@@ -144,22 +141,17 @@ class EvaluatorMulti(object):
             avgs.append(stepAvgs)
         plt.plot(x, avgs)
 
-    def __createClusterNumberOverParticleLifetimePlot(self, data):
+    def __createClusterNumberOverParticleLifetimePlot(self, data, labels):
         """
         Creates a bat plot for the number of clusters that every particle of every model has belonged to over the course of the whole run
 
         Parameters:
             - data (dictionary): a dictionary with the particle index as its key and number of clusters it has belonged to as its value
+            - labels (list of strings): labels for the models
 
         Returns:
             Nothing.
         """
-        width = 0.25  # the width of the bars
-        multiplier = 0
         sorted(data.items())
-        for time, vals in data.items():
-            for val in vals:
-                offset = width * multiplier
-                rects = plt.bar(time + offset, val, width, label=val)
-                #plt.bar_label(rects, padding=3)
-                multiplier += 1   
+        df = pd.DataFrame(data, index=labels).T
+        df.plot(kind='bar') 

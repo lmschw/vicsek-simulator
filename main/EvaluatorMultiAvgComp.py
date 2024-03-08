@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 from collections import defaultdict
 import numpy as np
+import pandas as pd
 
 import Evaluator
 import EnumMetrics
@@ -9,14 +10,15 @@ class EvaluatorMultiAvgComp(object):
     """
     Implementation of the evaluation mechanism for the Vicsek model for comparison of multiple models.
     """
-    def __init__(self, modelParams, metric, simulationData=None):
+    def __init__(self, modelParams, metric, simulationData=None, evaluationTimestepInterval=1):
         """
         Initialises the evaluator.
 
         Parameters:
             - simulationData (array of (time array, positions array, orientation array, colours array)): contains all the simulation data for each model
             - modelParams (array of dictionaries): contains the model parameters for each model
-            - metric (EnumMetrics.Metrics): the metric according to which the models' performances should be evaluated
+            - metric (EnumMetrics.Metrics) [optional]: the metric according to which the models' performances should be evaluated
+            - evaluationTimestepInterval (int) [optional]: the interval of the timesteps to be evaluated. By default, every time step is evaluated
         
         Returns:
             Nothing.
@@ -24,6 +26,7 @@ class EvaluatorMultiAvgComp(object):
         self.simulationData = simulationData
         self.modelParams = modelParams
         self.metric = metric
+        self.evaluationTimestepInterval = evaluationTimestepInterval
 
     def evaluate(self):
         """
@@ -33,20 +36,21 @@ class EvaluatorMultiAvgComp(object):
             A dictionary with the results for each model at every time step.
         """
         dd = defaultdict(list)
-        for i in range(len(self.simulationData)):
-            print(f"evaluating {i}/{len(self.simulationData)}")
+        for model in range(len(self.simulationData)):
+            print(f"evaluating {model}/{len(self.simulationData)}")
             results = []
-            for j in range(len(self.simulationData[i])):
-                print(f"step {j}/{len(self.simulationData[i])}")
-                evaluator = Evaluator.Evaluator(self.modelParams[i][j], self.metric, self.simulationData[i][j])
-                results.append(evaluator.evaluate())
+            for individualRun in range(len(self.simulationData[model])):
+                print(f"step {individualRun}/{len(self.simulationData[model])}")
+                evaluator = Evaluator.Evaluator(self.modelParams[model][individualRun], self.metric, self.simulationData[model][individualRun], self.evaluationTimestepInterval)
+                result = evaluator.evaluate()
+                results.append(result)
             
             ddi = defaultdict(list)
             for d in results: 
                 for key, value in d.items():
                     ddi[key].append(value)
-            for m in range(len(self.simulationData[i][0])):
-                dd[m].append(np.average(ddi[m]))
+            for m in range(len(ddi)):
+                dd[m * self.evaluationTimestepInterval].append(np.average(ddi[m * self.evaluationTimestepInterval]))
         return dd
 
     
@@ -67,18 +71,17 @@ class EvaluatorMultiAvgComp(object):
             case EnumMetrics.Metrics.ORDER:
                 self.__createOrderPlot(data)
             case EnumMetrics.Metrics.CLUSTER_NUMBER:
-                self.__createClusterNumberPlot(data)
+                self.__createClusterNumberPlot(data, labels)
             case EnumMetrics.Metrics.CLUSTER_SIZE:
                 self.__createClusterSizePlot(data)
             case EnumMetrics.Metrics.CLUSTER_NUMBER_OVER_PARTICLE_LIFETIME:
                 self.__createClusterNumberOverParticleLifetimePlot(data)
 
         plt.title(f"""Model comparison: \n{subtitle}""")
-        plt.gca().legend((labels))
         if savePath != None:
             plt.savefig(savePath)
 
-        #plt.show()
+        plt.show()
 
     
     def evaluateAndVisualize(self, labels, subtitle='', savePath=None):
@@ -109,25 +112,20 @@ class EvaluatorMultiAvgComp(object):
         plt.plot(x, y)
         plt.ylim(0,1)
         
-    def __createClusterNumberPlot(self, data):
+    def __createClusterNumberPlot(self, data, labels):
         """
         Creates a bar plot for the number of clusters in the system for every model at every timestep
 
         Parameters:
             - data (dictionary): a dictionary with the time step as its key and a list of the number of clusters for every model as its value
-
+            - labels (list of strings): labels for the models
+            
         Returns:
             Nothing.
         """
-        width = 0.25  # the width of the bars
-        multiplier = 0
         sorted(data.items())
-        for time, vals in data.items():
-            for val in vals:
-                offset = width * multiplier
-                rects = plt.bar(time + offset, val, width, label=val)
-                #plt.bar_label(rects, padding=3)
-                multiplier += 1    
+        df = pd.DataFrame(data, index=labels).T
+        df.plot(kind='bar')
 
     def __createClusterSizePlot(self, data):
         """
@@ -148,22 +146,17 @@ class EvaluatorMultiAvgComp(object):
             avgs.append(stepAvgs)
         plt.plot(x, avgs)
 
-    def __createClusterNumberOverParticleLifetimePlot(self, data):
+    def __createClusterNumberOverParticleLifetimePlot(self, data, labels):
         """
         Creates a bat plot for the number of clusters that every particle of every model has belonged to over the course of the whole run
 
         Parameters:
             - data (dictionary): a dictionary with the particle index as its key and number of clusters it has belonged to as its value
+            - labels (list of strings): labels for the models
 
         Returns:
             Nothing.
         """
-        width = 0.25  # the width of the bars
-        multiplier = 0
         sorted(data.items())
-        for time, vals in data.items():
-            for val in vals:
-                offset = width * multiplier
-                rects = plt.bar(time + offset, val, width, label=val)
-                #plt.bar_label(rects, padding=3)
-                multiplier += 1   
+        df = pd.DataFrame(data, index=labels).T
+        df.plot(kind='bar')
