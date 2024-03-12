@@ -110,9 +110,9 @@ class Evaluator(object):
         Returns:
             Nothing.
         """
-        x, y = zip(*sorted(data.items()))
-        plt.plot(x, y)
-        plt.ylim(0,1)
+        sorted(data.items())
+        df = pd.DataFrame(data, index=[1]).T
+        df.plot.line()
         
     def __createClusterNumberPlot(self, data):
         """
@@ -139,11 +139,16 @@ class Evaluator(object):
             Nothing.
         """
         time, num = zip(*sorted(data.items()))
-        minAvgMax = len(time) * [[0,0,0]]
+        mins = len(time) * [0]
+        avgs = len(time) * [0]
+        maxs = len(time) * [0]
         for i in range(len(time)):
-            minAvgMax[i] = [np.min(num[i][1:]), np.average(num[i][1:]), np.max(num[i][1:])]
-        plt.plot(time, minAvgMax)
-        plt.gca().legend(("min", "avg", "max"))
+            mins[i] = np.min(num[i][1:])
+            avgs[i] = np.average(num[i][1:])
+            maxs[i] = np.max(num[i][1:])
+        minAvgMax = [mins, avgs, maxs]
+        df = pd.DataFrame(minAvgMax, index=["min", "avg", "max"]).T
+        df.plot.line()
     
     def __createClusterNumberOverParticleLifetimePlot(self, data):
         """
@@ -155,5 +160,8 @@ class Evaluator(object):
         Returns:
             Nothing.
         """
-        particles, num = zip(*sorted(data.items()))
-        plt.bar(particles, num)
+        #particles, num = zip(*sorted(data.items()))
+        #plt.bar(particles, num)
+        sorted(data.items())
+        df = pd.DataFrame([data]).T
+        df.plot(kind='bar')
