@@ -10,7 +10,7 @@ class EvaluatorMultiAvgComp(object):
     """
     Implementation of the evaluation mechanism for the Vicsek model for comparison of multiple models.
     """
-    def __init__(self, modelParams, metric, simulationData=None, evaluationTimestepInterval=1):
+    def __init__(self, modelParams, metric, simulationData=None, evaluationTimestepInterval=1, threshold=0.01):
         """
         Initialises the evaluator.
 
@@ -27,6 +27,7 @@ class EvaluatorMultiAvgComp(object):
         self.modelParams = modelParams
         self.metric = metric
         self.evaluationTimestepInterval = evaluationTimestepInterval
+        self.threshold = threshold
 
     def evaluate(self):
         """
@@ -37,11 +38,11 @@ class EvaluatorMultiAvgComp(object):
         """
         dd = defaultdict(list)
         for model in range(len(self.simulationData)):
-            print(f"evaluating {model}/{len(self.simulationData)}")
+            #print(f"evaluating {model}/{len(self.simulationData)}")
             results = []
             for individualRun in range(len(self.simulationData[model])):
                 print(f"step {individualRun}/{len(self.simulationData[model])}")
-                evaluator = Evaluator.Evaluator(self.modelParams[model][individualRun], self.metric, self.simulationData[model][individualRun], self.evaluationTimestepInterval)
+                evaluator = Evaluator.Evaluator(self.modelParams[model][individualRun], self.metric, self.simulationData[model][individualRun], self.evaluationTimestepInterval, self.threshold)
                 result = evaluator.evaluate()
                 results.append(result)
             
@@ -80,7 +81,6 @@ class EvaluatorMultiAvgComp(object):
         plt.title(f"""Model comparison: \n{subtitle}""")
         if savePath != None:
             plt.savefig(savePath)
-
         plt.show()
 
     

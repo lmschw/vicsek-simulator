@@ -2,6 +2,9 @@
 import numpy as np
 import math
 from collections import defaultdict
+from scipy.cluster.hierarchy import linkage, dendrogram
+from sklearn.cluster import AgglomerativeClustering
+
 import EnumMetrics as metrics
 
 def evaluateSingleTimestep(positions, orientations, metric, radius=None, threshold=0.99):
@@ -25,18 +28,45 @@ def evaluateSingleTimestep(positions, orientations, metric, radius=None, thresho
                 sumOrientation += orientations[j]
             return np.sqrt(sumOrientation[0]**2 + sumOrientation[1]**2) / n
         case metrics.Metrics.CLUSTER_NUMBER:
-            nClusters, _ = findClusters(positions, orientations, radius, threshold)
+            nClusters, _ = findClusters(positions, orientations, threshold)
             return nClusters
         case metrics.Metrics.CLUSTER_SIZE:
-            nClusters, clusters = findClusters(positions, orientations, radius, threshold)
+            nClusters, clusters = findClusters(positions, orientations, threshold)
             clusterSizes = computeClusterSizes(nClusters, clusters)
             return clusterSizes
         case metrics.Metrics.CLUSTER_NUMBER_OVER_PARTICLE_LIFETIME:
-            _, clusters = findClusters(positions, orientations, radius, threshold)
+            _, clusters = findClusters(positions, orientations, threshold)
             return clusters
 
+
+def findClusters(positions, orientations, threshold):
+    """
+    #orientationsXy = getOrientationsXy(positions, orientations)
+    clustering = linkage(orientations, method="single", metric="cosine")
+    #dend = dendrogram(complete_clustering, color_threshold=0.0005)
+    dend = dendrogram(clustering, color_threshold=threshold)
+
+    colours = dend["color_list"]
+    print("nClusters: ", len(set(colours)))
+    return len(set(colours)), colours
+    """
+    
+    cluster = AgglomerativeClustering(n_clusters=None, metric='euclidean', linkage='single', compute_full_tree=True, distance_threshold=threshold)
+
+    # Cluster the data
+    cluster.fit_predict(orientations)
+
+    # number of clusters
+    nClusters = 1+np.amax(cluster.labels_)
+    print(f"nClusters: {nClusters}")
+    return nClusters, cluster.labels_
+    
+
+def getOrientationsXy(positions, orientations):
+    return [[positions[i][0] + np.cos(np.arcsin(orientations[i][0])), positions[i][1] + np.sin(np.arcsin(orientations[i][0]))] for i in range(len(orientations))]
+
          
-def findClusters(positions, orientations, radius, threshold=0.99):
+def findClustersWithRadius(positions, orientations, radius, threshold=0.99):
     """
     Finds clusters in the particle distribution. The clustering is performed according to the following constraints:
         - to belong to a cluster, a particle needs to be within the radius of at least one other member of the same cluster

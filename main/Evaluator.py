@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 
 import ServiceSavedModel
 import ServiceMetric
@@ -9,7 +10,7 @@ class Evaluator(object):
     """
     Implementation of the evaluation mechanism for the Vicsek model for a single model.
     """
-    def __init__(self, modelParams, metric, simulationData=None, evaluationTimestepInterval=1):
+    def __init__(self, modelParams, metric, simulationData=None, evaluationTimestepInterval=1, threshold=0.01):
         """
         Initialises the evaluator.
 
@@ -26,6 +27,7 @@ class Evaluator(object):
         self.modelParams = modelParams
         self.metric = metric
         self.evaluationTimestepInterval = evaluationTimestepInterval
+        self.threshold = threshold
 
         if metric in [EnumMetrics.Metrics.CLUSTER_NUMBER, 
                       EnumMetrics.Metrics.CLUSTER_SIZE, 
@@ -50,7 +52,7 @@ class Evaluator(object):
             if i % 100 == 0:
                 print(f"evaluating {i}/{len(self.time)}")
             if i % self.evaluationTimestepInterval == 0:
-                valuesPerTimeStep[self.time[i]] = ServiceMetric.evaluateSingleTimestep(self.positions[i], self.orientations[i], self.metric, self.radius)
+                valuesPerTimeStep[self.time[i]] = ServiceMetric.evaluateSingleTimestep(self.positions[i], self.orientations[i], self.metric, self.radius, threshold=self.threshold)
         print("Evaluation completed.")
         if(self.metric == EnumMetrics.Metrics.CLUSTER_NUMBER_OVER_PARTICLE_LIFETIME):
             valuesPerTimeStep = ServiceMetric.computeClusterNumberOverParticleLifetime(valuesPerTimeStep)
@@ -122,8 +124,9 @@ class Evaluator(object):
         Returns:
             Nothing.
         """
-        time, num = zip(*sorted(data.items()))
-        plt.bar(time, num)
+        sorted(data.items())
+        df = pd.DataFrame(data, index=[1]).T
+        df.plot(kind='bar')
 
     def __createClusterSizePlot(self, data):
         """
