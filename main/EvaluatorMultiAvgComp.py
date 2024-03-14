@@ -51,7 +51,11 @@ class EvaluatorMultiAvgComp(object):
                 for key, value in d.items():
                     ddi[key].append(value)
             for m in range(len(ddi)):
-                dd[m * self.evaluationTimestepInterval].append(np.average(ddi[m * self.evaluationTimestepInterval]))
+                idx = m * self.evaluationTimestepInterval
+                if self.metric == EnumMetrics.Metrics.CLUSTER_SIZE:
+                    for i in range(len(ddi[idx])):
+                        ddi[idx][i] = np.average(ddi[idx][i])
+                dd[idx].append(np.average(ddi[idx]))
         return dd
 
     
@@ -74,7 +78,7 @@ class EvaluatorMultiAvgComp(object):
             case EnumMetrics.Metrics.CLUSTER_NUMBER:
                 self.__createClusterNumberPlot(data, labels)
             case EnumMetrics.Metrics.CLUSTER_SIZE:
-                self.__createClusterSizePlot(data)
+                self.__createClusterSizePlot(data, labels)
             case EnumMetrics.Metrics.CLUSTER_NUMBER_OVER_PARTICLE_LIFETIME:
                 self.__createClusterNumberOverParticleLifetimePlot(data)
 
@@ -127,7 +131,7 @@ class EvaluatorMultiAvgComp(object):
         df = pd.DataFrame(data, index=labels).T
         df.plot(kind='bar')
 
-    def __createClusterSizePlot(self, data):
+    def __createClusterSizePlot(self, data, labels):
         """
         Creates a line plot for the average size of clusters in the system at every timestep for every model
 
@@ -137,14 +141,9 @@ class EvaluatorMultiAvgComp(object):
         Returns:
             Nothing.
         """
-        x, y = zip(*sorted(data.items()))
-        avgs = []
-        for vals in y:
-            stepAvgs = []
-            for val in vals:
-                stepAvgs.append(np.average(val))
-            avgs.append(stepAvgs)
-        plt.plot(x, avgs)
+        sorted(data.items())
+        df = pd.DataFrame(data, index=labels).T
+        df.plot.line()
 
     def __createClusterNumberOverParticleLifetimePlot(self, data, labels):
         """
