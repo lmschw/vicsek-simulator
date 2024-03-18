@@ -11,6 +11,9 @@ import ServicePreparation
 
 import DefaultValues as dv
 
+
+import time
+
 """
 n = 300
 density = ServicePreparation.getDensity((100,100), 500)
@@ -46,28 +49,29 @@ preparedAnimator.setParams(simulator.getParameterSummary())
 preparedAnimator.showAnimation()
 """
 
-"""
+
 #density comparison
 n = 500
-for density in [0.06, 0.07, 0.08, 0.09, 0.1]:
-    domainSize = ServicePreparation.getDomainSizeForConstantDensity(density, n)
+k = 5
+noise = 0
+radius= 10
+neighbourSelectionMode = EnumNeighbourSelectionMode.NeighbourSelectionMode.HIGHEST_ORIENTATION_DIFFERENCE
+tmax = 1000
+for density in [0.09]:
+    for i in range(1,11):
+        domainSize = ServicePreparation.getDomainSizeForConstantDensity(density, n)
 
-    print(f"n={n}, density={density}, domainSize={domainSize}")
+        t = time.localtime()
+        current_time = time.strftime("%H:%M:%S", t)
+        print(f"{current_time}: n={n}, density={density}, domainSize={domainSize}")
 
-    k = 5
-    noise = 0
-    radius= 10
-    neighbourSelectionMode = EnumNeighbourSelectionMode.NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE
-    tmax = 1000
+        simulator = VicsekWithNeighbourSelection.VicsekWithNeighbourSelection(neighbourSelectionMode, 
+                                                                        domainSize=domainSize, 
+                                                                        numberOfParticles=n, 
+                                                                        k=k, 
+                                                                        noise=noise, 
+                                                                        radius=radius)
+        simulationData, colours = simulator.simulate(tmax=tmax)
 
-    simulator = VicsekWithNeighbourSelection.VicsekWithNeighbourSelection(neighbourSelectionMode, 
-                                                                    domainSize=domainSize, 
-                                                                    numberOfParticles=n, 
-                                                                    k=k, 
-                                                                    noise=noise, 
-                                                                    radius=radius)
-    simulationData, colours = simulator.simulate(tmax=tmax)
-
-    # Save model values for future use
-    ServiceSavedModel.saveModel(simulationData, colours, f"{neighbourSelectionMode.name}_tmax={tmax}_n={n}_k={k}_noise={noise}_radius={radius}_density={density}_domainSize={domainSize}.json", simulator.getParameterSummary())
-"""
+        # Save model values for future use
+        ServiceSavedModel.saveModel(simulationData, colours, f"examples/densityExamples/HOD/model_{neighbourSelectionMode.name}_tmax={tmax}_n={n}_k={k}_noise={noise}_radius={radius}_density={density}_{i}.json", simulator.getParameterSummary())

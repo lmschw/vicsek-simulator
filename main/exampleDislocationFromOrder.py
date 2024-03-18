@@ -44,35 +44,57 @@ preparedAnimator.setParams(simulator.getParameterSummary())
 preparedAnimator.showAnimation()
 """
 
-"""
+
 n = 500
 k = 5
 radius= 10
-neighbourSelectionMode = EnumNeighbourSelectionMode.NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE
-tmax = 10000
+#neighbourSelectionMode = EnumNeighbourSelectionMode.NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE
+tmax = 3000
 domainSize = ServicePreparation.getDomainSizeForConstantDensity(0.05, n)
-
-noise = 0.4
-i = 3
-initialState = ServicePreparation.createOrderedInitialDistributionEquidistanced(domainSize, n)
-
-simulator = VicsekWithNeighbourSelection.VicsekWithNeighbourSelection(neighbourSelectionMode, 
-                                                                domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, 
-                                                                numberOfParticles=n, 
-                                                                k=k, 
-                                                                noise=noise, 
-                                                                radius=radius)
-simulationData, colours = simulator.simulate(tmax=tmax, initialState=initialState)
-
-# Save model values for future use
-ServiceSavedModel.saveModel(simulationData, colours, f"examples/dislocationExamples/model_{neighbourSelectionMode.name}_tmax={tmax}_n={n}_k={k}_noise={noise}_radius={radius}_{i}.json", simulator.getParameterSummary())
+modes = [EnumNeighbourSelectionMode.NeighbourSelectionMode.NEAREST,
+         EnumNeighbourSelectionMode.NeighbourSelectionMode.RANDOM]
 """
-"""
-# Initalise the animator
-animator = AnimatorMatplotlib.MatplotlibAnimator(simulationData, (100,100,100), colours)
+for neighbourSelectionMode in modes:
+    for noiseAmplitudePercentage in [2.5, 3]:
+        noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(noiseAmplitudePercentage)
+        for i in range(1, 6):
+            initialState = ServicePreparation.createOrderedInitialDistributionEquidistanced(domainSize, n)
 
-# prepare the animator
-preparedAnimator = animator.prepare(Animator2D.Animator2D(), frames=tmax)
-preparedAnimator.setParams(simulator.getParameterSummary())
-preparedAnimator.saveAnimation(f"examples/dislocationExamples/visualisation_mode={neighbourSelectionMode.name}_tmax={tmax}_n={n}_k={k}_noise={noise}_radius={radius}_{i}")
+            simulator = VicsekWithNeighbourSelection.VicsekWithNeighbourSelection(neighbourSelectionMode, 
+                                                                            domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, 
+                                                                            numberOfParticles=n, 
+                                                                            k=k, 
+                                                                            noise=noise, 
+                                                                            radius=radius)
+            simulationData, colours = simulator.simulate(tmax=tmax, initialState=initialState)
+
+            # Save model values for future use
+            ServiceSavedModel.saveModel(simulationData, colours, f"examples/dislocationExamples/model_{neighbourSelectionMode.name}_tmax={tmax}_n={n}_k={k}_noisePercentage={noiseAmplitudePercentage}%_radius={radius}_{i}.json", simulator.getParameterSummary())
+
+            
+            # Initalise the animator
+            animator = AnimatorMatplotlib.MatplotlibAnimator(simulationData, (100,100,100), colours)
+
+            # prepare the animator
+            preparedAnimator = animator.prepare(Animator2D.Animator2D(), frames=tmax)
+            preparedAnimator.setParams(simulator.getParameterSummary())
+            preparedAnimator.saveAnimation(f"examples/dislocationExamples/visualisation_mode={neighbourSelectionMode.name}_tmax={tmax}_n={n}_k={k}_noise={noise}_radius={radius}")
+        
 """
+            
+neighbourSelectionMode = EnumNeighbourSelectionMode.NeighbourSelectionMode.NEAREST
+noiseAmplitudePercentage = 2
+noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(noiseAmplitudePercentage)
+for i in range(5, 6):
+    initialState = ServicePreparation.createOrderedInitialDistributionEquidistanced(domainSize, n)
+
+    simulator = VicsekWithNeighbourSelection.VicsekWithNeighbourSelection(neighbourSelectionMode, 
+                                                                    domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, 
+                                                                    numberOfParticles=n, 
+                                                                    k=k, 
+                                                                    noise=noise, 
+                                                                    radius=radius)
+    simulationData, colours = simulator.simulate(tmax=tmax, initialState=initialState)
+
+    # Save model values for future use
+    ServiceSavedModel.saveModel(simulationData, colours, f"examples/dislocationExamples/model_{neighbourSelectionMode.name}_tmax={tmax}_n={n}_k={k}_noisePercentage={noiseAmplitudePercentage}%_radius={radius}_{i}.json", simulator.getParameterSummary())

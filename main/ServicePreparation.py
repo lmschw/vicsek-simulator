@@ -44,6 +44,13 @@ def getDensity(domainSize, numberOfParticles):
     """
     return numberOfParticles / (domainSize[0] * domainSize[1]) # n / area
 
+def getNoiseAmplitudeValueForPercentage(percentage):
+    """
+    Paramters:
+        - percentage (int, 1-100)
+    """
+    return 2 * np.pi * (percentage/100)
+
 def createOrderedInitialDistributionEquidistanced(domainSize, numberOfParticles, angleX=None, angleY=None):
     """
     Creates an ordered, equidistanced initial distribution of particles in a domain. 
