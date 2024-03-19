@@ -25,7 +25,7 @@ evaluator.visualize(data, savePath="LOD_tmax=100_n=100_k=5_noise=0_radius=10.png
 
 
 
-modelParams, simulationData, colours = ServiceSavedModel.loadModel("examples/general/LEAST_ORIENTATION_DIFFERENCE_n=500_k=5_noise=0_radius=10.json")
+modelParams, simulationData, colours = ServiceSavedModel.loadModel("examples/switch/switch_FARTHEST_switchType=SwitchType.NEIGHBOUR_SELECTION_MODE_switches=1000-NEAREST_4000-FARTHEST_tmax=5000_n=500_k=5_noise=0.09424777960769379_radius=10.json")
 print("Data loading complete.")
-evaluator = Evaluator.Evaluator(modelParams, EnumMetrics.Metrics.CLUSTER_NUMBER_OVER_PARTICLE_LIFETIME, simulationData, evaluationTimestepInterval=5)
-evaluator.evaluateAndVisualize(savePath="LEAST_ORIENTATION_DIFFERENCE_tmax=1000_n=500_k=5_noise=0_radius=10_CLUSTER_NUMBER_OVER_LIFETIME.png")
+evaluator = Evaluator.Evaluator(modelParams, EnumMetrics.Metrics.ORDER, simulationData, evaluationTimestepInterval=500)
+evaluator.evaluateAndVisualize(savePath="switch_ORDER_NEIGHBOUR_SELECTION_MODE_FARTHEST_1000-NEAREST_4000-FARTHEST_tmax=5000_n=500_k=5_noise=1.5%_radius=10.png")
