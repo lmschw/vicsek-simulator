@@ -144,21 +144,21 @@ for i in range(1, 6):
 
                     # Save model values for future use
                     ServiceSavedModel.saveModel(simulationData, colours, f"model_density-vs-swarmsize_{neighbourSelectionMode.name}_tmax={tmax}_density={density}_n={n}_k={k}_noisePercentage={baseNoise}%_radius={radius}_{i}.json", simulator.getParameterSummary())
-            for noisePercentage in noisePercentages:
-                domainSize = baseDomain
-                n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
-                initialState = ServicePreparation.createOrderedInitialDistributionEquidistanced(domainSize, n)
-                noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(noisePercentage)
+                for noisePercentage in noisePercentages:
+                    domainSize = baseDomain
+                    n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
+                    initialState = ServicePreparation.createOrderedInitialDistributionEquidistanced(domainSize, n)
+                    noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(noisePercentage)
 
-                simulator = VicsekWithNeighbourSelection.VicsekWithNeighbourSelection(neighbourSelectionMode, 
-                                                                                domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, 
-                                                                                numberOfParticles=n, 
-                                                                                k=k, 
-                                                                                noise=noise, 
-                                                                                radius=radius)
-                simulationData, colours = simulator.simulate(tmax=tmax, initialState=initialState)
+                    simulator = VicsekWithNeighbourSelection.VicsekWithNeighbourSelection(neighbourSelectionMode, 
+                                                                                    domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, 
+                                                                                    numberOfParticles=n, 
+                                                                                    k=k, 
+                                                                                    noise=noise, 
+                                                                                    radius=radius)
+                    simulationData, colours = simulator.simulate(tmax=tmax, initialState=initialState)
 
-                # Save model values for future use
-                ServiceSavedModel.saveModel(simulationData, colours, f"model_density-vs-noise_{neighbourSelectionMode.name}_tmax={tmax}_density={density}_n={n}_k={k}_noisePercentage={noisePercentage}%_radius={radius}_{i}.json", simulator.getParameterSummary())
+                    # Save model values for future use
+                    ServiceSavedModel.saveModel(simulationData, colours, f"model_density-vs-noise_{neighbourSelectionMode.name}_tmax={tmax}_density={density}_n={n}_k={k}_noisePercentage={noisePercentage}%_radius={radius}_{i}.json", simulator.getParameterSummary())
 
 

@@ -1,0 +1,35 @@
+Analysis of low noise percentages:
+    With little noise (0.5-2.5%), two groups form: 
+        NEAREST & LOD create comparatively many clusters while FARTHEST, HOD & RANDOM do not form significant clusters
+    With noise at 3%, HOD switches group and starts exhibiting seemlingly more clusters. 
+        On visual inspection, the overall direction appears stable
+
+Attempts to create switching behaviour:
+    Start with random initialisation, NEAREST and 0% noise
+    change to 0.5% noise after 1000 steps -> change to exploration behaviour -> clusters become more spread out and larger
+    change back to 0% noise after 4000 steps -> change back to a single direction -> instead clusters become smaller and denser again
+    -> unsuccessful
+
+    Start with random initialisation, FARTHEST and 0.5% noise
+    change to NEAREST after 1000 steps -> change to exploration behaviour
+    change back to FARTHEST after 4000 steps -> change back to a single direction, albeit with non-equidistant distribution
+    -> successful
+
+    Start with random initialisation, FARTHEST and 1% noise
+    change to NEAREST after 1000 steps -> change to exploration behaviour
+    change back to FARTHEST after 4000 steps -> change back to a single direction, albeit with non-equidistant distribution
+    -> successful. Faster, stronger reaction to switching
+
+    same with 1.5% but it seems too much noise. outliers happen even in ordered state. 
+    Conclustion: 1% seems best. NEAREST vs. FARTHEST appears to work well. Less computational load than LOD/HOD
+
+Move switch on individual particles as preparation for external input:
+    Difficulty choosing the update method for the mode 
+        -> most frequent does not allow changes
+        -> second most frequent leads to constant oscillations and thus prevents a change in behaviour
+        -> random chance of switching to a less frequent one leads to switches but not to a change in behaviour.
+    Even when updating a group of particles at the same time, no behaviour adaptations arise
+
+Ideas:
+    - Add marker to changes in mode -> new changes could be valued more highly
+    
