@@ -211,71 +211,8 @@ class VicsekWithNeighbourSelection:
     def updateCellForParticle(self, i, positions, cells, cellToParticleDistribution, particleToCellDistribution):
         oldCellIdx = particleToCellDistribution[i]
         currentCell = cells[oldCellIdx]
-        currentCellXMin = currentCell[0][0]
-        currentCellYMin = currentCell[0][1]
-        currentCellXMax = currentCell[1][0]
-        currentCellYMax = currentCell[1][1]
         posX = positions[i][0]
         posY = positions[i][1]
-        posXTooSmall = posX < currentCellXMin
-        posXTooLarge = posX > currentCellXMax
-        posYTooSmall = posY < currentCellYMin
-        posYTooLarge = posY > currentCellYMax
-        numCells = self.cellDims[0]* self.cellDims[1]
-        # TODO edge cases (wrapping around)
-        """
-        if posX < 0:
-            if posY < 0:
-                newCellIdx = numCells -1
-            elif posY > self.domainSize[1]:
-                newCellIdx = numCells - self.cellDims[1]
-            elif posYTooSmall == True:
-                newCellIdx = numCells - (self.cellDims[0]-oldCellIdx) -1
-            elif posYTooLarge == True:
-                newCellIdx = numCells - (self.cellDims[0]-oldCellIdx) +1
-            else:
-                newCellIdx = numCells - (self.cellDims[0]-oldCellIdx)
-        elif posX > self.domainSize[0]:
-            if posY < 0:
-                newCellIdx = self.cellDims[1] - 1
-            elif posY > self.domainSize[1]:
-                newCellIdx = 0
-            elif posYTooSmall == True:
-                newCellIdx = self.cellDims[1] - (numCells - oldCellIdx) -1
-            elif posYTooLarge == True:
-                newCellIdx = self.cellDims[1] - (numCells - oldCellIdx) +1
-            else:
-                newCellIdx = self.cellDims[1] - (numCells - oldCellIdx)
-        elif posXTooSmall == True:
-            if posY < 0:
-
-            elif posY > self.domainSize[1]:
-            elif posYTooSmall == True:
-                newCellIdx = particleToCellDistribution[i]-self.cellDims[1]+1
-            elif posYTooLarge == True:
-                newCellIdx = particleToCellDistribution[i]-self.cellDims[1]-1
-            else:
-                newCellIdx = particleToCellDistribution[i]-self.cellDims[1]
-        elif posXTooLarge == True:
-            if posY < 0:
-            elif posY > self.domainSize[1]:
-            elif posYTooSmall == True:
-                newCellIdx = particleToCellDistribution[i]+self.cellDims[1]+1
-            elif posYTooLarge == True:
-                newCellIdx = particleToCellDistribution[i]+self.cellDims[1]-1
-            else:
-                newCellIdx = particleToCellDistribution[i]+self.cellDims[1]
-        else:
-            if posY < 0:
-            elif posY > self.domainSize[1]:
-            elif posYTooSmall == True:
-                newCellIdx = particleToCellDistribution[i]+1
-            elif posYTooLarge == True:
-                newCellIdx = particleToCellDistribution[i]-1
-            else:
-                newCellIdx = oldCellIdx
-
-        """
 
         oldX = np.floor(oldCellIdx/self.cellDims[1])
         oldY = oldCellIdx % self.cellDims[1]
@@ -283,9 +220,9 @@ class VicsekWithNeighbourSelection:
             newX = self.cellDims[0] -1
         elif posX > self.domainSize[0]:
             newX = 0
-        elif posXTooSmall:
+        elif posX < currentCell[0][0]:
             newX = oldX - 1
-        elif posXTooLarge:
+        elif posX > currentCell[1][0]:
             newX = oldX + 1
         else:
             newX = oldX
@@ -294,9 +231,9 @@ class VicsekWithNeighbourSelection:
             newY = self.cellDims[1] -1
         elif posY > self.domainSize[1]:
             newY = 0
-        elif posYTooSmall:
+        elif posY < currentCell[0][1]:
             newY = oldY - 1
-        elif posYTooLarge:
+        elif posY > currentCell[1][1]:
             newY = oldY + 1
         else:
             newY = oldY
