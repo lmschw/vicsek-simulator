@@ -96,5 +96,4 @@ def createOrderedInitialDistributionEquidistanced(domainSize, numberOfParticles,
             positions[counter] = [x,y]
             counter += 1
 
-    print(f"angleX: {angleX}, angleY: {angleY}, orientations[0] = {orientations[0]}")
     return positions, orientations

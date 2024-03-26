@@ -166,8 +166,8 @@ class VicsekWithNeighbourSelection:
                         case EnumSwitchType.SwitchType.NEIGHBOUR_SELECTION_MODE:
                             self.neighbourSelectionMode = switches[switchIdx][1]
                     switchIdx += 1
-
-            print(f"t={t}/{numIntervals-1}")
+            if t % 100 == 0:
+                print(f"t={t}/{numIntervals-1}")
 
             colours=self.numberOfParticles * ['k']
 
