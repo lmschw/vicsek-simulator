@@ -2,7 +2,6 @@
 import numpy as np
 import math
 from collections import defaultdict
-from scipy.cluster.hierarchy import linkage, dendrogram
 from sklearn.cluster import AgglomerativeClustering
 
 import EnumMetrics as metrics
@@ -34,10 +33,18 @@ def evaluateSingleTimestep(positions, orientations, metric, radius=None, thresho
             nClusters, clusters = findClusters(positions, orientations, threshold)
             clusterSizes = computeClusterSizes(nClusters, clusters)
             return clusterSizes
-        case metrics.Metrics.CLUSTER_NUMBER_OVER_PARTICLE_LIFETIME:
+        case metrics.Metrics.CLUSTER_NUMBER_OVER_PARTICLE_LIFETIME:        
             _, clusters = findClusters(positions, orientations, threshold)
             return clusters
-
+        case metrics.Metrics.CLUSTER_CONSISTENCY_AVERAGE_STEPS:
+            # for every cluster, how long do particles on average stay: average timesteps / number of timesteps that the cluster exists for
+            _, clusters = findClusters(positions, orientations, threshold)
+            return clusters
+        case metrics.Metrics.CLUSTER_CONSISTENCY_NUMBER_OF_CLUSTER_CHANGES: 
+            # for every cluster, how often does the number or identity of the clusters change
+            _, clusters = findClusters(positions, orientations, threshold)
+            return clusters
+     
 
 def findClusters(positions, orientations, threshold):
     """
@@ -204,3 +211,42 @@ def computeClusterNumberOverParticleLifetime(clusters):
         countsPerParticle[key] = len(np.unique(values))
     return countsPerParticle
 
+def identifyClusters(clusters, orientations):
+    clusterIds = {}
+    referenceOrientations = {}
+    counter = 0
+    # identify the orientation for the cluster
+    # add cluster colour to clusterColours for the corresponding index
+    # use orientation as key to combine them
+
+    # could also try identifying the clusters by checking if the majority of the particles is the same
+    """
+    for i in range(len(clusters)):
+        handledClusters = []
+        for j in range(len(clusters[0])):
+            clusterId = clusters[i][j]
+            orientation = orientations[i][j]
+            if clusterId not in handledClusters:
+                isNewCluster = True
+                for clusterIdx in clusterIds.keys():
+                    referenceOrientation = referenceOrientations.get(clusterIdx)
+                    if cosAngle(referenceOrientation, orientation) == 1:
+                        isNewCluster = False
+                        clusterIds[clusterIdx] = clusterIds.get(clusterIdx).append(clusterId)  
+                if isNewCluster == True:
+                    clusterIds[counter] = [clusterId]
+                    referenceOrientations[counter] = orientation
+                    counter += 1
+                handledClusters.append(clusterId)
+    return clusterIds
+    """
+    clusterMembers = {}
+    for timestep in range(len(clusters)):
+        stepMembers = {}
+        for particleIdx in range(len(clusters[0])):
+            clusterId = clusters[timestep][particleIdx]
+            if clusterId in stepMembers.keys():
+                stepMembers[clusterId] = stepMembers[clusterId].append(particleIdx)
+            else:
+                stepMembers[clusterId] = [particleIdx]
+                
