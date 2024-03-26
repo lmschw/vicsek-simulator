@@ -7,6 +7,7 @@ from heapq import nsmallest
 import DefaultValues as dv
 import EnumNeighbourSelectionMode
 import EnumSwitchType
+import ServiceMetric
 
 class VicsekWithNeighbourSelection:
 
@@ -62,7 +63,7 @@ class VicsekWithNeighbourSelection:
         return summary
     
     
-    def calculateMeanOrientations(self, positions, orientations):
+    def calculateMeanOrientations(self, positions, orientations, cellToParticleDistribution, particleToCellDistribution):
         """
         Updates the orientations of all particles based on the model parameters.
 
@@ -73,13 +74,15 @@ class VicsekWithNeighbourSelection:
         Returns:
             An array of the adapted orientations.
         """
+        """
         rij=positions[:,np.newaxis,:]-positions
     
         rij = rij - self.domainSize*np.rint(rij/self.domainSize) #minimum image convention
 
         rij2 = np.sum(rij**2,axis=2)
         neighbourCandidates = (rij2 <= self.radius**2)
-
+        """
+        neighbourCandidates = self.__findNeighbours(positions, cellToParticleDistribution, particleToCellDistribution)
         neighbours = self.__selectNeighbours(neighbourCandidates, positions, orientations)
         summedOrientations = np.sum(neighbours[:,:,np.newaxis]*orientations[np.newaxis,:,:],axis=1)
         return self.__normalizeOrientations(summedOrientations)
@@ -144,9 +147,10 @@ class VicsekWithNeighbourSelection:
         orientationsHistory[0,:,:]=orientations
 
 
-        cells = self.initialiseCells()
+        self.cells = self.initialiseCells()
+        self.neighbouringCells = self.determineNeighbouringCells()
 
-        cellToParticleDistribution, particleToCellDistribution = self.createCellDistributions(positions, cells)
+        cellToParticleDistribution, particleToCellDistribution = self.createCellDistributions(positions)
         
         # for every time step, the positions, orientations and colours for each particle are updated and added to the histories
         for it in range(numIntervals):
@@ -169,10 +173,10 @@ class VicsekWithNeighbourSelection:
 
             for i in range(len(positions)):
                 positions[i] += dt*(self.speed*orientations[i])
-                cellToParticleDistribution, particleToCellDistribution = self.updateCellForParticle(i, positions, cells, cellToParticleDistribution, particleToCellDistribution)
+                cellToParticleDistribution, particleToCellDistribution = self.updateCellForParticle(i, positions, cellToParticleDistribution, particleToCellDistribution)
                 positions[i] += -self.domainSize*np.floor(positions[i]/self.domainSize)
 
-            orientations = self.calculateMeanOrientations(positions, orientations)
+            orientations = self.calculateMeanOrientations(positions, orientations, cellToParticleDistribution, particleToCellDistribution)
             orientations = self.__normalizeOrientations(orientations+self.generateNoise())
 
             positionsHistory[it,:,:]=positions
@@ -196,21 +200,54 @@ class VicsekWithNeighbourSelection:
                 cells.append([(x, y), (x+length, y+length)])
         return cells
     
-    def createCellDistributions(self, positions, cells):
-        cellToParticleDistribution = {cellIdx: [] for cellIdx in range(len(cells))}
+    def determineNeighbouringCells(self):
+        neighbouringCells = {}
+        for cellIdx, _ in enumerate(self.cells):
+            neighbours = [cellIdx] # always check the particle's own cell
+            # top if not in top row
+            if cellIdx % self.cellDims[1] != 0:
+                neighbours.append(cellIdx-1)
+                # corner up left
+                if cellIdx >= self.cellDims[1]:
+                    neighbours.append(cellIdx - self.cellDims[1] -1)
+                # corner up right
+                if cellIdx < ((self.cellDims[0]*self.cellDims[1]) - self.cellDims[1]):
+                    neighbours.append(cellIdx + self.cellDims[1] - 1) 
+            # bottom if not in bottom row
+            if cellIdx % self.cellDims[1] != (self.cellDims[1]-1):
+                neighbours.append(cellIdx+1)
+                # corner bottom left
+                if cellIdx >= self.cellDims[1]:
+                    neighbours.append(cellIdx - self.cellDims[1] + 1)
+                # corner bottom right
+                if cellIdx < ((self.cellDims[0]*self.cellDims[1]) - self.cellDims[1]):
+                    neighbours.append(cellIdx + self.cellDims[1] + 1)
+            # left if not in leftmost row
+            if cellIdx >= self.cellDims[1]:
+                neighbours.append(cellIdx-self.cellDims[1])
+            # right if not in rightmost row
+            if cellIdx < ((self.cellDims[0]*self.cellDims[1]) - self.cellDims[1]):
+                neighbours.append(cellIdx+self.cellDims[1])   
+            neighbouringCells[cellIdx] = neighbours    
+        return neighbouringCells
+
+
+    
+    def createCellDistributions(self, positions):
+        cellToParticleDistribution = {cellIdx: [] for cellIdx in range(len(self.cells))}
         particleToCellDistribution = {}
         for i in range(len(positions)):
             xPos = positions[i][0]
             yPos = positions[i][1]
-            for cellIdx, cell in enumerate(cells):
+            for cellIdx, cell in enumerate(self.cells):
                 if cell[0][0] <= xPos and cell[0][1] <= yPos and cell[1][0] >= xPos and cell[1][1] >= yPos:
                     cellToParticleDistribution.get(cellIdx).append(i)
                     particleToCellDistribution[i] = cellIdx
         return cellToParticleDistribution, particleToCellDistribution
 
-    def updateCellForParticle(self, i, positions, cells, cellToParticleDistribution, particleToCellDistribution):
+    def updateCellForParticle(self, i, positions, cellToParticleDistribution, particleToCellDistribution):
         oldCellIdx = particleToCellDistribution[i]
-        currentCell = cells[oldCellIdx]
+        currentCell = self.cells[oldCellIdx]
         posX = positions[i][0]
         posY = positions[i][1]
 
@@ -275,6 +312,15 @@ class VicsekWithNeighbourSelection:
         orientations = self.__normalizeOrientations(np.random.rand(numberOfParticles, len(domainSize))-0.5)
         
         return positions, orientations
+    
+        
+    def __findNeighbours(self, positions, cellToParticleDistribution, particleToCellDistribution):
+        neighbourCandidates = []
+        for part, cell in particleToCellDistribution.items():
+            cellsToCheck = self.neighbouringCells.get(cell)
+            candidates = [cand for candCell in cellsToCheck for cand in cellToParticleDistribution[candCell]]
+            neighbourCandidates.append([candIdx for candIdx in candidates if ServiceMetric.isNeighbour(self.radius, positions, part, candIdx)])
+        return neighbourCandidates
 
     def __selectNeighbours(self, neighbourCandidates, positions, orientations):
         """
@@ -290,7 +336,7 @@ class VicsekWithNeighbourSelection:
         """        
         neighbours = []
         for i in range(0, self.numberOfParticles):
-            candidates = [candIdx for candIdx in range(len(positions)) if neighbourCandidates[i][candIdx] == True and candIdx != i]
+            candidates = neighbourCandidates[i]
             iNeighbours = self.numberOfParticles * [False]
             currentParticlePosition = positions[i]
             currentParticleOrientation = orientations[i]
