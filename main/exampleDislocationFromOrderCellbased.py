@@ -1,14 +1,17 @@
 import time
 import random
 import copy
+from datetime import datetime
 
 import VicsekWithNeighbourSelectionSwitchingCellBased
-import VicsekWithNeighbourSelectionSwitching
 import AnimatorMatplotlib
 import Animator2D
 import ServiceSavedModel
 from EnumNeighbourSelectionMode import NeighbourSelectionMode
 import ServicePreparation
+
+import EnumSwitchType
+
 
 import DefaultValues as dv
 
@@ -39,46 +42,12 @@ baseSwarmSize = 500
 ks = [1, 3, 5]
 
 noisePercentages = [0, 0.1, 0.5, 1, 1.5, 2] # also run with 0 noise as baseline
-baseNoise = 1
 
 radius = 10
 tmax = 1000
 
 startTotal = time.time()
-for i in range(6, 11):
-    startI = time.time()
-    for neighbourSelectionMode in modes:
-        startMode = time.time()
-        for k in ks:
-            for density in densities:
-                for noisePercentage in noisePercentages:
-                    domainSize = baseDomain
-                    n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
-                    initialState = ServicePreparation.createOrderedInitialDistributionEquidistanced(domainSize, n)
-                    noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(noisePercentage)
-                    start = time.time()
-                    print(f"Executing density-vs-noise run for i={i}, neighbourSelectionMode={neighbourSelectionMode.name}, k={k}, density={density}, noisePercentage={noisePercentage}")
-                    simulator = VicsekWithNeighbourSelectionSwitchingCellBased.VicsekWithNeighbourSelection(neighbourSelectionMode, 
-                                                                                    domainSize=domainSize, 
-                                                                                    numberOfParticles=n, 
-                                                                                    k=k, 
-                                                                                    noise=noise, 
-                                                                                    radius=radius)
-                    simulationData, colours = simulator.simulate(tmax=tmax, initialState=initialState)
-
-                    # Save model values for future use
-                    ServiceSavedModel.saveModel(simulationData, colours, f"model_density-vs-noise_{neighbourSelectionMode.name}_tmax={tmax}_density={density}_n={n}_k={k}_noisePercentage={noisePercentage}%_radius={radius}_{i}.json", simulator.getParameterSummary())
-                    end = time.time()
-                    print(f"Completed experiment for i={i}, nMode={neighbourSelectionMode.name}, k={k}, density={density}, noiseP={noisePercentage} in {formatTime(end-start)}")
-        endMode = time.time()
-        print(f"Duration for mode {neighbourSelectionMode.name}: {formatTime(endMode-startMode)}")
-    endI = time.time()
-    print(f"Duration for i = {i}: {formatTime(endI-startI)}")
-endTotal = time.time()
-print(f"Duration total: {formatTime(endTotal-startTotal)}")
-
-startTotal = time.time()
-for i in range(6, 11):
+for i in range(4, 6):
     startI = time.time()
     for neighbourSelectionMode in modes:
         startMode = time.time()
@@ -110,24 +79,69 @@ for i in range(6, 11):
 endTotal = time.time()
 print(f"Duration total: {formatTime(endTotal-startTotal)}")
 
-"""
-for i in range(2, 6):
-    for neighbourSelectionMode in modes:
-        for k in ks:
+
+
+disorderStates = [NeighbourSelectionMode.NEAREST,
+                  NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE]
+orderStates = [NeighbourSelectionMode.RANDOM,
+               NeighbourSelectionMode.FARTHEST,
+               NeighbourSelectionMode.HIGHEST_ORIENTATION_DIFFERENCE,
+               NeighbourSelectionMode.ALL]
+
+
+radius = 10
+tmax = 5000
+
+ksSwitching = [1,5]
+
+startTotal = time.time()
+for i in range(1,6):
+    startI = time.time()
+    for k in ksSwitching:
+        startK = time.time()
+        for noisePercentage in noisePercentages:
+            startNoise = time.time()
             for density in densities:
-                for n in swarmSizes:
-                    domainSize = ServicePreparation.getDomainSizeForConstantDensity(density, baseSwarmSize)
-                    initialState = ServicePreparation.createOrderedInitialDistributionEquidistanced(domainSize, n)
-                    noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(baseNoise)
+                startDensity = time.time()
+                for orderState in orderStates:
+                    for disorderState in disorderStates:
+                        dateTime = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                        print(f"{dateTime}: Start i={i}, k={k}, noiseP={noisePercentage}, density={density}, orderState={orderState.name}, disorderState={disorderState.name}")
+                        startRun = time.time()
+                        domainSize = baseDomain
+                        n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
+                        noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(noisePercentage)
 
-                    simulator = VicsekWithNeighbourSelectionSwitchingCellBased.VicsekWithNeighbourSelection(neighbourSelectionMode, 
-                                                                                    domainSize=domainSize, 
-                                                                                    numberOfParticles=n, 
-                                                                                    k=k, 
-                                                                                    noise=noise, 
-                                                                                    radius=radius)
-                    simulationData, colours = simulator.simulate(tmax=tmax, initialState=initialState)
+                        switchType = EnumSwitchType.SwitchType.NEIGHBOUR_SELECTION_MODE
+                        switches = [[0, orderState],
+                                    [1000, disorderState], 
+                                    [4000, orderState]]
 
-                    # Save model values for future use
-                    ServiceSavedModel.saveModel(simulationData, colours, f"model_density-vs-swarmsize_{neighbourSelectionMode.name}_tmax={tmax}_density={density}_n={n}_k={k}_noisePercentage={baseNoise}%_radius={radius}_{i}.json", simulator.getParameterSummary())
-"""
+                        #initialState = ServicePreparation.createOrderedInitialDistributionEquidistanced(domainSize, n)
+
+                        simulator = VicsekWithNeighbourSelectionSwitchingCellBased.VicsekWithNeighbourSelection(orderState, 
+                                                                                        domainSize=domainSize, 
+                                                                                        numberOfParticles=n, 
+                                                                                        k=k, 
+                                                                                        noise=noise, 
+                                                                                        radius=radius)
+                        simulationData, colours = simulator.simulate(tmax=tmax, switchType=switchType, switches=switches)
+
+                        # Save model values for future use
+                        switchesStr = "_".join([f"{switch[0]}-{switch[1].name}" for switch in switches])
+                        ServiceSavedModel.saveModel(simulationData, colours, f"switch_switchType={switchType.name}_switches={switchesStr}_tmax={tmax}_n={n}_k={k}_noise={noisePercentage}%_{i}.json", simulator.getParameterSummary())
+                        endRun = time.time()
+                        print(f"Completed i={i}, k={k}, noiseP={noisePercentage}, density={density}, orderState={orderState.name}, disorderState={disorderState.name} in {formatTime(endRun-startRun)}")
+                endDensity = time.time()
+                print(f"Duration for density = {density}: {formatTime(endDensity-startDensity)}")
+            endNoise = time.time()
+            print(f"Duration for noise = {noisePercentage}%: {formatTime(endNoise-startNoise)}")
+        endK = time.time()
+        print(f"Duration for k = {k}: {formatTime(endK-startK)}")
+    endI = time.time()
+    print(f"Duration for i = {i}: {formatTime(endI-startI)}")
+endTotal = time.time()
+print(f"Duration for total: {formatTime(endTotal-startTotal)}")
+
+
+
