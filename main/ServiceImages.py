@@ -32,7 +32,7 @@ def createMultiPlotFromImages(title, nRows, nCols, rowLabels, colLabels, imgPath
     plt.tight_layout()
     plt.show()
 
-def createMultiPlotFromScratch(title, nRows, nCols, rowLabels, colLabels, data, savePath=None):
+def createMultiPlotFromScratch(title, nRows, nCols, rowLabels, colLabels, data, xLabel=None, yLabel=None, savePath=None):
     fig, axes = plt.subplots(nrows=nRows, ncols=nCols, sharex=True, sharey=True)
 
     fig.suptitle(title)
@@ -51,7 +51,12 @@ def createMultiPlotFromScratch(title, nRows, nCols, rowLabels, colLabels, data, 
     fig.subplots_adjust(bottom=0.3, wspace=0.33)
     xOffset = xOffsetsByNCol.get(nCols)
     plt.legend(loc='upper center', bbox_to_anchor=(xOffset, -0.3),fancybox=False, shadow=False)
-
+    if xLabel != None:
+        fig.supxlabel(xLabel)
+        #plt.xlabel(xLabel)
+    if yLabel != None:
+        fig.supylabel(yLabel)
+        #plt.ylabel(yLabel)
     plt.tight_layout()
     if savePath != None:
         plt.savefig(savePath)

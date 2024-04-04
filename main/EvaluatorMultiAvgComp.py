@@ -54,12 +54,12 @@ class EvaluatorMultiAvgComp(object):
                 idx = m * self.evaluationTimestepInterval
                 if self.metric == EnumMetrics.Metrics.CLUSTER_SIZE:
                     for i in range(len(ddi[idx])):
-                        ddi[idx][i] = np.average(ddi[idx][i])
+                        ddi[idx][i] = np.max(ddi[idx][i])
                 dd[idx].append(np.average(ddi[idx]))
         return dd
 
     
-    def visualize(self, data, labels, subtitle='', savePath=None):
+    def visualize(self, data, labels, xLabel=None, yLabel=None, subtitle=None, savePath=None):
         """
         Visualizes and optionally saves the results of the evaluation as a graph.
 
@@ -74,21 +74,26 @@ class EvaluatorMultiAvgComp(object):
         """
         match self.metric:
             case EnumMetrics.Metrics.ORDER:
-                self.__createOrderPlot(data)
+                self.__createOrderPlot(data, labels)
             case EnumMetrics.Metrics.CLUSTER_NUMBER:
                 self.__createClusterNumberPlot(data, labels)
             case EnumMetrics.Metrics.CLUSTER_SIZE:
                 self.__createClusterSizePlot(data, labels)
             case EnumMetrics.Metrics.CLUSTER_NUMBER_OVER_PARTICLE_LIFETIME:
-                self.__createClusterNumberOverParticleLifetimePlot(data)
+                self.__createClusterNumberOverParticleLifetimePlot(data, labels)
 
-        plt.title(f"""Model comparison: \n{subtitle}""")
+        if xLabel != None:
+            plt.xlabel(xLabel)
+        if yLabel != None:
+            plt.ylabel(yLabel)
+        if subtitle != None:
+            plt.title(f"""Model comparison: {subtitle}""")
         if savePath != None:
             plt.savefig(savePath)
         plt.show()
 
     
-    def evaluateAndVisualize(self, labels, subtitle='', savePath=None):
+    def evaluateAndVisualize(self, labels, xLabel=None, yLabel=None, subtitle=None, savePath=None):
         """
         Evaluates and subsequently visualises the results for multiple models.
 
@@ -100,9 +105,9 @@ class EvaluatorMultiAvgComp(object):
         Returns:
             Nothing.
         """
-        self.visualize(self.evaluate(), labels, subtitle=subtitle, savePath=savePath)
+        self.visualize(self.evaluate(), labels, xLabel=xLabel, yLabel=yLabel, subtitle=subtitle, savePath=savePath)
 
-    def __createOrderPlot(self, data):
+    def __createOrderPlot(self, data, labels):
         """
         Creates a line plot for the order in the system at every timestep for every model
 
@@ -112,9 +117,9 @@ class EvaluatorMultiAvgComp(object):
         Returns:
             Nothing.
         """
-        x, y = zip(*sorted(data.items()))
-        plt.plot(x, y)
-        plt.ylim(0,1)
+        sorted(data.items())
+        df = pd.DataFrame(data, index=labels).T
+        df.plot.line(ylim=(0,1.1))
         
     def __createClusterNumberPlot(self, data, labels):
         """
@@ -129,7 +134,7 @@ class EvaluatorMultiAvgComp(object):
         """
         sorted(data.items())
         df = pd.DataFrame(data, index=labels).T
-        df.plot(kind='bar')
+        df.plot()
 
     def __createClusterSizePlot(self, data, labels):
         """
@@ -158,4 +163,4 @@ class EvaluatorMultiAvgComp(object):
         """
         sorted(data.items())
         df = pd.DataFrame(data, index=labels).T
-        df.plot(kind='bar')
+        df.plot.line()

@@ -175,6 +175,7 @@ evaluator.evaluateAndVisualize(labels=labels, subtitle=f"Comparing average clust
 
 
 """
+"""
 n=500
 k=5
 noise=3
@@ -211,4 +212,78 @@ threshold = 0.01
 evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=300, threshold=threshold)
 evaluator.evaluateAndVisualize(labels=labels, subtitle=f"Comparing average {metric.name} \nfor dislocation from order between modes, \nn={n}, k={k}, noise={noise}, radius={radius}, threshold={threshold}", savePath=f"{metric.name}_mode-comparision_n={n}_k={k}_radius={radius}_dislocation-noise={noise}%_hierarchical_clustering_threshold={threshold}.png")
 
+"""
 
+"""
+n=50
+k=1
+noise=3
+tmax=3000
+radius=10
+metric=EnumMetrics.Metrics.CLUSTER_CONSISTENCY_AVERAGE_STEPS
+labels=["r=5", "r=10", "r=15"]
+
+
+modelParams = []
+simulationData = []
+colours = []
+
+modelParamsDensity, simulationDataDensity, coloursDensity = ServiceSavedModel.loadModels([
+                                                                                        f"switch_FARTHEST_switchType=SwitchType.NEIGHBOUR_SELECTION_MODE_switches=10-NEAREST_40-FARTHEST_tmax=50_n=50_k=1_noise=0.06283185307179587_radius=10.json",
+                                                                                            ])
+modelParams.append(modelParamsDensity)
+simulationData.append(simulationDataDensity)
+colours.append(coloursDensity)
+
+
+threshold = 0.01
+evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=1, threshold=threshold)
+evaluator.evaluateAndVisualize(labels=labels, subtitle=f"Comparing radius for dislocation from order, \nn={n}, noise={noise}, k={k}, threshold={threshold}", savePath=f"{metric.name}_n={n}_dislocation-noise={noise}%_hierarchical_clustering_threshold={threshold}.png")
+"""
+
+
+
+tmax=1000
+radius=10
+domainSize=(100,100)
+modes = [EnumNeighbourSelectionMode.NeighbourSelectionMode.RANDOM,
+         EnumNeighbourSelectionMode.NeighbourSelectionMode.NEAREST,
+         EnumNeighbourSelectionMode.NeighbourSelectionMode.FARTHEST,
+         EnumNeighbourSelectionMode.NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE,
+         EnumNeighbourSelectionMode.NeighbourSelectionMode.HIGHEST_ORIENTATION_DIFFERENCE,
+         EnumNeighbourSelectionMode.NeighbourSelectionMode.ALL]
+
+metric=EnumMetrics.Metrics.CLUSTER_NUMBER
+labels=["RANDOM", "NEAREST", "FARTHEST", "LEAST ORIENTATION DIFFERENCE", "HIGHEST ORIENTATION DIFFERENCE", "ALL"]
+xLabel = "Timestep"
+yLabel = "Number of clusters"
+
+density = 0.05
+noisePercentage = 1
+n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
+k = 1
+modelParams = []
+simulationData = []
+colours = []
+
+for mode in modes:
+    modelParamsDensity, simulationDataDensity, coloursDensity = ServiceSavedModel.loadModels([
+                                                                                            f"D:/vicsek-data/density-vs-noise/model_density-vs-noise_{mode.name}_tmax=1000_density={density}_n={n}_k={k}_noisePercentage={noisePercentage}%_radius=10_1.json",
+                                                                                            f"D:/vicsek-data/density-vs-noise/model_density-vs-noise_{mode.name}_tmax=1000_density={density}_n={n}_k={k}_noisePercentage={noisePercentage}%_radius=10_2.json",
+                                                                                            f"D:/vicsek-data/density-vs-noise/model_density-vs-noise_{mode.name}_tmax=1000_density={density}_n={n}_k={k}_noisePercentage={noisePercentage}%_radius=10_3.json",
+                                                                                            f"D:/vicsek-data/density-vs-noise/model_density-vs-noise_{mode.name}_tmax=1000_density={density}_n={n}_k={k}_noisePercentage={noisePercentage}%_radius=10_4.json",
+                                                                                            f"D:/vicsek-data/density-vs-noise/model_density-vs-noise_{mode.name}_tmax=1000_density={density}_n={n}_k={k}_noisePercentage={noisePercentage}%_radius=10_5.json",
+                                                                                            f"D:/vicsek-data/density-vs-noise/model_density-vs-noise_{mode.name}_tmax=1000_density={density}_n={n}_k={k}_noisePercentage={noisePercentage}%_radius=10_6.json",
+                                                                                            f"D:/vicsek-data/density-vs-noise/model_density-vs-noise_{mode.name}_tmax=1000_density={density}_n={n}_k={k}_noisePercentage={noisePercentage}%_radius=10_7.json",
+                                                                                            f"D:/vicsek-data/density-vs-noise/model_density-vs-noise_{mode.name}_tmax=1000_density={density}_n={n}_k={k}_noisePercentage={noisePercentage}%_radius=10_8.json",
+                                                                                            f"D:/vicsek-data/density-vs-noise/model_density-vs-noise_{mode.name}_tmax=1000_density={density}_n={n}_k={k}_noisePercentage={noisePercentage}%_radius=10_9.json",
+                                                                                            f"D:/vicsek-data/density-vs-noise/model_density-vs-noise_{mode.name}_tmax=1000_density={density}_n={n}_k={k}_noisePercentage={noisePercentage}%_radius=10_10.json",
+                                                                                            ])
+    modelParams.append(modelParamsDensity)
+    simulationData.append(simulationDataDensity)
+    colours.append(coloursDensity)
+
+
+threshold = 0.01
+evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=100, threshold=threshold)
+evaluator.evaluateAndVisualize(labels=labels, xLabel=xLabel, yLabel=yLabel, savePath=f"clusternumber_mode-comp_ordered_density=0.05_noise=1.svg")

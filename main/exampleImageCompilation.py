@@ -31,9 +31,10 @@ numY = 5
 
 title = "Density vs. noise - ORDER"
 
-rowLabels = ["density=0.01", "density=0.03", "density=0.05", "density=0.07", "density=0.09"]
-colLabels = ["0% noise", "0.5% noise", "1% noise", "1.5% noise", "2% noise"]
-
+rowLabels = ["0.01", "0.03", "0.05", "0.07", "0.09"]
+colLabels = ["0%", "0.5%", "1%", "1.5%", "2%"]
+xLabel = "Noise"
+yLabel = "Density"
 
 #paths = []
 domainSize = (100, 100)
@@ -89,6 +90,6 @@ for i, density in enumerate(densities):
             endEval = time.time()
             print(f"Duration eval {formatTime(endEval-startEval)}")    
 
-ServiceImages.createMultiPlotFromScratch(title, numX, numY, rowLabels, colLabels, data, savePath="order_density-vs-noise_partial.svg")
+ServiceImages.createMultiPlotFromScratch(title, numX, numY, rowLabels, colLabels, data, xLabel, yLabel, savePath="order_density-vs-noise_partial.svg")
 end = time.time()
 print(f"Total duration: {formatTime(end-start)}")
