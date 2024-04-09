@@ -10,7 +10,7 @@ import ServiceSavedModel
 from EnumNeighbourSelectionMode import NeighbourSelectionMode
 from EnumMetrics import Metrics
 
-xOffsetsByNCol = {3: -0.8, 4: -1.5, 5: -2.2, 6: -3}
+xOffsetsByNCol = {1: 0, 2: -0.5, 3: -0.8, 4: -1.5, 5: -2.2, 6: -3}
 
 
 def createMultiPlotFromImages(title, nRows, nCols, rowLabels, colLabels, imgPaths):
@@ -32,30 +32,35 @@ def createMultiPlotFromImages(title, nRows, nCols, rowLabels, colLabels, imgPath
     plt.tight_layout()
     plt.show()
 
-def createMultiPlotFromScratch(title, nRows, nCols, rowLabels, colLabels, data, xLabel=None, yLabel=None, savePath=None):
+def createMultiPlotFromScratch(xLabels, yLabels, data, index, title=None, xAxisLabel=None, yAxisLabel=None, savePath=None, xlim =(0,1000), ylim=None):
+    fontsize = 8
+    nRows = len(yLabels)
+    nCols = len(xLabels)
     fig, axes = plt.subplots(nrows=nRows, ncols=nCols, sharex=True, sharey=True)
 
-    fig.suptitle(title)
+    if title != None:
+        fig.suptitle(title)
     for x in range(nRows):
         for y in range(nCols):
-            df = pd.DataFrame(data.get(f"{x}-{y}"), index=["RANDOM", "NEAREST", "FARTHEST", "LEAST ORIENTATION DIFFERENCE", "HIGHEST ORIENTATION DIFFERENCE", "ALL"]).T  
+            df = pd.DataFrame(data.get(f"{x}-{y}"), index=index).T  
             df.plot(ax=axes[x][y], legend=False)
 
-    for ax, col in zip(axes[0, :], colLabels):
-        ax.set_title(col)
-        ax.set_xlim((0,1000))
-    for ax, row in zip(axes[:, 0], rowLabels):
-        ax.set_ylabel(row)
-        ax.set_ylim((0,1.1))
+    for ax, col in zip(axes[0, :], xLabels):
+        ax.set_title(col, fontsize=fontsize)
+        ax.set_xlim(xlim)
+    for ax, row in zip(axes[:, 0], yLabels):
+        ax.set_ylabel(row, fontsize=fontsize)
+        if ylim != None:
+            ax.set_ylim(ylim)
         
     fig.subplots_adjust(bottom=0.3, wspace=0.33)
     xOffset = xOffsetsByNCol.get(nCols)
     plt.legend(loc='upper center', bbox_to_anchor=(xOffset, -0.3),fancybox=False, shadow=False)
-    if xLabel != None:
-        fig.supxlabel(xLabel)
+    if xAxisLabel != None:
+        fig.supxlabel(xAxisLabel, va="bottom")
         #plt.xlabel(xLabel)
-    if yLabel != None:
-        fig.supylabel(yLabel)
+    if yAxisLabel != None:
+        fig.supylabel(yAxisLabel)
         #plt.ylabel(yLabel)
     plt.tight_layout()
     if savePath != None:
