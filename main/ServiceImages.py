@@ -43,19 +43,32 @@ def createMultiPlotFromScratch(xLabels, yLabels, data, index, title=None, xAxisL
     for x in range(nRows):
         for y in range(nCols):
             df = pd.DataFrame(data.get(f"{x}-{y}"), index=index).T  
-            df.plot(ax=axes[x][y], legend=False)
+            if nRows == 1:
+                df.plot(ax=axes[y], legend=False)
+            else:
+                df.plot(ax=axes[x][y], legend=False)
 
-    for ax, col in zip(axes[0, :], xLabels):
-        ax.set_title(col, fontsize=fontsize)
-        ax.set_xlim(xlim)
-    for ax, row in zip(axes[:, 0], yLabels):
-        ax.set_ylabel(row, fontsize=fontsize)
-        if ylim != None:
-            ax.set_ylim(ylim)
+    if nRows == 1:
+        axes[0].set_title(xLabels[0], fontsize=fontsize)
+        axes[0].set_xlim(xlim)
+
+        for ax, row in zip(axes, yLabels):
+            ax.set_ylabel(row, fontsize=fontsize)
+            if ylim != None:
+                ax.set_ylim(ylim)
+
+    else:
+        for ax, col in zip(axes[0, :], xLabels):
+            ax.set_title(col, fontsize=fontsize)
+            ax.set_xlim(xlim)
+        for ax, row in zip(axes[:, 0], yLabels):
+            ax.set_ylabel(row, fontsize=fontsize)
+            if ylim != None:
+                ax.set_ylim(ylim)
         
     fig.subplots_adjust(bottom=0.3, wspace=0.33)
     xOffset = xOffsetsByNCol.get(nCols)
-    plt.legend(loc='upper center', bbox_to_anchor=(xOffset, -0.3),fancybox=False, shadow=False)
+    plt.legend(loc='upper center', bbox_to_anchor=(xOffset, -0.3),fancybox=False, shadow=False, ncol=len(index))
     if xAxisLabel != None:
         fig.supxlabel(xAxisLabel, va="bottom")
         #plt.xlabel(xLabel)
