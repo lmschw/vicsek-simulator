@@ -165,8 +165,10 @@ class VicsekWithNeighbourSelection:
                             self.noise = switches[switchIdx][1]
                         case EnumSwitchType.SwitchType.NEIGHBOUR_SELECTION_MODE:
                             self.neighbourSelectionMode = switches[switchIdx][1]
+                        case EnumSwitchType.SwitchType.K:
+                            self.k = switches[switchIdx][1]
                     switchIdx += 1
-            if t % 100 == 0:
+            if t % 1000 == 0:
                 print(f"t={t}/{numIntervals-1}")
 
             colours=self.numberOfParticles * ['k']

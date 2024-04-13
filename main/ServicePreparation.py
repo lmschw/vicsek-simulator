@@ -97,3 +97,50 @@ def createOrderedInitialDistributionEquidistanced(domainSize, numberOfParticles,
             counter += 1
 
     return positions, orientations
+
+
+def createOrderedInitialDistributionEquidistancedForLowNumbers(domainSize, numberOfParticles, angleX=None, angleY=None):
+    """
+    Creates an ordered, equidistanced initial distribution of particles in a domain. 
+    The particles are placed in a grid-like fashion. The orientation of the particles is random unless specified
+    but always the same for all particles.
+
+    Parameters:
+        - domainSize (tuple): tuple containing the x and y dimensions of the domain size
+        - numberOfParticles (int): the number of particles to be placed in the domain
+        - angleX (float [0,1)): first angle component to specify the orientation of all particles
+        - angleY (float [0,1)): second angle component to specify the orientation of all particles
+
+    Returns:
+        Positions and orientations for all particles within the domain. Can be used as the initial state of a Vicsek simulation.
+
+    """
+    # choose random angle for orientations
+    if angleX is None:
+        angleX = random.random()
+    if angleY is None:
+        angleY = random.random()
+
+    # prepare the distribution for the positions
+    xLength = domainSize[0]
+    yLength = domainSize[1]
+    
+    area = xLength * yLength
+    pointArea = area / numberOfParticles
+    length = np.sqrt(pointArea)
+
+    # initialise the initialState components
+    positions = np.zeros((numberOfParticles, 2))
+    orientations = np.zeros((numberOfParticles, 2))
+
+    # set the orientation for all particles
+    orientations[:, 0] = angleX
+    orientations[:, 1] = angleY
+
+    counter = 0
+    # set the position of every particle
+    for x in np.arange(length/2, xLength, length):
+        positions[counter] = [x,x]
+        counter += 1
+
+    return positions, orientations
