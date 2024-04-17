@@ -178,8 +178,11 @@ def createNeighbourScatterplotVideo(positions, orientations,  radius=10, ylim=(-
     animator = AnimatorScatter.Animator()
 
     # prepare the animator
-    preparedAnimator =  animator.prepareAnimation(fig, axes, xlim=(0,radius), ylim=ylim, frames=len(times))
+    preparedAnimator =  animator.prepareAnimation(fig, axes, particleIdx=i, xlim=(0,radius), ylim=ylim, frames=len(times))
     preparedAnimator.setSimulationData(neighbourData=(times, pointsForI))
+
+    if savePath != None:
+        preparedAnimator.saveAnimation(savePath)
 
     # Display Animation
     preparedAnimator.showAnimation()
