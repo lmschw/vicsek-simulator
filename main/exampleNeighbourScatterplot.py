@@ -27,5 +27,6 @@ ServiceImages.createNeighbourScatterplot(positions=positions, orientations=orien
 """
 
 ServiceImages.createNeighbourScatterplotVideo(positions=positions, orientations=orientations,
+                                              startTime=1000, endTime=2000,
                                               radius=10, ylim=(-1.1, 1.1),
                                               savePath="test_scatter_kswitching_video.mp4")

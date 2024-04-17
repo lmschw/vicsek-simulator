@@ -156,11 +156,17 @@ def createNeighbourScatterplot(positions, orientations, numberOfExampleParticles
         plt.savefig(savePath)
     plt.show()
 
-def createNeighbourScatterplotVideo(positions, orientations,  radius=10, ylim=(-1.1,1.1), savePath=None):
+def createNeighbourScatterplotVideo(positions, orientations, startTime=0, endTime=None, radius=10, ylim=(-1.1,1.1), savePath=None):
+    
+    if endTime == None:
+        endTime = len(positions)
+    else:
+        endTime += 1 # to include the last time step
+
     i = 1
     pointsForI = []
     times = []
-    for timestep in range(len(positions)):
+    for timestep in range(startTime, endTime):
         neighbours = ServiceMetric.findNeighbours(i, positions[timestep], radius)
         times.append(timestep)
         pointsForTimestep = []
