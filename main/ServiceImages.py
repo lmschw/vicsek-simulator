@@ -13,6 +13,7 @@ from EnumMetrics import Metrics
 import ServiceMetric
 import ServiceGeneral
 import AnimatorScatter
+import AnimatorScatterMulti
 
 xOffsetsByNCol = {1: 0, 2: -0.5, 3: -0.8, 4: -1.5, 5: -2.2, 6: -3}
 
@@ -186,6 +187,51 @@ def createNeighbourScatterplotVideo(positions, orientations, startTime=0, endTim
     # prepare the animator
     preparedAnimator =  animator.prepareAnimation(fig, axes, particleIdx=i, xlim=(0,radius), ylim=ylim, frames=len(times))
     preparedAnimator.setSimulationData(neighbourData=(times, pointsForI))
+
+    if savePath != None:
+        preparedAnimator.saveAnimation(savePath)
+
+    # Display Animation
+    preparedAnimator.showAnimation()
+
+def createNeighbourScatterplotVideoMulti(positions, orientations, startTime=0, endTime=None, numberOfExampleParticles=5, selectRandomly=True, radius=10, ylim=(-1.5,1.5), savePath=None):
+    if selectRandomly == True:
+        selectedIndices = random.sample(range(len(positions[0])), numberOfExampleParticles)
+    else:
+        selectedIndices = range(numberOfExampleParticles)
+    
+
+    if endTime == None or (endTime+1) > len(positions):
+        endTime = len(positions)
+    else:
+        endTime += 1 # to include the last time step
+
+    plotData = {}
+    times = []
+    for i in selectedIndices:
+        pointsForI = []
+        for timestep in range(startTime, endTime):
+            if i == selectedIndices[0]:
+                times.append(timestep)
+            neighbours = ServiceMetric.findNeighbours(i, positions[timestep], radius)
+            pointsForTimestep = []
+            for neighbourIdx in neighbours:
+                orientationDifference = ServiceMetric.cosAngle(orientations[timestep][i], orientations[timestep][neighbourIdx])
+                distance = math.sqrt((positions[timestep][i][0]-positions[timestep][neighbourIdx][0])**2 + (positions[timestep][i][1]-positions[timestep][neighbourIdx][1])**2)
+                pointsForTimestep.append([distance, orientationDifference])
+            pointsForI.append(pointsForTimestep)
+        plotData[i] = pointsForI
+
+    nRows = numberOfExampleParticles
+    nCols = 1
+    fig, axes = plt.subplots(nrows=nRows, ncols=nCols, sharex=True, sharey=True)
+
+    # Initalise the animator
+    animator = AnimatorScatterMulti.Animator()
+
+    # prepare the animator
+    preparedAnimator =  animator.prepareAnimation(fig, axes, particleIdx=None, xlim=(0,radius), ylim=ylim, frames=len(times))
+    preparedAnimator.setSimulationData(neighbourData=(times, plotData))
 
     if savePath != None:
         preparedAnimator.saveAnimation(savePath)

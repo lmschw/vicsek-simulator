@@ -25,8 +25,14 @@ ServiceImages.createNeighbourScatterplot(positions=positions, orientations=orien
                                          steps=[1000, 1050, 1100, 1150, 1200, 1250, 1300, 1350, 1400], radius=10, index=index,
                                          savePath="test_scatter_kswitching_focused_diverging.svg")
 """
-
+"""
 ServiceImages.createNeighbourScatterplotVideo(positions=positions, orientations=orientations,
                                               startTime=1000, endTime=2000,
                                               radius=10, ylim=(-1.1, 1.1),
                                               savePath="test_scatter_kswitching_video.mp4")
+"""
+ServiceImages.createNeighbourScatterplotVideoMulti(positions=positions, orientations=orientations,
+                                              startTime=0, endTime=5000, 
+                                              numberOfExampleParticles=5, selectRandomly=True,
+                                              radius=10, ylim=(-1.5, 1.5),
+                                              savePath="test_scatter_kswitching_video_multi.mp4")
