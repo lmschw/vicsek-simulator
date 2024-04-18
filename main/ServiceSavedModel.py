@@ -4,7 +4,7 @@ import numpy as np
 Service contains static methods to save and load models to/from json files.
 """
 
-def saveModel(simulationData, colours, path="sample.json", modelParams=None, saveInterval=1, modes=None):
+def saveModel(simulationData, colours, path="sample.json", modelParams=None, saveInterval=1, modes=None, switchValues=None):
     """
     Saves a model trained by the Viscek simulator implementation.
 
@@ -23,9 +23,11 @@ def saveModel(simulationData, colours, path="sample.json", modelParams=None, sav
             "colours": __getSpecifiedIntervals(saveInterval, colours)}
     if modes != None:
         dict["modes"] = modes
+    if switchValues != None:
+        dict["switchValues"] = switchValues
     __saveDict(path, dict, modelParams)
 
-def loadModel(path):
+def loadModel(path, loadSwitchValues=False):
     """
     Loads a single model from a single file.
 
@@ -42,9 +44,12 @@ def loadModel(path):
     positions = np.array(loadedJson["positions"])
     orientations = np.array(loadedJson["orientations"])
     colours = np.array(loadedJson["colours"])
+    if loadSwitchValues == True:
+        switchValues = np.array(loadedJson["switchValues"])
+        return modelParams, (time, positions, orientations), colours, switchValues
     return modelParams, (time, positions, orientations), colours
 
-def loadModels(paths):
+def loadModels(paths, loadSwitchValues=False):
     """
     Loads multiple models from multiple files.
 
@@ -57,11 +62,15 @@ def loadModels(paths):
     data = []
     params = []
     coloursArr = []
+    switchValuesArr = []
     for path in paths:
-        modelParams, simulationData, colours = loadModel(path)
+        modelParams, simulationData, colours, switchValues = loadModel(path, loadSwitchValues=True)
         params.append(modelParams)
         data.append(simulationData)
         coloursArr.append(colours)
+        switchValuesArr.append(switchValues)
+    if loadSwitchValues == True:
+        return params, data, coloursArr, switchValuesArr
     return params, data, coloursArr
 
 def saveTimestepsResults(results, path, modelParams=None, saveInterval=1):

@@ -28,7 +28,7 @@ def getNumberOfParticlesForConstantDensity(density, domainSize):
     Returns:
         The number of particles to be placed in the domain that corresponds to the density.
     """
-    return density * (domainSize[0] * domainSize[1]) # density * area
+    return int(density * (domainSize[0] * domainSize[1])) # density * area
 
 def getDensity(domainSize, numberOfParticles):
     """

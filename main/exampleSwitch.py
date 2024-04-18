@@ -51,17 +51,17 @@ preparedAnimator.setParams(simulator.getParameterSummary())
 # Display Animation
 preparedAnimator.showAnimation()
 """
-n = 500
+n = 50
 domainSize=ServicePreparation.getDomainSizeForConstantDensity(0.05, n)
-k = 5
+k = 1
 noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(1)
 radius= 10
-neighbourSelectionMode = EnumNeighbourSelectionMode.NeighbourSelectionMode.HIGHEST_ORIENTATION_DIFFERENCE
-tmax = 5000
+neighbourSelectionMode = EnumNeighbourSelectionMode.NeighbourSelectionMode.FARTHEST
+tmax = 50
 
 switchType = EnumSwitchType.SwitchType.NEIGHBOUR_SELECTION_MODE
-switches = [[1000, EnumNeighbourSelectionMode.NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE], 
-            [4000, EnumNeighbourSelectionMode.NeighbourSelectionMode.HIGHEST_ORIENTATION_DIFFERENCE]]
+switches = [[10, EnumNeighbourSelectionMode.NeighbourSelectionMode.NEAREST], 
+            [40, EnumNeighbourSelectionMode.NeighbourSelectionMode.FARTHEST]]
 
 print(f"switches={switches}")
 #initialState = ServicePreparation.createOrderedInitialDistributionEquidistanced(domainSize, n)

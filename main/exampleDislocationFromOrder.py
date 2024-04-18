@@ -125,40 +125,47 @@ baseNoise = 1
 radius = 10
 tmax = 1000
 
-for i in range(1, 6):
-    for neighbourSelectionMode in modes:
-        for k in ks:
+i = 6
+k = 1
+
+neighbourSelectionMode = EnumNeighbourSelectionMode.NeighbourSelectionMode.FARTHEST
+for noisePercentage in [1,1.5,2]:
+    for density in densities:
+        domainSize = baseDomain
+        n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
+        initialState = ServicePreparation.createOrderedInitialDistributionEquidistanced(domainSize, n)
+        noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(noisePercentage)
+        print(f"mode={neighbourSelectionMode.name}, noisePercentage={noisePercentage}, density={density}")
+
+        simulator = VicsekWithNeighbourSelection.VicsekWithNeighbourSelection(neighbourSelectionMode, 
+                                                                        domainSize=domainSize, 
+                                                                        numberOfParticles=n, 
+                                                                        k=k, 
+                                                                        noise=noise, 
+                                                                        radius=radius)
+        simulationData, colours = simulator.simulate(tmax=tmax, initialState=initialState)
+
+        # Save model values for future use
+        ServiceSavedModel.saveModel(simulationData, colours, f"model_density-vs-noise_{neighbourSelectionMode.name}_tmax={tmax}_density={density}_n={n}_k={k}_noisePercentage={noisePercentage}%_radius={radius}_{i}.json", simulator.getParameterSummary())
+
+for neighbourSelectionMode in [EnumNeighbourSelectionMode.NeighbourSelectionMode.HIGHEST_ORIENTATION_DIFFERENCE,
+                               EnumNeighbourSelectionMode.NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE,
+                               EnumNeighbourSelectionMode.NeighbourSelectionMode.ALL]:
+        for noisePercentage in noisePercentages:
             for density in densities:
-                for n in swarmSizes:
-                    domainSize = ServicePreparation.getDomainSizeForConstantDensity(density, baseSwarmSize)
-                    initialState = ServicePreparation.createOrderedInitialDistributionEquidistanced(domainSize, n)
-                    noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(baseNoise)
+                domainSize = baseDomain
+                n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
+                initialState = ServicePreparation.createOrderedInitialDistributionEquidistanced(domainSize, n)
+                noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(noisePercentage)
+                print(f"mode={neighbourSelectionMode.name}, noisePercentage={noisePercentage}, density={density}")
 
-                    simulator = VicsekWithNeighbourSelection.VicsekWithNeighbourSelection(neighbourSelectionMode, 
-                                                                                    domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, 
-                                                                                    numberOfParticles=n, 
-                                                                                    k=k, 
-                                                                                    noise=noise, 
-                                                                                    radius=radius)
-                    simulationData, colours = simulator.simulate(tmax=tmax, initialState=initialState)
+                simulator = VicsekWithNeighbourSelection.VicsekWithNeighbourSelection(neighbourSelectionMode, 
+                                                                                domainSize=domainSize, 
+                                                                                numberOfParticles=n, 
+                                                                                k=k, 
+                                                                                noise=noise, 
+                                                                                radius=radius)
+                simulationData, colours = simulator.simulate(tmax=tmax, initialState=initialState)
 
-                    # Save model values for future use
-                    ServiceSavedModel.saveModel(simulationData, colours, f"model_density-vs-swarmsize_{neighbourSelectionMode.name}_tmax={tmax}_density={density}_n={n}_k={k}_noisePercentage={baseNoise}%_radius={radius}_{i}.json", simulator.getParameterSummary())
-                for noisePercentage in noisePercentages:
-                    domainSize = baseDomain
-                    n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
-                    initialState = ServicePreparation.createOrderedInitialDistributionEquidistanced(domainSize, n)
-                    noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(noisePercentage)
-
-                    simulator = VicsekWithNeighbourSelection.VicsekWithNeighbourSelection(neighbourSelectionMode, 
-                                                                                    domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, 
-                                                                                    numberOfParticles=n, 
-                                                                                    k=k, 
-                                                                                    noise=noise, 
-                                                                                    radius=radius)
-                    simulationData, colours = simulator.simulate(tmax=tmax, initialState=initialState)
-
-                    # Save model values for future use
-                    ServiceSavedModel.saveModel(simulationData, colours, f"model_density-vs-noise_{neighbourSelectionMode.name}_tmax={tmax}_density={density}_n={n}_k={k}_noisePercentage={noisePercentage}%_radius={radius}_{i}.json", simulator.getParameterSummary())
-
-
+                # Save model values for future use
+                ServiceSavedModel.saveModel(simulationData, colours, f"model_density-vs-noise_{neighbourSelectionMode.name}_tmax={tmax}_density={density}_n={n}_k={k}_noisePercentage={noisePercentage}%_radius={radius}_{i}.json", simulator.getParameterSummary())

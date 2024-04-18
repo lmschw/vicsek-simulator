@@ -23,7 +23,10 @@ class Animator(AnimatorScatter.Animator):
             posX = [el[0] for el in self._positions.get(particleIdx)[i]]
             posY = [el[1] for el in self._positions.get(particleIdx)[i]]
             ax.scatter(posX, posY)
-        self._matplotlibFigure.suptitle(f"$t$={self._time[i]:.2f}")
+        if self._title == None:
+            self._matplotlibFigure.suptitle(f"$t$={self._time[i]:.2f}")
+        else:
+            self._matplotlibFigure.suptitle(f"{self._title}\n$t$={self._time[i]:.2f}")
         self._matplotlibFigure.supxlabel("distance", va="bottom")
         self._matplotlibFigure.supylabel("cos angle (orientation alignment)")
 

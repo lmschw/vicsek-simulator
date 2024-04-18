@@ -194,7 +194,7 @@ def createNeighbourScatterplotVideo(positions, orientations, startTime=0, endTim
     # Display Animation
     preparedAnimator.showAnimation()
 
-def createNeighbourScatterplotVideoMulti(positions, orientations, startTime=0, endTime=None, numberOfExampleParticles=5, selectRandomly=True, radius=10, ylim=(-1.5,1.5), savePath=None):
+def createNeighbourScatterplotVideoMulti(positions, orientations, startTime=0, endTime=None, numberOfExampleParticles=5, selectRandomly=True, title=None, radius=10, ylim=(-1.5,1.5), savePath=None):
     if selectRandomly == True:
         selectedIndices = random.sample(range(len(positions[0])), numberOfExampleParticles)
     else:
@@ -230,11 +230,11 @@ def createNeighbourScatterplotVideoMulti(positions, orientations, startTime=0, e
     animator = AnimatorScatterMulti.Animator()
 
     # prepare the animator
-    preparedAnimator =  animator.prepareAnimation(fig, axes, particleIdx=None, xlim=(0,radius), ylim=ylim, frames=len(times))
+    preparedAnimator =  animator.prepareAnimation(fig, axes, particleIdx=None, title=title, xlim=(0,radius), ylim=ylim, frames=len(times))
     preparedAnimator.setSimulationData(neighbourData=(times, plotData))
 
     if savePath != None:
         preparedAnimator.saveAnimation(savePath)
 
     # Display Animation
-    preparedAnimator.showAnimation()
+    #preparedAnimator.showAnimation()

@@ -22,10 +22,7 @@ def evaluateSingleTimestep(positions, orientations, metric, radius=None, thresho
      n = len(positions)
      match metric:
         case metrics.Metrics.ORDER:
-            sumOrientation = orientations[0]
-            for j in range(1, n):
-                sumOrientation += orientations[j]
-            return np.sqrt(sumOrientation[0]**2 + sumOrientation[1]**2) / n
+            return computeOrder(orientations)
         case metrics.Metrics.CLUSTER_NUMBER:
             nClusters, _ = findClusters(positions, orientations, threshold)
             return nClusters
@@ -45,6 +42,11 @@ def evaluateSingleTimestep(positions, orientations, metric, radius=None, thresho
             _, clusters = findClusters(positions, orientations, threshold)
             return clusters
      
+def computeOrder(orientations):
+    sumOrientation = orientations[0]
+    for j in range(1, len(orientations)):
+        sumOrientation += orientations[j]
+    return np.sqrt(sumOrientation[0]**2 + sumOrientation[1]**2) / len(orientations)
 
 def findClusters(positions, orientations, threshold):
     """
@@ -65,7 +67,7 @@ def findClusters(positions, orientations, threshold):
 
     # number of clusters
     nClusters = 1+np.amax(cluster.labels_)
-    print(f"nClusters: {nClusters}")
+    #print(f"nClusters: {nClusters}")
     return nClusters, cluster.labels_
     
 
@@ -240,6 +242,7 @@ def identifyClusters(clusters, orientations):
                 handledClusters.append(clusterId)
     return clusterIds
     """
+    """
     clusterMembers = {}
     for timestep in range(len(clusters)):
         stepMembers = {}
@@ -250,3 +253,5 @@ def identifyClusters(clusters, orientations):
             else:
                 stepMembers[clusterId] = [particleIdx]
                 
+    """
+    

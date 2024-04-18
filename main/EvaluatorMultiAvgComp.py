@@ -41,7 +41,7 @@ class EvaluatorMultiAvgComp(object):
             #print(f"evaluating {model}/{len(self.simulationData)}")
             results = []
             for individualRun in range(len(self.simulationData[model])):
-                print(f"step {individualRun}/{len(self.simulationData[model])}")
+                #print(f"step {individualRun}/{len(self.simulationData[model])}")
                 evaluator = Evaluator.Evaluator(self.modelParams[model][individualRun], self.metric, self.simulationData[model][individualRun], self.evaluationTimestepInterval, self.threshold)
                 result = evaluator.evaluate()
                 results.append(result)

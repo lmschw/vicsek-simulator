@@ -31,7 +31,9 @@ class Evaluator(object):
 
         if metric in [EnumMetrics.Metrics.CLUSTER_NUMBER, 
                       EnumMetrics.Metrics.CLUSTER_SIZE, 
-                      EnumMetrics.Metrics.CLUSTER_NUMBER_OVER_PARTICLE_LIFETIME]:
+                      EnumMetrics.Metrics.CLUSTER_NUMBER_OVER_PARTICLE_LIFETIME,
+                      EnumMetrics.Metrics.CLUSTER_CONSISTENCY_AVERAGE_STEPS,
+                      EnumMetrics.Metrics.CLUSTER_CONSISTENCY_NUMBER_OF_CLUSTER_CHANGES]:
             self.radius = modelParams["radius"]
         else:
             self.radius = None
@@ -49,13 +51,15 @@ class Evaluator(object):
             return
         valuesPerTimeStep = {}
         for i in range(len(self.time)):
-            if i % 100 == 0:
-                print(f"evaluating {i}/{len(self.time)}")
+            #if i % 100 == 0:
+                #print(f"evaluating {i}/{len(self.time)}")
             if i % self.evaluationTimestepInterval == 0:
                 valuesPerTimeStep[self.time[i]] = ServiceMetric.evaluateSingleTimestep(self.positions[i], self.orientations[i], self.metric, self.radius, threshold=self.threshold)
-        print("Evaluation completed.")
+        #print("Evaluation completed.")
         if(self.metric == EnumMetrics.Metrics.CLUSTER_NUMBER_OVER_PARTICLE_LIFETIME):
             valuesPerTimeStep = ServiceMetric.computeClusterNumberOverParticleLifetime(valuesPerTimeStep)
+        if(self.metric == EnumMetrics.Metrics.CLUSTER_CONSISTENCY_AVERAGE_STEPS):
+            valuesPerTimeStep = ServiceMetric.identifyClusters(valuesPerTimeStep, self.orientations)
         if saveTimestepsResultsPath != None:
             ServiceSavedModel.saveTimestepsResults(valuesPerTimeStep, saveTimestepsResultsPath, self.modelParams)
         return valuesPerTimeStep

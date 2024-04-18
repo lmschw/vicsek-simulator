@@ -241,7 +241,7 @@ evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, sim
 evaluator.evaluateAndVisualize(labels=labels, subtitle=f"Comparing radius for dislocation from order, \nn={n}, noise={noise}, k={k}, threshold={threshold}", savePath=f"{metric.name}_n={n}_dislocation-noise={noise}%_hierarchical_clustering_threshold={threshold}.png")
 """
 
-
+"""
 
 tmax=1000
 radius=10
@@ -287,3 +287,83 @@ for mode in modes:
 threshold = 0.01
 evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=100, threshold=threshold)
 evaluator.evaluateAndVisualize(labels=labels, xLabel=xLabel, yLabel=yLabel, savePath=f"clusternumber_mode-comp_ordered_density=0.05_noise=1.svg")
+"""
+
+"""
+tmax=100000
+radius=10
+domainSize=(100,100)
+modes = [EnumNeighbourSelectionMode.NeighbourSelectionMode.NEAREST,
+         EnumNeighbourSelectionMode.NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE]
+
+metric=EnumMetrics.Metrics.ORDER
+labels=["NEAREST", "LEAST ORIENTATION DIFFERENCE"]
+xLabel = "Timestep"
+yLabel = "Number of clusters"
+
+density = 0.01
+noisePercentage = 0
+n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
+k = 3
+tmax = 100000
+modelParams = []
+simulationData = []
+colours = []
+
+for mode in modes:
+    modelParamsDensity, simulationDataDensity, coloursDensity = ServiceSavedModel.loadModels([
+                                                                                            f"main/longer_runs/model_density-vs-noise_random-start_{mode.name}_tmax={tmax}_density=0.01_n=100_k=3_noisePercentage={noisePercentage}%_radius=10_1.json",
+                                                                                            ])
+    modelParams.append(modelParamsDensity)
+    simulationData.append(simulationDataDensity)
+    colours.append(coloursDensity)
+
+
+threshold = 0.01
+evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=100, threshold=threshold)
+evaluator.evaluateAndVisualize(labels=labels, xLabel=xLabel, yLabel=yLabel, savePath=f"order-random-start-k=3-noise={noisePercentage}-tmax={tmax}.svg")
+"""
+tmax=5000
+radius=10
+domainSize=(100,100)
+modes = [EnumNeighbourSelectionMode.NeighbourSelectionMode.NEAREST,
+         EnumNeighbourSelectionMode.NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE]
+
+metric=EnumMetrics.Metrics.ORDER
+labels=["NEAREST", "LEAST ORIENTATION DIFFERENCE"]
+xLabel = "Timestep"
+yLabel = "order"
+
+density = 0.01
+noisePercentage = 1
+n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
+tmax = 5000
+modelParams = []
+simulationData = []
+colours = []
+
+for mode in modes:
+    modelParamsDensity, simulationDataDensity, coloursDensity = ServiceSavedModel.loadModels([
+                                                                                            f"D:/vicsek-data/kswitching/switch_switchType=K_switches=0-5_1000-1_4000-5_tmax=5000_n={n}_density={density}_mode={mode.name}_noise={noisePercentage}%_1.json",
+                                                                                            f"D:/vicsek-data/kswitching/switch_switchType=K_switches=0-5_1000-1_4000-5_tmax=5000_n={n}_density={density}_mode={mode.name}_noise={noisePercentage}%_2.json",
+                                                                                            f"D:/vicsek-data/kswitching/switch_switchType=K_switches=0-5_1000-1_4000-5_tmax=5000_n={n}_density={density}_mode={mode.name}_noise={noisePercentage}%_3.json",
+                                                                                            f"D:/vicsek-data/kswitching/switch_switchType=K_switches=0-5_1000-1_4000-5_tmax=5000_n={n}_density={density}_mode={mode.name}_noise={noisePercentage}%_4.json",
+                                                                                            f"D:/vicsek-data/kswitching/switch_switchType=K_switches=0-5_1000-1_4000-5_tmax=5000_n={n}_density={density}_mode={mode.name}_noise={noisePercentage}%_5.json",
+                                                                                            f"D:/vicsek-data/kswitching/switch_switchType=K_switches=0-5_1000-1_4000-5_tmax=5000_n={n}_density={density}_mode={mode.name}_noise={noisePercentage}%_6.json",
+                                                                                            f"D:/vicsek-data/kswitching/switch_switchType=K_switches=0-5_1000-1_4000-5_tmax=5000_n={n}_density={density}_mode={mode.name}_noise={noisePercentage}%_7.json",
+                                                                                            f"D:/vicsek-data/kswitching/switch_switchType=K_switches=0-5_1000-1_4000-5_tmax=5000_n={n}_density={density}_mode={mode.name}_noise={noisePercentage}%_8.json",
+                                                                                            f"D:/vicsek-data/kswitching/switch_switchType=K_switches=0-5_1000-1_4000-5_tmax=5000_n={n}_density={density}_mode={mode.name}_noise={noisePercentage}%_9.json",
+                                                                                            f"D:/vicsek-data/kswitching/switch_switchType=K_switches=0-5_1000-1_4000-5_tmax=5000_n={n}_density={density}_mode={mode.name}_noise={noisePercentage}%_10.json",
+                                                                                            ])
+    modelParams.append(modelParamsDensity)
+    simulationData.append(simulationDataDensity)
+    colours.append(coloursDensity)
+
+
+threshold = 0.01
+evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=100, threshold=threshold)
+evaluator.evaluateAndVisualize(labels=labels, xLabel=xLabel, yLabel=yLabel, savePath=f"order-kswitching-density={density}-noise={noisePercentage}-tmax={tmax}.svg")
+
+
+
+

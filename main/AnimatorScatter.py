@@ -6,7 +6,7 @@ import DefaultValues as dv
 
 class Animator(object):
 
-    def prepareAnimation(self, matplotlibFigure, ax, particleIdx, xlim=(0,10), ylim=(-1.1, 1.1), frames=100, frameInterval = 10):
+    def prepareAnimation(self, matplotlibFigure, ax, particleIdx, title=None, xlim=(0,10), ylim=(-1.1, 1.1), frames=100, frameInterval = 10):
         """
         Prepares the 2D animator object for animation.
 
@@ -20,6 +20,7 @@ class Animator(object):
         self._matplotlibFigure = matplotlibFigure
         self._ax = ax
         self._particleIdx = particleIdx
+        self._title = title
         self._xlim = xlim
         self._ylim = ylim
         self._frames = frames
@@ -95,5 +96,9 @@ class Animator(object):
         posX = [el[0] for el in self._positions[i]]
         posY = [el[1] for el in self._positions[i]]
         scatter = self._ax.scatter(posX, posY)
-        plt.title(f"particle={self._particleIdx}, $t$={self._time[i]:.2f}")
+        if self._title == None:
+            plt.title(f"particle={self._particleIdx}, $t$={self._time[i]:.2f}")
+        else:
+            plt.title(f"{self._title}\nparticle={self._particleIdx}, $t$={self._time[i]:.2f}")
+
         return scatter

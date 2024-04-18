@@ -33,3 +33,54 @@ Move switch on individual particles as preparation for external input:
 Ideas:
     - Add marker to changes in mode -> new changes could be valued more highly
     
+
+
+
+TODO:
+- add method to set numcells = domainArea / (radius**2)
+- possibly parallelise for loops
+- start draft for paper on overleaf
+- recreate key figures in pdf or vector-based
+- fix matrix representation
+- at least 10 runs of each
+- research literature
+- 
+
+TODO:
+- try to replicate findings from other fish papers with our approach
+- implement active elastic
+- look for papers with similiar approach (neighbour selection, adaptive networks)
+- run experiments for switching
+- create figures
+- check who cites Calvao & Brigatti (2014)
+
+additional: try with borders (necessary to reproduce fish experiments)
+
+
+- run k =3 for high noise for longer (10'000 or 100'000 steps (from order and from disorder))
+- try local order with threshold for individual switching - > propagration possible?
+- rewrite with 3 sections:
+    - the modes and their effects
+    - global switching
+    - local switching
+            -> density as additional material
+- redo experiments for 5-8 particles
+- isolate HOD and see if density/noise switch for HOD could lead to switching as well
+- try k-switching 
+- check out histeresis (for sinus-curve like switching)
+- fix graphs with illustrator
+- replace image captions with main point I'm trying to make with it
+- focus on literature research
+
+
+- graph for 10 particles at 10 time steps during runs: scatterplot of all neighbours: x - orientation difference, y - distance to the particle
+    - possibly video
+    - aggregate over a few timesteps for each plot (e.g. 5-10) adding all neighbours from every steps
+    - focus on areas with a switch (order to disorder or vice versa)
+- individuals: 
+    - change direction or mode/k of a subset (1%, 10%...) of the individuals and see if the information propagates
+        - pick randomly overall
+        - pick within a local area
+- taxonomy for neighbour selection
+- look for mathematical basis for behaviours
+
