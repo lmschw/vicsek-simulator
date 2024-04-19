@@ -47,7 +47,7 @@ orderStates = [NeighbourSelectionMode.RANDOM,
 
 
 
-density = 0.03
+density = 0.01
 radius = 10
 noisePercentage = 1
 k = 1
@@ -58,33 +58,36 @@ i = 1
 switchType = SwitchType.K
 orderValue = 5
 disorderValue = 1
+orderThreshold = 0.05
 """
 switches = [[0, orderValue],
             [1000, disorderValue], 
             [4000, orderValue]]
 """
 
-startRun = time.time()
-ServiceGeneral.logWithTime(f"Start i={i}, noiseP={noisePercentage}, density={density}, neighbourSelectionMode={neighbourSelectionMode.name}, orderVal={orderValue}, disorderVal={disorderValue}")
-domainSize = baseDomain
-n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
-noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(noisePercentage)
+for i in range(1,11):
+    for orderThreshold in []:
+        startRun = time.time()
+        ServiceGeneral.logWithTime(f"Start i={i}, noiseP={noisePercentage}, density={density}, neighbourSelectionMode={neighbourSelectionMode.name}, orderVal={orderValue}, disorderVal={disorderValue}, threshold={orderThreshold}")
+        domainSize = baseDomain
+        n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
+        noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(noisePercentage)
 
-#initialState = ServicePreparation.createOrderedInitialDistributionEquidistanced(domainSize, n)
-simulator = VicsekWithNeighbourSelectionSwitchingCellBasedIndividuals.VicsekWithNeighbourSelection(neighbourSelectionMode, 
-                                                                domainSize=domainSize, 
-                                                                numberOfParticles=n, 
-                                                                k=orderValue, 
-                                                                noise=noise, 
-                                                                radius=radius,
-                                                                switchType=switchType,
-                                                                switchValues=(orderValue, disorderValue))
-simulationData, colours, switchValues = simulator.simulate(tmax=tmax)
+        #initialState = ServicePreparation.createOrderedInitialDistributionEquidistanced(domainSize, n)
+        simulator = VicsekWithNeighbourSelectionSwitchingCellBasedIndividuals.VicsekWithNeighbourSelection(neighbourSelectionMode, 
+                                                                        domainSize=domainSize, 
+                                                                        numberOfParticles=n, 
+                                                                        k=orderValue, 
+                                                                        noise=noise, 
+                                                                        radius=radius,
+                                                                        switchType=switchType,
+                                                                        switchValues=(orderValue, disorderValue))
+        simulationData, colours, switchValues = simulator.simulate(tmax=tmax)
 
-# Save model values for future use
-ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"switch_individual_switchType={switchType.name}_orderVal={orderValue}_disorderVal={disorderValue}_tmax={tmax}_n={n}_density={density}_mode={neighbourSelectionMode.name}_noise={noisePercentage}%_orderthresholds=[0.95,0.5]_{i}.json", modelParams=simulator.getParameterSummary())
-endRun = time.time()
-ServiceGeneral.logWithTime(f"Completed i={i}, noiseP={noisePercentage}, density={density},  neighbourSelectionMode={neighbourSelectionMode.name}, orderK={orderValue}, disorderK={disorderValue} in {formatTime(endRun-startRun)}")
+        # Save model values for future use
+        ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"switch_individual_switchType={switchType.name}_orderVal={orderValue}_disorderVal={disorderValue}_tmax={tmax}_n={n}_density={density}_mode={neighbourSelectionMode.name}_noise={noisePercentage}%_orderthreshold={orderThreshold}_{i}.json", modelParams=simulator.getParameterSummary())
+        endRun = time.time()
+        ServiceGeneral.logWithTime(f"Completed i={i}, noiseP={noisePercentage}, density={density},  neighbourSelectionMode={neighbourSelectionMode.name}, orderK={orderValue}, disorderK={disorderValue} in {formatTime(endRun-startRun)}")
 
 
 """

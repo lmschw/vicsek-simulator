@@ -11,7 +11,7 @@ import ServiceMetric
 
 class VicsekWithNeighbourSelection:
 
-    def __init__(self, neighbourSelectionModel, domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, speed=dv.DEFAULT_SPEED, radius=dv.DEFAULT_RADIUS, noise=dv.DEFAULT_NOISE, numberOfParticles=dv.DEFAULT_NUM_PARTICLES, k=dv.DEFAULT_K_NEIGHBOURS, showExample=dv.DEFAULT_SHOW_EXAMPLE_PARTICLE, numCells=dv.DEFAULT_NUM_CELLS, switchType=None, switchValues=(None, None)):
+    def __init__(self, neighbourSelectionModel, domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, speed=dv.DEFAULT_SPEED, radius=dv.DEFAULT_RADIUS, noise=dv.DEFAULT_NOISE, numberOfParticles=dv.DEFAULT_NUM_PARTICLES, k=dv.DEFAULT_K_NEIGHBOURS, showExample=dv.DEFAULT_SHOW_EXAMPLE_PARTICLE, numCells=dv.DEFAULT_NUM_CELLS, switchType=None, switchValues=(None, None), switchDifferenceThreshold=0.01):
         """
         Initialize the model with all its parameters
 
@@ -39,6 +39,7 @@ class VicsekWithNeighbourSelection:
         self.numCells = numCells
         self.switchType = switchType
         self.orderSwitchValue, self.disorderSwitchValue = switchValues
+        self.switchDifferenceThreshold = switchDifferenceThreshold
 
     def getParameterSummary(self, asString=False):
         """
@@ -146,10 +147,13 @@ class VicsekWithNeighbourSelection:
         self.neighbouringCells = self.determineNeighbouringCells()
 
         cellToParticleDistribution, particleToCellDistribution = self.createCellDistributions(positions)
+
+        localOrders = self.__initialiseLocalOrders(positions, orientations, cellToParticleDistribution, particleToCellDistribution)
         
         # for every time step, the positions, orientations, switchTypeValue and colours for each particle are updated and added to the histories
         for it in range(numIntervals):
-            if t % 1000 == 0:
+            self.t = it
+            if t % 100 == 0:
                 print(f"t={t}/{numIntervals-1}")
 
             for i in range(len(positions)):
@@ -159,7 +163,9 @@ class VicsekWithNeighbourSelection:
             
             neighbourCandidates = self.__findNeighbours(positions, cellToParticleDistribution, particleToCellDistribution)
 
-            switchTypeValues = self.computeSwitchTypeValues(switchTypeValues, orientations, neighbourCandidates)
+            previousLocalOrders = localOrders
+            localOrders = self.__getLocalOrders(orientations, neighbourCandidates)
+            switchTypeValues = self.computeSwitchTypeValues(previousSwitchTypeValues=switchTypeValues, neighbours=neighbourCandidates, localOrders=localOrders, previousLocalOrders=previousLocalOrders)
 
             colours = self.__colourGroups(switchTypeValues)
 
@@ -303,7 +309,6 @@ class VicsekWithNeighbourSelection:
                 switchTypeValues = numberOfParticles * [self.neighbourSelectionMode]
             case SwitchType.K:
                 switchTypeValues = numberOfParticles * [self.k]
-        
         return positions, orientations, switchTypeValues
     
         
@@ -367,23 +372,45 @@ class VicsekWithNeighbourSelection:
             neighbours.append(iNeighbours)
         return np.array(neighbours)
     
-    def computeSwitchTypeValues(self, previousSwitchTypeValues, orientations, neighbours):
+    """
+    def computeSwitchTypeValues(self, previousSwitchTypeValues, orientations, neighbours, previousLocalOrders):
         switchTypeValues = self.numberOfParticles * [None]
+        localOrders = self.numberOfParticles * [None]
         for i in range(len(orientations)):
-            neighbourOrientations = [orientations[neighbourIdx] for neighbourIdx in neighbours]
-            switchTypeValues[i] = self.__getSingleSwitchTypeValue(previousSwitchTypeValues[i], neighbourOrientations[i])
+            neighbourOrientations = [orientations[neighbourIdx] for neighbourIdx in neighbours[i]]
+            hasNeighbours = len(neighbourOrientations) > 1
+            localOrder = ServiceMetric.computeOrder(neighbourOrientations)
+            localOrders[i] = localOrder # preparation for next time step
+            switchTypeValues[i] = self.__getSingleSwitchTypeValue(previousSwitchTypeValues[i], hasNeighbours, previousLocalOrders[i], localOrder)
+            
+        return switchTypeValues, localOrders
+"""
+    def computeSwitchTypeValues(self, previousSwitchTypeValues, neighbours, localOrders, previousLocalOrders):
+        switchTypeValues = self.numberOfParticles * [None]
+        for i in range(self.numberOfParticles):
+            hasNeighbours = len(neighbours[i]) > 1
+            switchTypeValues[i] = self.__getSingleSwitchTypeValue(previousSwitchTypeValues[i], hasNeighbours, previousLocalOrders[i], localOrders[i])
         return switchTypeValues
-
+            
+    def __getSingleSwitchTypeValue(self, previousValue, hasNeighbours, localOrder, previousLocalOrder):
+        if hasNeighbours == True and np.absolute(localOrder-previousLocalOrder) >= self.switchDifferenceThreshold:
+            if localOrder > previousLocalOrder:
+                return self.orderSwitchValue
+            elif localOrder < previousLocalOrder:
+                return self.disorderSwitchValue
+        return previousValue
     
-    def __getSingleSwitchTypeValue(self, previousValue, neighbourOrientations):
-        # back and forth implementation
-        localOrder = ServiceMetric.computeOrder(neighbourOrientations)
-        if localOrder > 0.95:
-            return self.disorderSwitchValue
-        elif localOrder < 0.5:
-            return self.orderSwitchValue
-        else:
-            return previousValue
+    def __getLocalOrders(self, orientations, neighbours):
+        localOrders = self.numberOfParticles * [None]
+        for i in range(len(orientations)):
+            neighbourOrientations = [orientations[neighbourIdx] for neighbourIdx in neighbours[i]]
+            localOrder = ServiceMetric.computeOrder(neighbourOrientations)
+            localOrders[i] = localOrder
+        return localOrders
+    
+    def __initialiseLocalOrders(self, positions, orientations, cellToParticleDistribution, particleToCellDistribution):
+        neighbourCandidates = self.__findNeighbours(positions, cellToParticleDistribution, particleToCellDistribution)
+        return self.__getLocalOrders(orientations, neighbourCandidates)
 
     def __colourGroups(self, switchTypeValues):
         # blue for order, red for disorder
