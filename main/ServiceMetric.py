@@ -43,8 +43,8 @@ def evaluateSingleTimestep(positions, orientations, metric, radius=None, thresho
             return clusters
      
 def computeOrder(orientations):
-    sumOrientation = orientations[0]
-    for j in range(1, len(orientations)):
+    sumOrientation = [0,0]
+    for j in range(len(orientations)):
         sumOrientation += orientations[j]
     return np.sqrt(sumOrientation[0]**2 + sumOrientation[1]**2) / len(orientations)
 
