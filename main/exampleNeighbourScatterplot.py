@@ -3,6 +3,8 @@ import ServiceSavedModel
 import ServicePreparation
 import ServiceGeneral
 from EnumNeighbourSelectionMode import NeighbourSelectionMode
+from EnumMetrics import Metrics
+import EvaluatorMultiAvgComp
 import time
 
 index = ["distance", "orientation difference"]
@@ -52,6 +54,14 @@ modes = [NeighbourSelectionMode.RANDOM,
          NeighbourSelectionMode.HIGHEST_ORIENTATION_DIFFERENCE,
          NeighbourSelectionMode.ALL]
 
+orderModes = [NeighbourSelectionMode.RANDOM,
+              NeighbourSelectionMode.FARTHEST,
+              NeighbourSelectionMode.HIGHEST_ORIENTATION_DIFFERENCE,
+              NeighbourSelectionMode.ALL]
+
+disorderModes = [NeighbourSelectionMode.NEAREST,
+                 NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE]
+
 densities = [0.01, 0.09]
 
 radius = 10
@@ -61,16 +71,90 @@ domainSize = (100,100)
 noisePercentage = 1
 k=1
 
-for density in densities:
-    n = ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize)
+metric = Metrics.ORDER
 
-    for mode in [NeighbourSelectionMode.NEAREST']:
-        ServiceGeneral.logWithTime(f"Starting mode={mode.name}, density={density}")
-        modelParams, simulationData, colours = ServiceSavedModel.loadModel(f"D:/vicsek-data/density-vs-noise/model_density-vs-noise_{mode.name}_tmax={tmax}_density={density}_n={n}_k={k}_noisePercentage={noisePercentage}%_radius=10_1.json")
-        timesteps, positions, orientations = simulationData
-        ServiceImages.createNeighbourScatterplotVideoMulti(positions=positions, orientations=orientations,
-                                                    startTime=0, endTime=tmax,  
-                                                    title=f"{mode.name} - k={k}, n={n}, density={density},noise={noisePercentage}%",
-                                                    numberOfExampleParticles=5, selectRandomly=True,
-                                                    radius=radius, ylim=(-1.5, 1.5),
-                                                    savePath=f"scatter_from-order_tmax={tmax}_mode={mode.name}_density={density}_noise={noisePercentage}_1.mp4")
+for density in [0.09]:
+    for i in range(1,6):
+        n = ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize)
+
+        for mode in modes:
+            ServiceGeneral.logWithTime(f"Starting mode={mode.name}, density={density}, i={i}")
+            modelParams, simulationData, colours = ServiceSavedModel.loadModel(f"D:/vicsek-data/density-vs-noise/model_density-vs-noise_{mode.name}_tmax={tmax}_density={density}_n={n}_k={k}_noisePercentage={noisePercentage}%_radius=10_{i}.json")
+            timesteps, positions, orientations = simulationData
+            
+            ServiceImages.createNeighbourScatterplotVideoMulti(positions=positions, orientations=orientations,
+                                                        startTime=0, endTime=tmax,  
+                                                        title=f"{mode.name} - k={k}, n={n}, density={density},noise={noisePercentage}%",
+                                                        numberOfExampleParticles=7, selectRandomly=True,
+                                                        radius=radius, ylim=(-1.5, 1.5),
+                                                        savePath=f"scatter_from-order_tmax={tmax}_mode={mode.name}_density={density}_noise={noisePercentage}_{i}.mp4")
+            
+            evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp([[modelParams]], metric, [[simulationData]], evaluationTimestepInterval=100)
+            evaluator.evaluateAndVisualize(labels=[mode.name], xLabel="density", yLabel="noise", savePath=f"order_from-order_tmax={tmax}_mode={mode.name}_density={density}-noise={noisePercentage}_{i}.svg")
+
+for density in densities:
+    for i in range(1,6):
+        n = ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize)
+
+        for mode in modes:
+            ServiceGeneral.logWithTime(f"Random start. Starting mode={mode.name}, density={density}, i={i}")
+            modelParams, simulationData, colours = ServiceSavedModel.loadModel(f"D:/vicsek-data/density-vs-noise_random-start/model_density-vs-noise_random-start_{mode.name}_tmax={tmax}_density={density}_n={n}_k={k}_noisePercentage={noisePercentage}%_radius=10_{i}.json")
+            timesteps, positions, orientations = simulationData
+            
+            ServiceImages.createNeighbourScatterplotVideoMulti(positions=positions, orientations=orientations,
+                                                        startTime=0, endTime=tmax,  
+                                                        title=f"{mode.name} - k={k}, n={n}, density={density},noise={noisePercentage}%",
+                                                        numberOfExampleParticles=7, selectRandomly=True,
+                                                        radius=radius, ylim=(-1.5, 1.5),
+                                                        savePath=f"scatter_from-random_tmax={tmax}_mode={mode.name}_density={density}_noise={noisePercentage}_{i}.mp4")
+            
+            evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp([[modelParams]], metric, [[simulationData]], evaluationTimestepInterval=100)
+            evaluator.evaluateAndVisualize(labels=[mode.name], xLabel="density", yLabel="noise", savePath=f"order_from-random_tmax={tmax}_mode={mode.name}_density={density}-noise={noisePercentage}_{i}.svg")
+
+tmax = 5000
+for density in densities:
+    for i in range(1,6):
+        n = ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize)
+
+        for orderMode in orderModes:
+            for disorderMode in disorderModes:
+                ServiceGeneral.logWithTime(f"mode switching. order mode={orderMode.name}, disorder mode={disorderMode.name}. density={density}, i={i}")
+                modelParams, simulationData, colours = ServiceSavedModel.loadModel(f"D:/vicsek-data/switching/switch_switchType=NEIGHBOUR_SELECTION_MODE_switches=0-{orderMode.name}_1000-{disorderMode.name}_4000-{orderMode.name}_tmax={tmax}_n={n}_k={k}_noise={noisePercentage}%_{i}.json")
+                timesteps, positions, orientations = simulationData
+                
+                ServiceImages.createNeighbourScatterplotVideoMulti(positions=positions, orientations=orientations,
+                                                            startTime=0, endTime=tmax,  
+                                                            title=f"{mode.name} - k={k}, n={n}, density={density},noise={noisePercentage}%",
+                                                            numberOfExampleParticles=7, selectRandomly=True,
+                                                            radius=radius, ylim=(-1.5, 1.5),
+                                                            savePath=f"scatter_mode-switching_tmax={tmax}_ordermode={orderMode.name}_disordermode={disorderMode.name}_density={density}_noise={noisePercentage}_{i}.mp4")
+                
+                evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp([[modelParams]], metric, [[simulationData]], evaluationTimestepInterval=100)
+                evaluator.evaluateAndVisualize(labels=[mode.name], xLabel="density", yLabel="noise", savePath=f"order_mode-switching_tmax={tmax}_ordermode={orderMode.name}_disordermode={disorderMode.name}_density={density}-noise={noisePercentage}_{i}.svg")
+
+
+for density in densities:
+    for i in range(1,6):
+        n = ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize)
+
+        orderK = 5
+        disorderK = 1
+        for mode in disorderModes:
+            ServiceGeneral.logWithTime(f"k switching. mode={mode.name}. density={density}, i={i}")
+            modelParams, simulationData, colours = ServiceSavedModel.loadModel(f"D:/vicsek-data/kswitching/switch_switchType=K_switches=0-{orderK}_1000-{disorderK}_4000-{orderK}_tmax={tmax}_n={n}_density={density}_mode={mode.name}_noise=%{noisePercentage}_{i}.json")
+            timesteps, positions, orientations = simulationData 
+            
+            ServiceImages.createNeighbourScatterplotVideoMulti(positions=positions, orientations=orientations,
+                                                        startTime=0, endTime=tmax,  
+                                                        title=f"{mode.name} - k={k}, n={n}, density={density},noise={noisePercentage}%",
+                                                        numberOfExampleParticles=7, selectRandomly=True,
+                                                        radius=radius, ylim=(-1.5, 1.5),
+                                                        savePath=f"scatter_kswitching_tmax={tmax}_mode={mode.name}_density={density}_noise={noisePercentage}_{i}.mp4")
+            
+            evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp([[modelParams]], metric, [[simulationData]], evaluationTimestepInterval=100)
+            evaluator.evaluateAndVisualize(labels=[mode.name], xLabel="density", yLabel="noise", savePath=f"order_kswitching_tmax={tmax}_mode={mode.name}_density={density}-noise={noisePercentage}_{i}.svg")
+
+
+
+
+

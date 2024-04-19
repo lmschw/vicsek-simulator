@@ -90,7 +90,7 @@ class EvaluatorMultiAvgComp(object):
             plt.title(f"""Model comparison: {subtitle}""")
         if savePath != None:
             plt.savefig(savePath)
-        plt.show()
+        #plt.show()
 
     
     def evaluateAndVisualize(self, labels, xLabel=None, yLabel=None, subtitle=None, savePath=None):
