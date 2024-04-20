@@ -51,7 +51,7 @@ density = 0.01
 radius = 10
 noisePercentage = 1
 k = 1
-neighbourSelectionMode = NeighbourSelectionMode.NEAREST
+#neighbourSelectionMode = NeighbourSelectionMode.NEAREST
 tmax = 5000
 i = 1
 
@@ -64,32 +64,94 @@ switches = [[0, orderValue],
             [1000, disorderValue], 
             [4000, orderValue]]
 """
+# TODO LOD & ALL for random start
 
-for i in range(1,11):
-    for orderThreshold in []:
-        startRun = time.time()
-        ServiceGeneral.logWithTime(f"Start i={i}, noiseP={noisePercentage}, density={density}, neighbourSelectionMode={neighbourSelectionMode.name}, orderVal={orderValue}, disorderVal={disorderValue}, threshold={orderThreshold}")
-        domainSize = baseDomain
-        n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
-        noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(noisePercentage)
+"""
+# ORDERED START
+for neighbourSelectionMode in [NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE,
+                               NeighbourSelectionMode.ALL]:
+    for i in range(1, 11):
+        for startValue in [orderValue, disorderValue]:
+            for orderThreshold in [0,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]:
+                startRun = time.time()
+                ServiceGeneral.logWithTime(f"Start ordered start i={i}, noiseP={noisePercentage}, density={density}, neighbourSelectionMode={neighbourSelectionMode.name}, orderVal={orderValue}, disorderVal={disorderValue}, threshold={orderThreshold}, startValue={startValue}")
+                domainSize = baseDomain
+                n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
+                noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(noisePercentage)
 
-        #initialState = ServicePreparation.createOrderedInitialDistributionEquidistanced(domainSize, n)
-        simulator = VicsekWithNeighbourSelectionSwitchingCellBasedIndividuals.VicsekWithNeighbourSelection(neighbourSelectionMode, 
-                                                                        domainSize=domainSize, 
-                                                                        numberOfParticles=n, 
-                                                                        k=orderValue, 
-                                                                        noise=noise, 
-                                                                        radius=radius,
-                                                                        switchType=switchType,
-                                                                        switchValues=(orderValue, disorderValue))
-        simulationData, colours, switchValues = simulator.simulate(tmax=tmax)
+                initialState = ServicePreparation.createOrderedInitialDistributionEquidistancedIndividual(startValue, domainSize, n)
+                simulator = VicsekWithNeighbourSelectionSwitchingCellBasedIndividuals.VicsekWithNeighbourSelection(neighbourSelectionMode, 
+                                                                                domainSize=domainSize, 
+                                                                                numberOfParticles=n, 
+                                                                                k=startValue, 
+                                                                                noise=noise, 
+                                                                                radius=radius,
+                                                                                switchType=switchType,
+                                                                                switchValues=(orderValue, disorderValue))
+                simulationData, colours, switchValues = simulator.simulate(tmax=tmax, initialState=initialState)
 
-        # Save model values for future use
-        ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"switch_individual_switchType={switchType.name}_orderVal={orderValue}_disorderVal={disorderValue}_tmax={tmax}_n={n}_density={density}_mode={neighbourSelectionMode.name}_noise={noisePercentage}%_orderthreshold={orderThreshold}_{i}.json", modelParams=simulator.getParameterSummary())
-        endRun = time.time()
-        ServiceGeneral.logWithTime(f"Completed i={i}, noiseP={noisePercentage}, density={density},  neighbourSelectionMode={neighbourSelectionMode.name}, orderK={orderValue}, disorderK={disorderValue} in {formatTime(endRun-startRun)}")
+                # Save model values for future use
+                ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"switch_individual_ordered-start_switchType={switchType.name}_orderVal={orderValue}_disorderVal={disorderValue}_startVal={startValue}_tmax={tmax}_n={n}_density={density}_mode={neighbourSelectionMode.name}_noise={noisePercentage}%_orderthreshold={orderThreshold}_{i}.json", modelParams=simulator.getParameterSummary())
+                endRun = time.time()
+                ServiceGeneral.logWithTime(f"Completed ordered start i={i}, noiseP={noisePercentage}, density={density},  neighbourSelectionMode={neighbourSelectionMode.name}, orderK={orderValue}, disorderK={disorderValue}, threshold={orderThreshold}, startValue={startValue} in {formatTime(endRun-startRun)}")
+"""
+# RANDOM START
+for neighbourSelectionMode in [NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE,
+                               NeighbourSelectionMode.ALL]:
+    for i in range(1, 11):
+        for startValue in [orderValue, disorderValue]:
+            for orderThreshold in [0,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]:
+                startRun = time.time()
+                ServiceGeneral.logWithTime(f"Start random start i={i}, noiseP={noisePercentage}, density={density}, neighbourSelectionMode={neighbourSelectionMode.name}, orderVal={orderValue}, disorderVal={disorderValue}, threshold={orderThreshold}, startValue={startValue}")
+                domainSize = baseDomain
+                n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
+                noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(noisePercentage)
 
+                #initialState = ServicePreparation.createOrderedInitialDistributionEquidistanced(domainSize, n)
+                simulator = VicsekWithNeighbourSelectionSwitchingCellBasedIndividuals.VicsekWithNeighbourSelection(neighbourSelectionMode, 
+                                                                                domainSize=domainSize, 
+                                                                                numberOfParticles=n, 
+                                                                                k=startValue, 
+                                                                                noise=noise, 
+                                                                                radius=radius,
+                                                                                switchType=switchType,
+                                                                                switchValues=(orderValue, disorderValue))
+                simulationData, colours, switchValues = simulator.simulate(tmax=tmax)
 
+                # Save model values for future use
+                ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"switch_individual_random-start_switchType={switchType.name}_orderVal={orderValue}_disorderVal={disorderValue}_startVal={startValue}_tmax={tmax}_n={n}_density={density}_mode={neighbourSelectionMode.name}_noise={noisePercentage}%_orderthreshold={orderThreshold}_{i}.json", modelParams=simulator.getParameterSummary())
+                endRun = time.time()
+                ServiceGeneral.logWithTime(f"Completed random start i={i}, noiseP={noisePercentage}, density={density},  neighbourSelectionMode={neighbourSelectionMode.name}, orderK={orderValue}, disorderK={disorderValue}, threshold={orderThreshold}, startValue={startValue} in {formatTime(endRun-startRun)}")
+
+"""
+k = 1
+for orderValue in orderStates:
+    for disorderValue in disorderStates:
+        for i in range(1, 11):
+            for startValue in [orderValue, disorderValue]:
+                for orderThreshold in [0,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]:
+                    startRun = time.time()
+                    ServiceGeneral.logWithTime(f"Start i={i}, noiseP={noisePercentage}, density={density}, neighbourSelectionMode={neighbourSelectionMode.name}, orderVal={orderValue.name}, disorderVal={disorderValue.name}, threshold={orderThreshold}, startValue={startValue}")
+                    domainSize = baseDomain
+                    n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
+                    noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(noisePercentage)
+
+                    initialState = ServicePreparation.createOrderedInitialDistributionEquidistanced(domainSize, n)
+                    simulator = VicsekWithNeighbourSelectionSwitchingCellBasedIndividuals.VicsekWithNeighbourSelection(startValue, 
+                                                                                    domainSize=domainSize, 
+                                                                                    numberOfParticles=n, 
+                                                                                    k=k, 
+                                                                                    noise=noise, 
+                                                                                    radius=radius,
+                                                                                    switchType=switchType,
+                                                                                    switchValues=(orderValue, disorderValue))
+                    simulationData, colours, switchValues = simulator.simulate(tmax=tmax)
+
+                    # Save model values for future use
+                    ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"switch_individual_ordered-start_switchType={switchType.name}_orderVal={orderValue.name}_disorderVal={disorderValue.name}_startVal={startValue.name}_tmax={tmax}_n={n}_density={density}_k={k}_noise={noisePercentage}%_orderthreshold={orderThreshold}_{i}.json", modelParams=simulator.getParameterSummary())
+                    endRun = time.time()
+                    ServiceGeneral.logWithTime(f"Completed i={i}, noiseP={noisePercentage}, density={density}, orderValue={orderValue.name}, disorderValue={disorderValue.name}, threshold={orderThreshold}, startValue={startValue.name} in {formatTime(endRun-startRun)}")
+"""
 """
 startTotal = time.time()
 for density in densities:

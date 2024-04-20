@@ -153,7 +153,7 @@ class VicsekWithNeighbourSelection:
         # for every time step, the positions, orientations, switchTypeValue and colours for each particle are updated and added to the histories
         for it in range(numIntervals):
             self.t = it
-            if t % 100 == 0:
+            if t % 1000 == 0:
                 print(f"t={t}/{numIntervals-1}")
 
             for i in range(len(positions)):

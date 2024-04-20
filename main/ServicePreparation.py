@@ -51,6 +51,11 @@ def getNoiseAmplitudeValueForPercentage(percentage):
     """
     return 2 * np.pi * (percentage/100)
 
+def createOrderedInitialDistributionEquidistancedIndividual(startSwitchTypeValue, domainSize, numberOfParticles, angleX=None, angleY=None):
+    positions, orientations = createOrderedInitialDistributionEquidistanced(domainSize, numberOfParticles, angleX, angleY)
+    switchTypeValues = numberOfParticles * [startSwitchTypeValue]
+    return positions, orientations, switchTypeValues
+
 def createOrderedInitialDistributionEquidistanced(domainSize, numberOfParticles, angleX=None, angleY=None):
     """
     Creates an ordered, equidistanced initial distribution of particles in a domain. 
