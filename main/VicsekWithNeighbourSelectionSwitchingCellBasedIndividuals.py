@@ -11,7 +11,7 @@ import ServiceMetric
 
 class VicsekWithNeighbourSelection:
 
-    def __init__(self, neighbourSelectionModel, domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, speed=dv.DEFAULT_SPEED, radius=dv.DEFAULT_RADIUS, noise=dv.DEFAULT_NOISE, numberOfParticles=dv.DEFAULT_NUM_PARTICLES, k=dv.DEFAULT_K_NEIGHBOURS, showExample=dv.DEFAULT_SHOW_EXAMPLE_PARTICLE, numCells=dv.DEFAULT_NUM_CELLS, switchType=None, switchValues=(None, None), switchDifferenceThreshold=0.01):
+    def __init__(self, neighbourSelectionModel, domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, speed=dv.DEFAULT_SPEED, radius=dv.DEFAULT_RADIUS, noise=dv.DEFAULT_NOISE, numberOfParticles=dv.DEFAULT_NUM_PARTICLES, k=dv.DEFAULT_K_NEIGHBOURS, showExample=dv.DEFAULT_SHOW_EXAMPLE_PARTICLE, numCells=dv.DEFAULT_NUM_CELLS, switchType=None, switchValues=(None, None), switchDifferenceThreshold=0.1, stimuli=[]):
         """
         Initialize the model with all its parameters
 
@@ -40,6 +40,7 @@ class VicsekWithNeighbourSelection:
         self.switchType = switchType
         self.orderSwitchValue, self.disorderSwitchValue = switchValues
         self.switchDifferenceThreshold = switchDifferenceThreshold
+        self.stimuli = stimuli
 
     def getParameterSummary(self, asString=False):
         """
@@ -99,7 +100,7 @@ class VicsekWithNeighbourSelection:
         """
         return np.random.normal(scale=self.noise, size=(self.numberOfParticles, len(self.domainSize)))
 
-    def simulate(self, initialState=(None, None, None), dt=None, tmax=None):
+    def simulate(self, initialState=(None, None, None), dt=None, tmax=None, events=None):
         """
         Runs the simulation experiment.
         First the parameters are computed if they are not passed. Then the positions, orientations and colours are computed for each particle at each time step.
@@ -162,6 +163,11 @@ class VicsekWithNeighbourSelection:
                 positions[i] += -self.domainSize*np.floor(positions[i]/self.domainSize)
             
             neighbourCandidates = self.__findNeighbours(positions, cellToParticleDistribution, particleToCellDistribution)
+
+            # check if any events take effect at this timestep before anything except the positions is updates
+            if events != None:
+                for event in events:
+                    orientations = event.check(self.numberOfParticles, it, positions, orientations, self.cells, self.neighbouringCells, cellToParticleDistribution)
 
             previousLocalOrders = localOrders
             localOrders = self.__getLocalOrders(orientations, neighbourCandidates)
