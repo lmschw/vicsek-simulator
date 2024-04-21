@@ -19,6 +19,20 @@ xOffsetsByNCol = {1: 0, 2: -0.5, 3: -0.8, 4: -1.5, 5: -2.2, 6: -3}
 
 
 def createMultiPlotFromImages(title, nRows, nCols, rowLabels, colLabels, imgPaths):
+    """
+    Creates a plot with multiple subplots from pre-existing images.
+
+    Params:
+        - title (string): the title of the overall plot
+        - nRows (int): the number of rows of subplots
+        - nCols (int): the number of columns of subplots
+        - rowLabels (array of strings): the labels for the rows
+        - colLabels (array of strings): the labels for the columns
+        - imgPaths (array of strings): the paths for all pre-existing images to be included
+
+    Returns:
+        Nothing.
+    """
     if len(imgPaths) != (nRows * nCols):
         print("ERROR: wrong number of image paths supplied")
 
@@ -38,6 +52,26 @@ def createMultiPlotFromImages(title, nRows, nCols, rowLabels, colLabels, imgPath
     plt.show()
 
 def createMultiPlotFromScratch(xLabels, yLabels, data, index, title=None, xAxisLabel=None, yAxisLabel=None, savePath=None, xlim =(0,1000), ylim=None, legendRows=1):
+    """
+    Creates a plot with multiple subplots from data.
+
+    Params:
+        - xLabels (array of strings): the labels for the x-axis
+        - yLabels (array of strings): the labels for the y-axis
+        - data (dictionary with keys "x-y"): the data to be visualised as line plots
+        - index (array of strings): the index of the data
+        - title (string) [optional]: the title of the overall plot
+        - xAxisLabel (string) [optional]: the label of the x-axis of the overall plot
+        - yAxisLabel (string) [optional]: the label of the y-axis of the overall plot
+        - savePath (string) [optional]: the path of the file where the resulting plot should be saved
+        - xlim (tuple: (min, max)) [optional]: the min and max of values on the x-axis for every subplot
+        - ylim (tuple: (min, max)) [optional]: the min and max of values on the y-axis for every subplot
+        - legendRows (int) [optional]: the number of rows for the legend
+
+    Returns:
+        Nothing.
+    """
+    
     fontsize = 8
     nRows = len(yLabels)
     nCols = len(xLabels)
@@ -90,6 +124,25 @@ def createMultiPlotFromScratch(xLabels, yLabels, data, index, title=None, xAxisL
 
 # SCATTERPLOT OF NEIGHBOURS
 def createNeighbourScatterplot(positions, orientations, numberOfExampleParticles, index, title=None, selectRandomly=True, numberOfSteps=10, steps=None, radius=10, ylim=(-1.1,1.1), savePath=None):
+    """
+    Creates a plot containing a scatterplot of the neighbours of every selected example particle at regular intervals or at the specified steps.
+
+    Params:
+        - positions (array of arrays of [x,y]-coordinates): The position of every particle at every timestep
+        - orientations (array of arrays of [u,v]-coordinates): The orientation of every particle at every timestep
+        - numberOfExampleParticles (int): the number of particles to be displayed
+        - index (array of strings): the index for the data
+        - title (string) [optional]: the title for the overall plot
+        - selectRandomly (boolean) [optional]: should the example particles be selected randomly or should the first x particles be used
+        - numberOfSteps (int) [optional]: the number of evaluation points within the total duration
+        - steps (array of ints) [optional]: the time steps at which the data should be evaluated
+        - radius (int) [optional]: the perception radius of the particles
+        - ylim (tuple: (min, max)) [optional]: the minimum and maximum value for the y-axis of every subplot
+        - savePath (string) [optional]: the path of the file where the resulting plot should be saved
+    
+    Returns:
+        Nothing.
+    """
     if selectRandomly == True:
         selectedIndices = random.sample(range(len(positions[0])), numberOfExampleParticles)
     else:
@@ -158,7 +211,22 @@ def createNeighbourScatterplot(positions, orientations, numberOfExampleParticles
     plt.show()
 
 def createNeighbourScatterplotVideo(positions, orientations, startTime=0, endTime=None, radius=10, ylim=(-1.1,1.1), savePath=None):
+    # TODO allow specifying which particle should be shown/selectRandomly
+    """
+    Creates a video of the distance-orientation difference scatterplot for the neighbours of a selected example particle.
+
+    Params:
+        - positions (array of arrays of [x,y]-coordinates): The position of every particle at every timestep
+        - orientations (array of arrays of [u,v]-coordinates): The orientation of every particle at every timestep
+        - startTime (int) [optional]: the first time step to be considered (inclusive)
+        - endTime (int) [optional]: the last time step to be considered (inclusive)
+        - radius (int) [optional]: the perception radius of the particles
+        - ylim (tuple: (min, max)) [optional]: the minimum and maximum value for the y-axis of every subplot
+        - savePath (string) [optional]: the path of the file where the resulting plot should be saved
     
+    Returns:
+        Nothing.
+    """
     if endTime == None:
         endTime = len(positions)
     else:
@@ -195,6 +263,25 @@ def createNeighbourScatterplotVideo(positions, orientations, startTime=0, endTim
     preparedAnimator.showAnimation()
 
 def createNeighbourScatterplotVideoMulti(positions, orientations, startTime=0, endTime=None, numberOfExampleParticles=5, selectRandomly=True, title=None, radius=10, ylim=(-1.5,1.5), savePath=None):
+    """
+    Creates a video of the distance-orientation difference scatterplot for the neighbours of a selected example particle.
+
+    Params:
+        - positions (array of arrays of [x,y]-coordinates): The position of every particle at every timestep
+        - orientations (array of arrays of [u,v]-coordinates): The orientation of every particle at every timestep
+        - startTime (int) [optional]: the first time step to be considered (inclusive)
+        - endTime (int) [optional]: the last time step to be considered (inclusive)
+        - numberOfExampleParticles (int): the number of particles to be displayed
+        - selectRandomly (boolean) [optional]: should the example particles be selected randomly or should the first x particles be used
+        - title (string) [optional]: the title for the overall plot
+        - radius (int) [optional]: the perception radius of the particles
+        - ylim (tuple: (min, max)) [optional]: the minimum and maximum value for the y-axis of every subplot
+        - savePath (string) [optional]: the path of the file where the resulting plot should be saved
+    
+    Returns:
+        Nothing.
+    """
+    
     if selectRandomly == True:
         selectedIndices = random.sample(range(len(positions[0])), numberOfExampleParticles)
     else:

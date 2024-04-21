@@ -1,5 +1,8 @@
 from enum import Enum
 
+"""
+Contains the evaluation metric options.
+"""
 class Metrics(str, Enum):
     ORDER = "ORDER",
     CLUSTER_NUMBER = "CLUSTER_NUMBER",

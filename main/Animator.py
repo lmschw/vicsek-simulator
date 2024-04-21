@@ -3,8 +3,12 @@ import matplotlib.pyplot as plt
 
 import DefaultValues as dv
 
-class Animator(object):
 
+
+class Animator(object):
+    """
+    Animates the quiver plot for the Vicsek data
+    """
     def prepareAnimation(self, matplotlibFigure, frames=100, frameInterval = 10):
         """
         Prepares the 2D animator object for animation.
@@ -82,6 +86,7 @@ class Animator(object):
         animation = self._getAnimation()
         animation.save(filename=filename, writer="ffmpeg")
         print("Saving completed.")
+        #plt.close()
         return self
     
     def _getAnimation(self):

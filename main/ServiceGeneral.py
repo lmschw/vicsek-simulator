@@ -1,11 +1,32 @@
 from datetime import datetime
 
+"""
+Contains methods that can be used anywhere.
+"""
+
 def logWithTime(text):
+    """
+    Prints the specified text prefaced with the current date and time.
+
+    Params:
+        - text (string): the text to be printed
+
+    Returns:
+        Nothing.
+    """
     dateTime = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
     print(f"{dateTime}: {text}")
 
-
 def formatTime(timeInSecs):
+    """
+    Formats seconds as hours, minutes, seconds.
+
+    Params:
+        - timeInSecs (float): the number of seconds
+    
+    Returns:
+        A formatted string specifying the number of hours, minutes and seconds.
+    """
     mins = int(timeInSecs / 60)
     secs = timeInSecs % 60
 

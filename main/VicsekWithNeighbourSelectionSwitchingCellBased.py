@@ -191,6 +191,12 @@ class VicsekWithNeighbourSelection:
     
 
     def initialiseCells(self):
+        """
+        Initialises the cell grid for the current domain.
+
+        Returns:
+            The cell grid as an array of arrays [[(minX, minY), (maxX, maxY)]].
+        """
         domainArea = self.domainSize[0] * self.domainSize[1]
         pointArea = domainArea / self.numCells
         length = np.sqrt(pointArea)
@@ -203,6 +209,12 @@ class VicsekWithNeighbourSelection:
         return cells
     
     def determineNeighbouringCells(self):
+        """
+        Creates a dictionary of the neighbouring cells of every cell in the cell grid.
+
+        Returns:
+            A dictionary with an entry for every cell with an array of the indices of its neighbours as its value.
+        """
         neighbouringCells = {}
         for cellIdx, _ in enumerate(self.cells):
             neighbours = [cellIdx] # always check the particle's own cell
@@ -233,9 +245,16 @@ class VicsekWithNeighbourSelection:
             neighbouringCells[cellIdx] = neighbours    
         return neighbouringCells
 
-
-    
     def createCellDistributions(self, positions):
+        """
+        Initialises the distribution of particles within the cell grid.
+
+        Params:
+            - positions (array of (x,y)-coordinates): the initial positions of all particles within the domain
+
+        Returns:
+            Two dictionaries: the particles for every cell and the cell for every particle.
+        """
         cellToParticleDistribution = {cellIdx: [] for cellIdx in range(len(self.cells))}
         particleToCellDistribution = {}
         for i in range(len(positions)):
@@ -248,6 +267,18 @@ class VicsekWithNeighbourSelection:
         return cellToParticleDistribution, particleToCellDistribution
 
     def updateCellForParticle(self, i, positions, cellToParticleDistribution, particleToCellDistribution):
+        """
+        Update the mapping of the particle to the cell and vice versa.
+
+        Params:
+            - i (int): the index of the current particle
+            - positions (array of (x,y)-coordinates): the current positions of all particles
+            - cellToParticleDistribution (dictionary cellIdx: [particleIndices]): the distribution of particles for each cell
+            - particleToCellDistribution (dictionary particleIdx: cellidx): the cell in which any given particle is currently situated
+
+        Returns:
+            The two updated dictionaries cellToParticleDistribution and particleToCellDistribution.
+        """
         oldCellIdx = particleToCellDistribution[i]
         currentCell = self.cells[oldCellIdx]
         posX = positions[i][0]
@@ -317,6 +348,17 @@ class VicsekWithNeighbourSelection:
     
         
     def __findNeighbours(self, positions, cellToParticleDistribution, particleToCellDistribution):
+        """
+        Finds all the neighbours for every particle.
+
+        Params:
+            - positions (array of (x,y)-coordinates): the current positions of all particles
+            - cellToParticleDistribution (dictionary cellIdx: [particleIndices]): the distribution of particles for each cell
+            - particleToCellDistribution (dictionary particleIdx: cellidx): the cell in which any given particle is currently situated
+
+        Returns:
+            An array of arrays of the indices all neighbours for every particle.
+        """
         neighbourCandidates = []
         for part, cell in particleToCellDistribution.items():
             cellsToCheck = self.neighbouringCells.get(cell)

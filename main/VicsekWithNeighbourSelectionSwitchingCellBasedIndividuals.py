@@ -189,6 +189,12 @@ class VicsekWithNeighbourSelection:
     
 
     def initialiseCells(self):
+        """
+        Initialises the cell grid for the current domain.
+
+        Returns:
+            The cell grid as an array of arrays [[(minX, minY), (maxX, maxY)]].
+        """
         domainArea = self.domainSize[0] * self.domainSize[1]
         pointArea = domainArea / self.numCells
         length = np.sqrt(pointArea)
@@ -201,6 +207,12 @@ class VicsekWithNeighbourSelection:
         return cells
     
     def determineNeighbouringCells(self):
+        """
+        Creates a dictionary of the neighbouring cells of every cell in the cell grid.
+
+        Returns:
+            A dictionary with an entry for every cell with an array of the indices of its neighbours as its value.
+        """
         neighbouringCells = {}
         for cellIdx, _ in enumerate(self.cells):
             neighbours = [cellIdx] # always check the particle's own cell
@@ -230,10 +242,17 @@ class VicsekWithNeighbourSelection:
                 neighbours.append(cellIdx+self.cellDims[1])   
             neighbouringCells[cellIdx] = neighbours    
         return neighbouringCells
-
-
     
     def createCellDistributions(self, positions):
+        """
+        Initialises the distribution of particles within the cell grid.
+
+        Params:
+            - positions (array of (x,y)-coordinates): the initial positions of all particles within the domain
+
+        Returns:
+            Two dictionaries: the particles for every cell and the cell for every particle.
+        """
         cellToParticleDistribution = {cellIdx: [] for cellIdx in range(len(self.cells))}
         particleToCellDistribution = {}
         for i in range(len(positions)):
@@ -246,6 +265,18 @@ class VicsekWithNeighbourSelection:
         return cellToParticleDistribution, particleToCellDistribution
 
     def updateCellForParticle(self, i, positions, cellToParticleDistribution, particleToCellDistribution):
+        """
+        Update the mapping of the particle to the cell and vice versa.
+
+        Params:
+            - i (int): the index of the current particle
+            - positions (array of (x,y)-coordinates): the current positions of all particles
+            - cellToParticleDistribution (dictionary cellIdx: [particleIndices]): the distribution of particles for each cell
+            - particleToCellDistribution (dictionary particleIdx: cellidx): the cell in which any given particle is currently situated
+
+        Returns:
+            The two updated dictionaries cellToParticleDistribution and particleToCellDistribution.
+        """
         oldCellIdx = particleToCellDistribution[i]
         currentCell = self.cells[oldCellIdx]
         posX = positions[i][0]
@@ -319,6 +350,17 @@ class VicsekWithNeighbourSelection:
     
         
     def __findNeighbours(self, positions, cellToParticleDistribution, particleToCellDistribution):
+        """
+        Finds all the neighbours for every particle.
+
+        Params:
+            - positions (array of (x,y)-coordinates): the current positions of all particles
+            - cellToParticleDistribution (dictionary cellIdx: [particleIndices]): the distribution of particles for each cell
+            - particleToCellDistribution (dictionary particleIdx: cellidx): the cell in which any given particle is currently situated
+
+        Returns:
+            An array of arrays of the indices all neighbours for every particle.
+        """
         neighbourCandidates = []
         for part, cell in particleToCellDistribution.items():
             cellsToCheck = self.neighbouringCells.get(cell)
@@ -392,6 +434,18 @@ class VicsekWithNeighbourSelection:
         return switchTypeValues, localOrders
 """
     def computeSwitchTypeValues(self, previousSwitchTypeValues, neighbours, localOrders, previousLocalOrders):
+        """
+        Determines the selected switch type value for every particle at the current timestep.
+
+        Params:
+            - previousSwitchTypeValues (array): The values for the last time step
+            - neighbours (array of arrays): the neighbours of every particle
+            - localOrders (array of floats): the current local order as perceived by every particle, indexed by particle index
+            - previousLocalOrders (array of floats): the local order at the previous timestep as perceived by every particle, indexed by particle index
+
+        Returns:
+            An array with the switch type value selected for every particle at this timestep.
+        """
         switchTypeValues = self.numberOfParticles * [None]
         for i in range(self.numberOfParticles):
             hasNeighbours = len(neighbours[i]) > 1
@@ -399,6 +453,18 @@ class VicsekWithNeighbourSelection:
         return switchTypeValues
             
     def __getSingleSwitchTypeValue(self, previousValue, hasNeighbours, localOrder, previousLocalOrder):
+        """
+        Determines the switch type value for a single particle for the current timestep.
+
+        Params:
+            - previousValue (value of the switchType): the previous switch type value
+            - hasNeighbours (boolean): does the particle have any neighbours at this timestep
+            - localOrder (float): the current local order within the perception radius of the particle
+            - previousLocalOrder (float): the local order within the perception radius of the particle at the last timestep
+
+        Returns:
+            The updated switch type value for the current timestep.
+        """
         if hasNeighbours == True and np.absolute(localOrder-previousLocalOrder) >= self.switchDifferenceThreshold:
             if localOrder > previousLocalOrder:
                 return self.orderSwitchValue
@@ -407,6 +473,16 @@ class VicsekWithNeighbourSelection:
         return previousValue
     
     def __getLocalOrders(self, orientations, neighbours):
+        """
+        Computes the local order for every particle at the current time step.
+
+        Params:
+            - orientations (array of (u,v)-coordinates): the orientation of every particle at the current timestep
+            - neighbours (array of arrays of int): the neighbours of every particle at the current timestep
+
+        Returns:
+            An array containing the local order as perceived by every particle.
+        """
         localOrders = self.numberOfParticles * [None]
         for i in range(len(orientations)):
             neighbourOrientations = [orientations[neighbourIdx] for neighbourIdx in neighbours[i]]
@@ -415,10 +491,31 @@ class VicsekWithNeighbourSelection:
         return localOrders
     
     def __initialiseLocalOrders(self, positions, orientations, cellToParticleDistribution, particleToCellDistribution):
+        """
+        Computes the initial local order for every particle in the domain.
+
+        Params:
+            - positions (array of (x,y)-coordinates): the position of every particle at the current timestep
+            - orientations (array of (u,v)-coordinates): the orientation of every particle at the current timestep
+            - cellToParticleDistribution (dictionary cellIdx: [particleIndices]): the distribution of particles for each cell
+            - particleToCellDistribution (dictionary particleIdx: cellidx): the cell in which any given particle is currently situated
+
+        Returns:
+            An array containing the local order as perceived by every particle.
+        """
         neighbourCandidates = self.__findNeighbours(positions, cellToParticleDistribution, particleToCellDistribution)
         return self.__getLocalOrders(orientations, neighbourCandidates)
 
     def __colourGroups(self, switchTypeValues):
+        """
+        Sets the colour for every particle based on which switch type value it has selected.
+
+        Params:
+            - switchTypeValues (array of switch type values): the current switch type value selected by every particle
+
+        Returns:
+            An array containing the colour of every particle for the current timestep.
+        """
         # blue for order, red for disorder
         colours=self.numberOfParticles * ['k']
         for i in range(len(colours)):

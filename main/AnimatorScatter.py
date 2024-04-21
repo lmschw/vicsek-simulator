@@ -6,14 +6,22 @@ import DefaultValues as dv
 
 class Animator(object):
 
+    """
+    Animates the scatterplots for the neighbours of a particle.
+    """
+
     def prepareAnimation(self, matplotlibFigure, ax, particleIdx, title=None, xlim=(0,10), ylim=(-1.1, 1.1), frames=100, frameInterval = 10):
         """
-        Prepares the 2D animator object for animation.
+        Prepares the animator object for the scatterplot animation.
 
         parameters:
-        matplotlibFigure: Matplotlibs figure object.
-        frameInterval -- The interval between two frames.
-        frames -- The number of frames used in the animation.
+            - matplotlibFigure (Matplotlib Figure): Matplotlib figure object.
+            - ax (array of Axes): all the relevant axes of the Matplotlib figure object
+            - title (string) [optional]: title to be included in the animation
+            - xlim (tuple of int: (min, max)) [optional]: the lower and upper limit of the x-axis
+            - ylim (tuple of int: (min, max)) [optional]: the lower and upper limit of the y-axis
+            - frames (int): The number of frames used in the animation.
+            - frameInterval (int): The interval between two frames.
 
         returns self
         """
@@ -30,10 +38,11 @@ class Animator(object):
 
     def setSimulationData(self, neighbourData):
         """
-        Sets
-        keyword arguments:
-        simulationData -- The simulation data array.
-        domainSize -- The tuple that represents the lenghts of the square domain in each dimension.
+        Sets the simulation data
+        
+        Parameters:
+            - simulationData: The simulation data array.
+            - domainSize: The tuple that represents the lenghts of the square domain in each dimension.
 
         return:
         self

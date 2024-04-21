@@ -1,5 +1,8 @@
 from enum import Enum
 
+"""
+Contains all the different ways of selecting a subset of neighbours from all possible neighbours.
+"""
 class NeighbourSelectionMode(str, Enum):
     RANDOM = "RANDOM",
     NEAREST = "NEAREST",

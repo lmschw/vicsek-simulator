@@ -1,11 +1,11 @@
-from matplotlib.animation import FuncAnimation
-import matplotlib.pyplot as plt
-import numpy as np
-
-import DefaultValues as dv
 import AnimatorScatter
 
+
 class Animator(AnimatorScatter.Animator):
+    """
+    Animates multiple scatterplots for neighbours of a particle within a single figure.
+    """
+
     def _animate(self, i):
         """
         Animator class that goes through sim data.
