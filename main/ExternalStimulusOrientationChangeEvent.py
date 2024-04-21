@@ -12,7 +12,7 @@ class ExternalStimulusOrientationChangeEvent:
         Params:
             - timestep (int): the timestep at which the stimulus is presented and affects the swarm
             - percentage (float, range: 0-100): how many percent of the swarm is directly affected by the event
-            - angle (int, range: 1-359): how much the orientation of the affected particles is changed
+            - angle (int, range: 1-359): how much the orientation of the affected particles is changed in a counterclockwise manner
             - distributionType (EnumDistributionType) [optional]: how the directly affected particles are distributed, i.e. if the event occurs globally or locally
             - areas ([(centerXCoordinate, centerYCoordinate, radius)]) [optional]: list of areas in which the event takes effect. Should be specified if the distributionType is not GLOBAL and match the DistributionType
 
@@ -25,7 +25,7 @@ class ExternalStimulusOrientationChangeEvent:
         self.distributionType = distributionType
         self.areas = areas
 
-        if self.distributionType != DistributionType.GLOBAL and self.area == None:
+        if self.distributionType != DistributionType.GLOBAL and self.areas == None:
             raise Exception("Local effects require the area to be specified")
         
     def getShortPrintVersion(self):
@@ -42,7 +42,6 @@ class ExternalStimulusOrientationChangeEvent:
     
     def executeEvent(self, totalNumberOfParticles, positions, orientations, cells, neighbouringCells, cellToParticleDistribution):
         selectedIndices = self.__determineAffectedParticles(totalNumberOfParticles, positions, orientations, cells, neighbouringCells, cellToParticleDistribution)
-        print(orientations[0])
         for idx in selectedIndices:
             orientations[idx] = self.__computeNewOrientation(orientations[idx])
         return orientations
