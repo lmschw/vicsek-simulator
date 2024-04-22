@@ -86,8 +86,8 @@ additional: try with borders (necessary to reproduce fish experiments)
 
 
 - use threshold switching
-- plot position on x-axis (distance) against timestep and show the number of particles within that position as a colourmap
-- plot position on y-axis (orientation alignment) against timestep and show the number of particles within that position as a colourmap
+- plot position on x-axis (distance) against timestep and show the number of particles within that position as a colourmap -- entropy for mode comparison
+- plot position on y-axis (orientation alignment) against timestep and show the number of particles within that position as a colourmap -- entropy for mode comparison
 - implement switching to a specific angle
 - implement switching to alignment
 - average window for local order or running average: avg(t+1) = avg(t) + alpha * (local order + avg(t)) with alpha between 0 and 1
