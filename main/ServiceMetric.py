@@ -4,9 +4,9 @@ import math
 from collections import defaultdict
 from sklearn.cluster import AgglomerativeClustering
 
-import EnumMetrics as metrics
+from EnumMetrics import Metrics
 
-def evaluateSingleTimestep(positions, orientations, metric, radius=None, threshold=0.99):
+def evaluateSingleTimestep(positions, orientations, metric, radius=None, threshold=0.99, switchTypeValues=None, switchTypeOptions=None):
      """
         Evaluates the simulation data for a single timestep according to the selected metric.
 
@@ -15,34 +15,49 @@ def evaluateSingleTimestep(positions, orientations, metric, radius=None, thresho
             - orientations (array): the orientation of every particle at this timestep
             - metric (EnumMetrics): the metric for evaluating the data
             - radius (int) [optional]: the perception radius of every particle. Radius is only relevant for certain metrics such as Clustering, therefore it can be None for the others.
-
+            - threshold (float) [optional]: the threshold for the agglomerative clustering
+            - switchTypeValues (array) [optional]: the switch type values for individual switching
+            - switchTypeOptions (tuple) [optional]: contains the orderValue and the disorderValue respectively
         Returns:
             An array of the results according to the metric.
      """
      n = len(positions)
      match metric:
-        case metrics.Metrics.ORDER:
+        case Metrics.ORDER:
             return computeOrder(orientations)
-        case metrics.Metrics.CLUSTER_NUMBER:
+        case Metrics.CLUSTER_NUMBER:
             nClusters, _ = findClusters(positions, orientations, threshold)
             return nClusters
-        case metrics.Metrics.CLUSTER_SIZE:
+        case Metrics.CLUSTER_SIZE:
             nClusters, clusters = findClusters(positions, orientations, threshold)
             clusterSizes = computeClusterSizes(nClusters, clusters)
             return clusterSizes
-        case metrics.Metrics.CLUSTER_NUMBER_OVER_PARTICLE_LIFETIME:        
+        case Metrics.CLUSTER_NUMBER_OVER_PARTICLE_LIFETIME:        
             _, clusters = findClusters(positions, orientations, threshold)
             return clusters
-        case metrics.Metrics.CLUSTER_CONSISTENCY_AVERAGE_STEPS:
+        case Metrics.CLUSTER_CONSISTENCY_AVERAGE_STEPS:
             # for every cluster, how long do particles on average stay: average timesteps / number of timesteps that the cluster exists for
             _, clusters = findClusters(positions, orientations, threshold)
             return clusters
-        case metrics.Metrics.CLUSTER_CONSISTENCY_NUMBER_OF_CLUSTER_CHANGES: 
+        case Metrics.CLUSTER_CONSISTENCY_NUMBER_OF_CLUSTER_CHANGES: 
             # for every cluster, how often does the number or identity of the clusters change
             _, clusters = findClusters(positions, orientations, threshold)
             return clusters
+        case Metrics.SWITCH_VALUE_DISTRIBUTION:
+            orderCount, disorderCount = getNumbersPerSwitchTypeValue(switchTypeValues, switchTypeOptions)
+            return disorderCount
      
 def computeOrder(orientations):
+    """
+    Computes the order within the provided orientations. 
+    Can also be called for a subsection of all particles by only providing their orientations.
+
+    Params:
+        - orientations (array of (u,v)-coordinates): the orientation of all particles that should be included
+    
+    Returns:
+        A float representing the order in the given orientations
+    """
     sumOrientation = [0,0]
     for j in range(len(orientations)):
         sumOrientation += orientations[j]
@@ -255,4 +270,28 @@ def identifyClusters(clusters, orientations):
                 stepMembers[clusterId] = [particleIdx]
                 
     """
-    
+
+def getNumbersPerSwitchTypeValue(switchTypeValues, switchTypeOptions):
+    """
+    Counts the occurrences for all switch type values.
+
+    Params:
+        - switchTypeValues (array) [optional]: the switch type values for individual switching
+
+    Returns:
+        Two integer representing the counts of the orderValue and disorderValue respectively
+    """
+    unique, counts = np.unique(switchTypeValues, return_counts=True)
+    d = dict(zip(unique, counts))
+    sortedD = dict(sorted(d.items()))
+    n = sum(list(sortedD.values()))
+    if sortedD.get(switchTypeOptions[0]) != None:
+        percentageOrdered = sortedD.get(switchTypeOptions[0])/n
+    else:
+        percentageOrdered = 0
+    if sortedD.get(switchTypeOptions[1]) != None:
+        percentageDisordered = sortedD.get(switchTypeOptions[1])/n
+    else:
+        percentageDisordered = 0
+
+    return percentageOrdered, percentageDisordered 

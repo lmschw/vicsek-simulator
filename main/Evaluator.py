@@ -10,7 +10,7 @@ class Evaluator(object):
     """
     Implementation of the evaluation mechanism for the Vicsek model for a single model.
     """
-    def __init__(self, modelParams, metric, simulationData=None, evaluationTimestepInterval=1, threshold=0.01):
+    def __init__(self, modelParams, metric, simulationData=None, evaluationTimestepInterval=1, threshold=0.01, switchTypeValues=None, switchTypeOptions=None):
         """
         Initialises the evaluator.
 
@@ -28,6 +28,8 @@ class Evaluator(object):
         self.metric = metric
         self.evaluationTimestepInterval = evaluationTimestepInterval
         self.threshold = threshold
+        self.switchTypeValues = switchTypeValues
+        self.switchTypeOptions = switchTypeOptions
 
         if metric in [EnumMetrics.Metrics.CLUSTER_NUMBER, 
                       EnumMetrics.Metrics.CLUSTER_SIZE, 
@@ -54,7 +56,11 @@ class Evaluator(object):
             #if i % 100 == 0:
                 #print(f"evaluating {i}/{len(self.time)}")
             if i % self.evaluationTimestepInterval == 0:
-                valuesPerTimeStep[self.time[i]] = ServiceMetric.evaluateSingleTimestep(self.positions[i], self.orientations[i], self.metric, self.radius, threshold=self.threshold)
+                if None in self.switchTypeValues:
+                    valuesPerTimeStep[self.time[i]] = ServiceMetric.evaluateSingleTimestep(self.positions[i], self.orientations[i], self.metric, self.radius, threshold=self.threshold)
+                else:
+                    valuesPerTimeStep[self.time[i]] = ServiceMetric.evaluateSingleTimestep(self.positions[i], self.orientations[i], self.metric, self.radius, threshold=self.threshold, switchTypeValues=self.switchTypeValues[i], switchTypeOptions=self.switchTypeOptions)
+
         #print("Evaluation completed.")
         if(self.metric == EnumMetrics.Metrics.CLUSTER_NUMBER_OVER_PARTICLE_LIFETIME):
             valuesPerTimeStep = ServiceMetric.computeClusterNumberOverParticleLifetime(valuesPerTimeStep)
@@ -92,6 +98,7 @@ class Evaluator(object):
             plt.savefig(savePath)
         
         plt.show()
+
     def evaluateAndVisualize(self, savePath=None, saveTimestepsResults=None):
         """
         Evaluates and subsequently visualises the results for a single model.

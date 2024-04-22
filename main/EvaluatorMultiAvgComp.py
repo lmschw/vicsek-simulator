@@ -10,7 +10,7 @@ class EvaluatorMultiAvgComp(object):
     """
     Implementation of the evaluation mechanism for the Vicsek model for comparison of multiple models.
     """
-    def __init__(self, modelParams, metric, simulationData=None, evaluationTimestepInterval=1, threshold=0.01):
+    def __init__(self, modelParams, metric, simulationData=None, evaluationTimestepInterval=1, threshold=0.01, switchTypeValues=None, switchTypeOptions=None):
         """
         Initialises the evaluator.
 
@@ -28,6 +28,8 @@ class EvaluatorMultiAvgComp(object):
         self.metric = metric
         self.evaluationTimestepInterval = evaluationTimestepInterval
         self.threshold = threshold
+        self.switchTypeValues = switchTypeValues
+        self.switchTypeOptions = switchTypeOptions
 
     def evaluate(self):
         """
@@ -42,7 +44,7 @@ class EvaluatorMultiAvgComp(object):
             results = []
             for individualRun in range(len(self.simulationData[model])):
                 #print(f"step {individualRun}/{len(self.simulationData[model])}")
-                evaluator = Evaluator.Evaluator(self.modelParams[model][individualRun], self.metric, self.simulationData[model][individualRun], self.evaluationTimestepInterval, self.threshold)
+                evaluator = Evaluator.Evaluator(self.modelParams[model][individualRun], self.metric, self.simulationData[model][individualRun], self.evaluationTimestepInterval, self.threshold, self.switchTypeValues[model][individualRun], self.switchTypeOptions)
                 result = evaluator.evaluate()
                 results.append(result)
             
@@ -81,6 +83,8 @@ class EvaluatorMultiAvgComp(object):
                 self.__createClusterSizePlot(data, labels)
             case EnumMetrics.Metrics.CLUSTER_NUMBER_OVER_PARTICLE_LIFETIME:
                 self.__createClusterNumberOverParticleLifetimePlot(data, labels)
+            case EnumMetrics.Metrics.SWITCH_VALUE_DISTRIBUTION:
+                self.__createSwitchValuePlot(data, labels)
 
         if xLabel != None:
             plt.xlabel(xLabel)
@@ -90,7 +94,8 @@ class EvaluatorMultiAvgComp(object):
             plt.title(f"""Model comparison: {subtitle}""")
         if savePath != None:
             plt.savefig(savePath)
-        #plt.show()
+        plt.show()
+        #plt.close()
 
     
     def evaluateAndVisualize(self, labels, xLabel=None, yLabel=None, subtitle=None, savePath=None):
@@ -164,3 +169,18 @@ class EvaluatorMultiAvgComp(object):
         sorted(data.items())
         df = pd.DataFrame(data, index=labels).T
         df.plot.line()
+
+    def __createSwitchValuePlot(self, data, labels):
+        """
+        Creates a line plot for the number of clusters in the system for every model at every timestep
+
+        Parameters:
+            - data (dictionary): a dictionary with the time step as its key and a list of the number of clusters for every model as its value
+            - labels (list of strings): labels for the models
+            
+        Returns:
+            Nothing.
+        """
+        sorted(data.items())
+        df = pd.DataFrame(data, index=labels).T
+        df.plot()
