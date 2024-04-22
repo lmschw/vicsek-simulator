@@ -84,3 +84,11 @@ additional: try with borders (necessary to reproduce fish experiments)
 - taxonomy for neighbour selection
 - look for mathematical basis for behaviours
 
+
+- use threshold switching
+- plot position on x-axis (distance) against timestep and show the number of particles within that position as a colourmap
+- plot position on y-axis (orientation alignment) against timestep and show the number of particles within that position as a colourmap
+- implement switching to a specific angle
+- implement switching to alignment
+- average window for local order or running average: avg(t+1) = avg(t) + alpha * (local order + avg(t)) with alpha between 0 and 1
+- global/local, small/large difference, random/alignment changes
