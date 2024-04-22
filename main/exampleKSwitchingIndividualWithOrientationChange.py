@@ -26,10 +26,14 @@ disorderValue = 1
 startValue = orderValue
 orderThreshold = 0.05
 
+orderThresholds = [0.1, 0.3, 0.5, 0.7]
+percentages = [1, 5, 10, 30, 50]
+angles = [45, 90, 180]
 
-for orderThreshold in [0.05, 0.1, 0.3, 0.5, 0.7, 0.9]:
-    for percentage in [1, 5, 10, 30, 50]:
-        for angle in [45, 90, 180, 270]:
+"""
+for orderThreshold in orderThresholds:
+    for percentage in percentages:
+        for angle in angles:
             event1 = ExternalStimulusOrientationChangeEvent(timestep=1000,
                                                             percentage=percentage,
                                                             angle=angle,
@@ -56,29 +60,27 @@ for orderThreshold in [0.05, 0.1, 0.3, 0.5, 0.7, 0.9]:
 
             # Save model values for future use
             eventsString = "_".join([event.getShortPrintVersion() for event in events])
-            savePath = f"individual_random_switch={switchType.name}_orderV={orderValue}_disorderV={disorderValue}_startV={startValue}_tmax={tmax}_n={n}_density={density}_mode={neighbourSelectionMode.name}_noise={noisePercentage}%_orderthreshold={orderThreshold}_events-{eventsString}_{i}"
+            savePath = f"ind_random_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d={density}_{neighbourSelectionMode.value}_noise={noisePercentage}_ot={orderThreshold}_events-{eventsString}_{i}.json"
             ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
-            """
             # Initalise the animator
-            animator = AnimatorMatplotlib.MatplotlibAnimator(simulationData, (100,100,100), colours)
+            #animator = AnimatorMatplotlib.MatplotlibAnimator(simulationData, (100,100,100), colours)
 
             # prepare the animator
-            preparedAnimator = animator.prepare(Animator2D.Animator2D(), frames=tmax)
-            preparedAnimator.setParams(simulator.getParameterSummary())
+            #preparedAnimator = animator.prepare(Animator2D.Animator2D(), frames=tmax)
+            #preparedAnimator.setParams(simulator.getParameterSummary())
 
-            preparedAnimator.saveAnimation(f"{savePath}.mp4")
+            #preparedAnimator.saveAnimation(f"{savePath}.mp4")
 
             # Display Animation
             #preparedAnimator.showAnimation()
-            """
 
             endRun = time.time()
             ServiceGeneral.logWithTime(f"Completed global random start i={i}, threshold={orderThreshold}, startValue={startValue}, percentage={percentage}, angle={angle} in {ServiceGeneral.formatTime(endRun-startRun)}")
             
 
-for orderThreshold in [0.05, 0.1, 0.3, 0.5, 0.7, 0.9]:
-    for percentage in [1, 5, 10, 30, 50]:
-        for angle in [45, 90, 180, 270]:
+for orderThreshold in orderThresholds:
+    for percentage in percentages:
+        for angle in angles:
             event1 = ExternalStimulusOrientationChangeEvent(timestep=1000,
                                                             percentage=percentage,
                                                             angle=angle,
@@ -106,30 +108,28 @@ for orderThreshold in [0.05, 0.1, 0.3, 0.5, 0.7, 0.9]:
 
             # Save model values for future use
             eventsString = "_".join([event.getShortPrintVersion() for event in events])
-            savePath = f"individual_random_switch={switchType.name}_orderV={orderValue}_disorderV={disorderValue}_startV={startValue}_tmax={tmax}_n={n}_density={density}_mode={neighbourSelectionMode.name}_noise={noisePercentage}%_orderthreshold={orderThreshold}_events-{eventsString}_{i}.json"
+            savePath = f"ind_random_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d={density}_{neighbourSelectionMode.value}_noise={noisePercentage}_ot={orderThreshold}_events-{eventsString}_{i}.json"
             ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
 
-            """
             # Initalise the animator
-            animator = AnimatorMatplotlib.MatplotlibAnimator(simulationData, (100,100,100), colours)
+            #animator = AnimatorMatplotlib.MatplotlibAnimator(simulationData, (100,100,100), colours)
 
             # prepare the animator
-            preparedAnimator = animator.prepare(Animator2D.Animator2D(), frames=tmax)
-            preparedAnimator.setParams(simulator.getParameterSummary())
+            #preparedAnimator = animator.prepare(Animator2D.Animator2D(), frames=tmax)
+            #preparedAnimator.setParams(simulator.getParameterSummary())
 
-            preparedAnimator.saveAnimation(f"{savePath}.mp4")
+            #preparedAnimator.saveAnimation(f"{savePath}.mp4")
 
             # Display Animation
             #preparedAnimator.showAnimation()
-            """
 
             endRun = time.time()
             ServiceGeneral.logWithTime(f"Completed local random start i={i}, threshold={orderThreshold}, startValue={startValue}, percentage={percentage}, angle={angle} in {ServiceGeneral.formatTime(endRun-startRun)}")
-            
+"""            
 
-for orderThreshold in [0.05, 0.1, 0.3, 0.5, 0.7, 0.9]:
-    for percentage in [1, 5, 10, 30, 50]:
-        for angle in [45, 90, 180, 270]:
+for orderThreshold in orderThresholds:
+    for percentage in percentages:
+        for angle in angles:
             event1 = ExternalStimulusOrientationChangeEvent(timestep=1000,
                                                             percentage=percentage,
                                                             angle=angle,
@@ -158,7 +158,7 @@ for orderThreshold in [0.05, 0.1, 0.3, 0.5, 0.7, 0.9]:
 
             # Save model values for future use
             eventsString = "_".join([event.getShortPrintVersion() for event in events])
-            savePath = f"individual_ordered_switch={switchType.name}_orderV={orderValue}_disorderV={disorderValue}_startV={startValue}_tmax={tmax}_n={n}_density={density}_mode={neighbourSelectionMode.name}_noise={noisePercentage}%_orderthreshold={orderThreshold}_events-{eventsString}_{i}.json"
+            savePath = f"ind_ordered_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d={density}_{neighbourSelectionMode.value}_noise={noisePercentage}_ot={orderThreshold}_events-{eventsString}_{i}.json"
             ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
 
             """
@@ -179,9 +179,9 @@ for orderThreshold in [0.05, 0.1, 0.3, 0.5, 0.7, 0.9]:
             ServiceGeneral.logWithTime(f"Completed global ordered start i={i}, threshold={orderThreshold}, startValue={startValue}, percentage={percentage}, angle={angle} in {ServiceGeneral.formatTime(endRun-startRun)}")
             
 
-for orderThreshold in [0.05, 0.1, 0.3, 0.5, 0.7, 0.9]:
-    for percentage in [1, 5, 10, 30, 50]:
-        for angle in [45, 90, 180, 270]:
+for orderThreshold in orderThresholds:
+    for percentage in percentages:
+        for angle in angles:
             event1 = ExternalStimulusOrientationChangeEvent(timestep=1000,
                                                             percentage=percentage,
                                                             angle=angle,
@@ -211,7 +211,8 @@ for orderThreshold in [0.05, 0.1, 0.3, 0.5, 0.7, 0.9]:
 
             # Save model values for future use
             eventsString = "_".join([event.getShortPrintVersion() for event in events])
-            savePath = f"individual_ordered_switch={switchType.name}_orderV={orderValue}_disorderV={disorderValue}_startV={startValue}_tmax={tmax}_n={n}_density={density}_mode={neighbourSelectionMode.name}_noise={noisePercentage}%_orderthreshold={orderThreshold}_events-{eventsString}_{i}.json"
+            savePath = f"ind_ordered_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d={density}_{neighbourSelectionMode.value}_noise={noisePercentage}_ot={orderThreshold}_events-{eventsString}_{i}.json"
+
             ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
             """
             # Initalise the animator
