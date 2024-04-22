@@ -11,7 +11,7 @@ import ServiceMetric
 
 class VicsekWithNeighbourSelection:
 
-    def __init__(self, neighbourSelectionModel, domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, speed=dv.DEFAULT_SPEED, radius=dv.DEFAULT_RADIUS, noise=dv.DEFAULT_NOISE, numberOfParticles=dv.DEFAULT_NUM_PARTICLES, k=dv.DEFAULT_K_NEIGHBOURS, showExample=dv.DEFAULT_SHOW_EXAMPLE_PARTICLE, numCells=dv.DEFAULT_NUM_CELLS, switchType=None, switchValues=(None, None), switchDifferenceThreshold=0.1, stimuli=[]):
+    def __init__(self, neighbourSelectionModel, domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, speed=dv.DEFAULT_SPEED, radius=dv.DEFAULT_RADIUS, noise=dv.DEFAULT_NOISE, numberOfParticles=dv.DEFAULT_NUM_PARTICLES, k=dv.DEFAULT_K_NEIGHBOURS, showExample=dv.DEFAULT_SHOW_EXAMPLE_PARTICLE, numCells=dv.DEFAULT_NUM_CELLS, switchType=None, switchValues=(None, None), switchDifferenceThresholdUpper=0.8, switchDifferenceThresholdLower=0.2, stimuli=[]):
         """
         Initialize the model with all its parameters
 
@@ -39,7 +39,8 @@ class VicsekWithNeighbourSelection:
         self.numCells = numCells
         self.switchType = switchType
         self.orderSwitchValue, self.disorderSwitchValue = switchValues
-        self.switchDifferenceThreshold = switchDifferenceThreshold
+        self.switchDifferenceThresholdUpper = switchDifferenceThresholdUpper
+        self.switchDifferenceThresholdLower = switchDifferenceThresholdLower
         self.stimuli = stimuli
 
     def getParameterSummary(self, asString=False):
@@ -465,11 +466,20 @@ class VicsekWithNeighbourSelection:
         Returns:
             The updated switch type value for the current timestep.
         """
-        if hasNeighbours == True and np.absolute(localOrder-previousLocalOrder) >= self.switchDifferenceThreshold:
-            if localOrder > previousLocalOrder:
-                return self.orderSwitchValue
-            elif localOrder < previousLocalOrder:
-                return self.disorderSwitchValue
+        hasPassedUpperThreshold = (localOrder >= self.switchDifferenceThresholdUpper and previousLocalOrder < self.switchDifferenceThresholdUpper) or (localOrder <= self.switchDifferenceThresholdUpper and previousLocalOrder > self.switchDifferenceThresholdUpper)
+        hasPassedLowerThreshold = (localOrder <= self.switchDifferenceThresholdLower and previousLocalOrder > self.switchDifferenceThresholdLower) or (localOrder >= self.switchDifferenceThresholdLower and previousLocalOrder < self.switchDifferenceThresholdLower)
+
+        if hasNeighbours == True:
+            if hasPassedUpperThreshold:
+                if localOrder >= self.switchDifferenceThresholdUpper:
+                    return self.orderSwitchValue
+                else:
+                    return self.disorderSwitchValue
+            elif hasPassedLowerThreshold:
+                if localOrder <= self.switchDifferenceThresholdLower:
+                    return self.disorderSwitchValue
+                else:
+                    return self.orderSwitchValue
         return previousValue
     
     def __getLocalOrders(self, orientations, neighbours):

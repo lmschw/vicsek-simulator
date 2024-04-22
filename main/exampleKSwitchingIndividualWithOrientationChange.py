@@ -127,10 +127,11 @@ for orderThreshold in orderThresholds:
             ServiceGeneral.logWithTime(f"Completed local random start i={i}, threshold={orderThreshold}, startValue={startValue}, percentage={percentage}, angle={angle} in {ServiceGeneral.formatTime(endRun-startRun)}")
 """            
 
+"""
 for orderThreshold in orderThresholds:
     for percentage in percentages:
         for angle in angles:
-            event1 = ExternalStimulusOrientationChangeEvent(timestep=1000,
+            event1 = ExternalStimulusOrientationChangeEvent(timestep=2000,
                                                             percentage=percentage,
                                                             angle=angle,
                                                             distributionType=DistributionType.GLOBAL
@@ -161,7 +162,6 @@ for orderThreshold in orderThresholds:
             savePath = f"ind_ordered_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d={density}_{neighbourSelectionMode.value}_noise={noisePercentage}_ot={orderThreshold}_events-{eventsString}_{i}.json"
             ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
 
-            """
             # Initalise the animator
             animator = AnimatorMatplotlib.MatplotlibAnimator(simulationData, (100,100,100), colours)
 
@@ -173,7 +173,6 @@ for orderThreshold in orderThresholds:
 
             # Display Animation
             #preparedAnimator.showAnimation()
-            """
 
             endRun = time.time()
             ServiceGeneral.logWithTime(f"Completed global ordered start i={i}, threshold={orderThreshold}, startValue={startValue}, percentage={percentage}, angle={angle} in {ServiceGeneral.formatTime(endRun-startRun)}")
@@ -214,20 +213,81 @@ for orderThreshold in orderThresholds:
             savePath = f"ind_ordered_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d={density}_{neighbourSelectionMode.value}_noise={noisePercentage}_ot={orderThreshold}_events-{eventsString}_{i}.json"
 
             ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
-            """
             # Initalise the animator
-            animator = AnimatorMatplotlib.MatplotlibAnimator(simulationData, (100,100,100), colours)
+            #animator = AnimatorMatplotlib.MatplotlibAnimator(simulationData, (100,100,100), colours)
 
             # prepare the animator
-            preparedAnimator = animator.prepare(Animator2D.Animator2D(), frames=tmax)
-            preparedAnimator.setParams(simulator.getParameterSummary())
+            #preparedAnimator = animator.prepare(Animator2D.Animator2D(), frames=tmax)
+            #preparedAnimator.setParams(simulator.getParameterSummary())
 
-            preparedAnimator.saveAnimation(f"{savePath}.mp4")
+            #preparedAnimator.saveAnimation(f"{savePath}.mp4")
 
             # Display Animation
-            """
-
             #preparedAnimator.showAnimation()
+
             endRun = time.time()
             ServiceGeneral.logWithTime(f"Completed local ordered start i={i}, threshold={orderThreshold}, startValue={startValue}, percentage={percentage}, angle={angle} in {ServiceGeneral.formatTime(endRun-startRun)}")
             
+"""
+
+percentage = 30
+angle = 180
+
+event1 = ExternalStimulusOrientationChangeEvent(timestep=2000,
+                                                percentage=percentage,
+                                                angle=angle,
+                                                distributionType=DistributionType.GLOBAL
+                                                )
+
+event2 = ExternalStimulusOrientationChangeEvent(timestep=6000,
+                                                percentage=percentage,
+                                                angle=angle,
+                                                distributionType=DistributionType.GLOBAL
+                                                )
+
+tmax = 10000
+events = [event1, event2]
+# RANDOM START
+
+lowerThreshold = 0.2
+upperThreshold = 0.7
+
+noisePercentage = 1
+startRun = time.time()
+ServiceGeneral.logWithTime(f"Start global ordered start i={i}, threshold={orderThreshold}, startValue={startValue}, percentage={percentage}, angle={angle}")
+n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
+noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(noisePercentage)
+
+initialState = ServicePreparation.createOrderedInitialDistributionEquidistancedIndividual(startValue, domainSize, n)
+
+simulator = VicsekWithNeighbourSelectionSwitchingCellBasedIndividuals.VicsekWithNeighbourSelection(neighbourSelectionMode, 
+                                                                domainSize=domainSize, 
+                                                                numberOfParticles=n, 
+                                                                k=startValue, 
+                                                                noise=noise, 
+                                                                radius=radius,
+                                                                switchType=switchType,
+                                                                switchValues=(orderValue, disorderValue),
+                                                                switchDifferenceThresholdLower=lowerThreshold,
+                                                                switchDifferenceThresholdUpper=upperThreshold)
+simulationData, colours, switchValues = simulator.simulate(tmax=tmax, initialState=initialState, events=events)
+
+# Save model values for future use
+eventsString = "_".join([event.getShortPrintVersion() for event in events])
+savePath = f"ind_ordered_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d={density}_{neighbourSelectionMode.value}_noise={noisePercentage}_lt={lowerThreshold}_ut={upperThreshold}_events-{eventsString}_{i}"
+ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
+
+# Initalise the animator
+animator = AnimatorMatplotlib.MatplotlibAnimator(simulationData, (100,100,100), colours)
+
+# prepare the animator
+preparedAnimator = animator.prepare(Animator2D.Animator2D(), frames=tmax)
+preparedAnimator.setParams(simulator.getParameterSummary())
+
+preparedAnimator.saveAnimation(f"{savePath}.mp4")
+
+# Display Animation
+#preparedAnimator.showAnimation()
+
+endRun = time.time()
+ServiceGeneral.logWithTime(f"Completed global ordered start i={i}, threshold={orderThreshold}, startValue={startValue}, percentage={percentage}, angle={angle} in {ServiceGeneral.formatTime(endRun-startRun)}")
