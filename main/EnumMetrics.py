@@ -4,10 +4,10 @@ from enum import Enum
 Contains the evaluation metric options.
 """
 class Metrics(str, Enum):
-    ORDER = "ORDER",
-    CLUSTER_NUMBER = "CLUSTER_NUMBER",
-    CLUSTER_SIZE = "CLUSTER_SIZE",
-    CLUSTER_NUMBER_OVER_PARTICLE_LIFETIME = "CLUSTER_NUMBER_OVER_PARTICLE_LIFETIME",
-    CLUSTER_CONSISTENCY_AVERAGE_STEPS = "CLUSTER_CONSISTENCY_AVERAGE_STEPS",
-    CLUSTER_CONSISTENCY_NUMBER_OF_CLUSTER_CHANGES = "CLUSTER_CONSISTENCY_NUMBER_OF_CLUSTER_CHANGES",
-    SWITCH_VALUE_DISTRIBUTION = "SWITCH_VALUE_DISTRIBUTION" # number of disorder particles
+    ORDER = "order",
+    CLUSTER_NUMBER = "clusternumber",
+    CLUSTER_SIZE = "clustersize",
+    CLUSTER_NUMBER_OVER_PARTICLE_LIFETIME = "clusternumber_lifetime",
+    CLUSTER_CONSISTENCY_AVERAGE_STEPS = "clusterconst_steps",
+    CLUSTER_CONSISTENCY_NUMBER_OF_CLUSTER_CHANGES = "clusterconst_changes",
+    SWITCH_VALUE_DISTRIBUTION = "numdisorder" # number of disorder particles

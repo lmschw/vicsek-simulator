@@ -11,7 +11,9 @@ import Animator2D
 
 from EnumSwitchType import SwitchType
 from EnumDistributionType import DistributionType
+from EnumEventEffect import EventEffect
 
+eventEffect = EventEffect.ALIGN_TO_FIRST_PARTICLE
 domainSize = (100, 100)
 density = 0.01
 radius = 10
@@ -23,7 +25,7 @@ i = 1
 switchType = SwitchType.K
 orderValue = 5
 disorderValue = 1
-startValue = orderValue
+startValue = disorderValue
 orderThreshold = 0.05
 
 orderThresholds = [0.1, 0.3, 0.5, 0.7]
@@ -37,6 +39,7 @@ for orderThreshold in orderThresholds:
             event1 = ExternalStimulusOrientationChangeEvent(timestep=1000,
                                                             percentage=percentage,
                                                             angle=angle,
+                                                            eventEffect=eventEffect,
                                                             distributionType=DistributionType.GLOBAL
                                                             )
 
@@ -84,6 +87,7 @@ for orderThreshold in orderThresholds:
             event1 = ExternalStimulusOrientationChangeEvent(timestep=1000,
                                                             percentage=percentage,
                                                             angle=angle,
+                                                            eventEffect=eventEffect,
                                                             distributionType=DistributionType.LOCAL_SINGLE_SITE,
                                                             areas=[[20, 20, 10]]
                                                             )
@@ -134,7 +138,8 @@ for orderThreshold in orderThresholds:
             event1 = ExternalStimulusOrientationChangeEvent(timestep=2000,
                                                             percentage=percentage,
                                                             angle=angle,
-                                                            distributionType=DistributionType.GLOBAL
+                                                            eventEffect=eventEffect,
+                                                            distributionType=DistributionType.GLOBA
                                                             )
 
             events = [event1]
@@ -184,6 +189,7 @@ for orderThreshold in orderThresholds:
             event1 = ExternalStimulusOrientationChangeEvent(timestep=1000,
                                                             percentage=percentage,
                                                             angle=angle,
+                                                            eventEffect=eventEffect,
                                                             distributionType=DistributionType.LOCAL_SINGLE_SITE,
                                                             areas=[[20, 20, 10]]
                                                             )
@@ -230,18 +236,21 @@ for orderThreshold in orderThresholds:
             
 """
 
+
 percentage = 30
 angle = 180
 
 event1 = ExternalStimulusOrientationChangeEvent(timestep=2000,
                                                 percentage=percentage,
                                                 angle=angle,
+                                                eventEffect=eventEffect,
                                                 distributionType=DistributionType.GLOBAL
                                                 )
 
 event2 = ExternalStimulusOrientationChangeEvent(timestep=6000,
                                                 percentage=percentage,
                                                 angle=angle,
+                                                eventEffect=eventEffect,
                                                 distributionType=DistributionType.GLOBAL
                                                 )
 
@@ -249,45 +258,49 @@ tmax = 10000
 events = [event1, event2]
 # RANDOM START
 
-lowerThreshold = 0.2
+lowerThreshold = 0.05
 upperThreshold = 0.7
 
 noisePercentage = 1
-startRun = time.time()
-ServiceGeneral.logWithTime(f"Start global ordered start i={i}, threshold={orderThreshold}, startValue={startValue}, percentage={percentage}, angle={angle}")
-n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
-noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(noisePercentage)
 
-initialState = ServicePreparation.createOrderedInitialDistributionEquidistancedIndividual(startValue, domainSize, n)
+for i in range(1, 4):
+    for lowerThreshold in [0.1, 0.2, 0.3, 0.4, 0.5]:
+        for upperThreshold in [0.5, 0.6, 0.7, 0.8, 0.9]:
+            startRun = time.time()
+            ServiceGeneral.logWithTime(f"Start global ordered start i={i}, threshold={orderThreshold}, startValue={startValue}, percentage={percentage}, angle={angle}")
+            n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
+            noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(noisePercentage)
 
-simulator = VicsekWithNeighbourSelectionSwitchingCellBasedIndividuals.VicsekWithNeighbourSelection(neighbourSelectionMode, 
-                                                                domainSize=domainSize, 
-                                                                numberOfParticles=n, 
-                                                                k=startValue, 
-                                                                noise=noise, 
-                                                                radius=radius,
-                                                                switchType=switchType,
-                                                                switchValues=(orderValue, disorderValue),
-                                                                switchDifferenceThresholdLower=lowerThreshold,
-                                                                switchDifferenceThresholdUpper=upperThreshold)
-simulationData, colours, switchValues = simulator.simulate(tmax=tmax, initialState=initialState, events=events)
+            #initialState = ServicePreparation.createOrderedInitialDistributionEquidistancedIndividual(startValue, domainSize, n)
 
-# Save model values for future use
-eventsString = "_".join([event.getShortPrintVersion() for event in events])
-savePath = f"ind_ordered_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d={density}_{neighbourSelectionMode.value}_noise={noisePercentage}_lt={lowerThreshold}_ut={upperThreshold}_events-{eventsString}_{i}"
-ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
+            simulator = VicsekWithNeighbourSelectionSwitchingCellBasedIndividuals.VicsekWithNeighbourSelection(neighbourSelectionMode, 
+                                                                            domainSize=domainSize, 
+                                                                            numberOfParticles=n, 
+                                                                            k=startValue, 
+                                                                            noise=noise, 
+                                                                            radius=radius,
+                                                                            switchType=switchType,
+                                                                            switchValues=(orderValue, disorderValue),
+                                                                            switchDifferenceThresholdLower=lowerThreshold,
+                                                                            switchDifferenceThresholdUpper=upperThreshold)
+            #simulationData, colours, switchValues = simulator.simulate(tmax=tmax, initialState=initialState, events=events)
+            simulationData, colours, switchValues = simulator.simulate(tmax=tmax, events=events)
 
-# Initalise the animator
-animator = AnimatorMatplotlib.MatplotlibAnimator(simulationData, (100,100,100), colours)
+            # Save model values for future use
+            eventsString = "_".join([event.getShortPrintVersion() for event in events])
+            savePath = f"ind_random_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d={density}_{neighbourSelectionMode.value}_noise={noisePercentage}_lt={lowerThreshold}_ut={upperThreshold}_events-{eventsString}_{i}"
+            ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
 
-# prepare the animator
-preparedAnimator = animator.prepare(Animator2D.Animator2D(), frames=tmax)
-preparedAnimator.setParams(simulator.getParameterSummary())
+            # Initalise the animator
+            animator = AnimatorMatplotlib.MatplotlibAnimator(simulationData, (100,100,100), colours)
 
-preparedAnimator.saveAnimation(f"{savePath}.mp4")
+            # prepare the animator
+            #preparedAnimator = animator.prepare(Animator2D.Animator2D(), frames=tmax)
+            #preparedAnimator.setParams(simulator.getParameterSummary())
 
-# Display Animation
-#preparedAnimator.showAnimation()
+            #preparedAnimator.saveAnimation(f"{savePath}.mp4")
 
-endRun = time.time()
-ServiceGeneral.logWithTime(f"Completed global ordered start i={i}, threshold={orderThreshold}, startValue={startValue}, percentage={percentage}, angle={angle} in {ServiceGeneral.formatTime(endRun-startRun)}")
+            # Display Animation
+            #preparedAnimator.showAnimation()
+            endRun = time.time()
+            ServiceGeneral.logWithTime(f"Completed global ordered start i={i}, threshold={orderThreshold}, startValue={startValue}, percentage={percentage}, angle={angle} in {ServiceGeneral.formatTime(endRun-startRun)}")

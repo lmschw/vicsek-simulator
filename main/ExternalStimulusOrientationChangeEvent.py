@@ -3,6 +3,7 @@ import math
 import numpy as np
 
 from EnumDistributionType import DistributionType
+from EnumEventEffect import EventEffect
 
 class ExternalStimulusOrientationChangeEvent:
     # TODO refactor to allow areas with a radius bigger than the radius of a particle, i.e. remove neighbourCells and determine all affected cells here
@@ -10,7 +11,7 @@ class ExternalStimulusOrientationChangeEvent:
     Representation of an event occurring at a specified time and place within the domain and affecting 
     a specified percentage of particles. After creation, the check()-method takes care of everything.
     """
-    def __init__(self, timestep, percentage, angle, distributionType=DistributionType.GLOBAL, areas=None):
+    def __init__(self, timestep, percentage, angle, eventEffect, distributionType=DistributionType.GLOBAL, areas=None):
         """
         Creates an external stimulus event that affects part of the swarm at a given timestep.
 
@@ -18,6 +19,7 @@ class ExternalStimulusOrientationChangeEvent:
             - timestep (int): the timestep at which the stimulus is presented and affects the swarm
             - percentage (float, range: 0-100): how many percent of the swarm is directly affected by the event
             - angle (int, range: 1-359): how much the orientation of the affected particles is changed in a counterclockwise manner
+            - eventEffect (EnumEventEffect): how the orientations should be affected
             - distributionType (EnumDistributionType) [optional]: how the directly affected particles are distributed, i.e. if the event occurs globally or locally
             - areas ([(centerXCoordinate, centerYCoordinate, radius)]) [optional]: list of areas in which the event takes effect. Should be specified if the distributionType is not GLOBAL and match the DistributionType
 
@@ -27,6 +29,7 @@ class ExternalStimulusOrientationChangeEvent:
         self.timestep = timestep
         self.percentage = percentage
         self.angle = angle
+        self.eventEffect = eventEffect
         self.distributionType = distributionType
         self.areas = areas
 
@@ -34,7 +37,7 @@ class ExternalStimulusOrientationChangeEvent:
             raise Exception("Local effects require the area to be specified")
         
     def getShortPrintVersion(self):
-        return f"t{self.timestep}p{self.percentage}a{self.angle}dt{self.distributionType.value}a{self.areas}"
+        return f"t{self.timestep}e{self.eventEffect.value}p{self.percentage}a{self.angle}dt{self.distributionType.value}a{self.areas}"
 
     def check(self, totalNumberOfParticles, currentTimestep, positions, orientations, cells, neighbouringCells, cellToParticleDistribution):
         """
@@ -86,7 +89,14 @@ class ExternalStimulusOrientationChangeEvent:
         """
         selectedIndices = self.__determineAffectedParticles(totalNumberOfParticles, positions, cells, neighbouringCells, cellToParticleDistribution)
         for idx in selectedIndices:
-            orientations[idx] = self.__computeNewOrientation(orientations[idx])
+            match self.eventEffect:
+                case EventEffect.TURN_BY_FIXED_ANGLE:
+                    orientations[idx] = self.__computeFixedAngleTurn(orientations[idx])
+                case EventEffect.ALIGN_TO_FIXED_ANGLE:
+                    orientations[idx] = self.__computeUvCoordinates(self.angle)
+                case EventEffect.ALIGN_TO_FIRST_PARTICLE:
+                    orientations[idx] = orientations[selectedIndices[0]]
+
         return orientations
 
     def __determineAffectedParticles(self, totalNumberOfParticles, positions, cells, neighbouringCells, cellToParticleDistribution):
@@ -159,7 +169,7 @@ class ExternalStimulusOrientationChangeEvent:
                 break
         return targetCell
     
-    def __computeNewOrientation(self, orientation):
+    def __computeFixedAngleTurn(self, orientation):
         """
         Determines the new uv-coordinates after turning the particle by the specified angle.
         The new angle is the equivalent of the old angle plus the angle specified by the event.
@@ -177,9 +187,12 @@ class ExternalStimulusOrientationChangeEvent:
         # add the event angle to the current angle
         newAngle = (previousAngle + self.angle) % 360
 
+        return self.__computeUvCoordinates(newAngle)
+
+    def __computeUvCoordinates(self, angle):
         # compute the uv-coordinates
-        U = np.cos(newAngle*np.pi/180)
-        V = np.sin(newAngle*np.pi/180)
+        U = np.cos(angle*np.pi/180)
+        V = np.sin(angle*np.pi/180)
         
         return [U,V]
 

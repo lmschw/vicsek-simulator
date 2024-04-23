@@ -2,11 +2,13 @@ from EnumNeighbourSelectionMode import NeighbourSelectionMode
 from EnumMetrics import Metrics
 from EnumSwitchType import SwitchType
 from EnumDistributionType import DistributionType
+from EnumEventEffect import EventEffect
 
 import ServiceSavedModel
 import EvaluatorMultiAvgComp
 import VicsekWithNeighbourSelection
 import ServicePreparation
+import ServiceGeneral
 
 import DefaultValues as dv
 import AnimatorMatplotlib
@@ -261,19 +263,66 @@ distributionType = DistributionType.GLOBAL
 area = None
 switchTypeOptions = (orderValue, disorderValue)
 
-metric = Metrics.SWITCH_VALUE_DISTRIBUTION
+startValue = disorderValue
 
-labels = [""]
-subtitle = "Local - events at 2000 and 6000"
-modelParamsDensity, simulationDataDensity, coloursDensity, switchTypeValuesDensity = ServiceSavedModel.loadModels([
-                                                                                        f"ind_ordered_st=K_order=5_disorder=1_start=5_d=0.01_LOD_noise=1_lt=0.3_ut=0.7_events-t2000p30a180dtGaNone_t6000p30a180dtGaNone_1.json",
-                                                                                        ], loadSwitchValues=True)
-modelParams.append(modelParamsDensity)
-simulationData.append(simulationDataDensity)
-colours.append(coloursDensity)
-switchTypeValues.append(switchTypeValuesDensity)
+tmax = 10000
+lowerThresholds = [0.1, 0.2, 0.3, 0.4, 0.5]
+upperThresholds = [0.5, 0.6, 0.7, 0.8, 0.9]
+lowerThresholdLabels = ["0.1", "0.2", "0.3", "0.4", "0.5"]
+upperThresholdLabels = ["0.5", "0.6", "0.7", "0.8", "0.9"]
 
-#savePath = f"order-ot_comp-K-ordered-d={density}-noise={noisePercentage}-{mode.name}-ot={orderThreshold}-events-t{eventTimestep}p{eventPercentage}a{angle}dt{distributionType.value}a{area}.svg"
-savePath = "numdisorder_ind_ordered_st=K_order=5_disorder=1_start=5_d=0.01_LOD_noise=1_lt=0.3_ut=0.7_events-t2000p30a180dtGaNone_t6000p30a180dtGaNone_1.svg"
-evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=100, switchTypeValues=switchTypeValues, switchTypeOptions=switchTypeOptions)
-evaluator.evaluateAndVisualize(labels=labels, xLabel=xLabel, yLabel=yLabel, subtitle=subtitle, savePath=savePath)
+for eventEffect in [EventEffect.ALIGN_TO_FIRST_PARTICLE, EventEffect.ALIGN_TO_FIXED_ANGLE]:
+    for metric in [Metrics.ORDER, Metrics.SWITCH_VALUE_DISTRIBUTION]:
+        if metric == Metrics.ORDER:
+            yLabel = "order"
+        else:
+            yLabel = "number of particles"
+        labels = lowerThresholdLabels
+        for upperThreshold in upperThresholds:
+            subtitle = f"Global - lower threshold comparison with \nupper threshold = {upperThreshold} - events at 2000 and 6000"
+            modelParams = []
+            simulationData = []
+            colours = []
+            switchTypeValues = []
+            for lowerThreshold in lowerThresholds:
+                modelParamsDensity, simulationDataDensity, coloursDensity, switchTypeValuesDensity = ServiceSavedModel.loadModels([
+                                                                                                        f"ind_random_st=K_order=5_disorder=1_start={startValue}_d=0.01_LOD_noise=1_lt={lowerThreshold}_ut={upperThreshold}_events-t2000e{eventEffect.value}p30a180dtGaNone_t6000e{eventEffect.value}p30a180dtGaNone_1.json",
+                                                                                                        f"ind_random_st=K_order=5_disorder=1_start={startValue}_d=0.01_LOD_noise=1_lt={lowerThreshold}_ut={upperThreshold}_events-t2000e{eventEffect.value}p30a180dtGaNone_t6000e{eventEffect.value}p30a180dtGaNone_2.json",
+                                                                                                        f"ind_random_st=K_order=5_disorder=1_start={startValue}_d=0.01_LOD_noise=1_lt={lowerThreshold}_ut={upperThreshold}_events-t2000e{eventEffect.value}p30a180dtGaNone_t6000e{eventEffect.value}p30a180dtGaNone_3.json"
+
+                                                                                                        ], loadSwitchValues=True)
+                modelParams.append(modelParamsDensity)
+                simulationData.append(simulationDataDensity)
+                colours.append(coloursDensity)
+                switchTypeValues.append(switchTypeValuesDensity)
+
+            #savePath = f"order-ot_comp-K-ordered-d={density}-noise={noisePercentage}-{mode.name}-ot={orderThreshold}-events-t{eventTimestep}p{eventPercentage}a{angle}dt{distributionType.value}a{area}.svg"
+            savePath = f"{metric.value}_lt-comp_ind_random_st=K_order=5_disorder=1_start={startValue}_d=0.01_LOD_noise=1_ut={upperThreshold}_events-t2000e{eventEffect.value}p30a180dtGaNone_t6000e{eventEffect.value}p30a180dtGaNone.svg"
+            evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=100, switchTypeValues=switchTypeValues, switchTypeOptions=switchTypeOptions)
+            evaluator.evaluateAndVisualize(labels=labels, xLabel=xLabel, yLabel=yLabel, subtitle=subtitle, savePath=savePath)
+            ServiceGeneral.logWithTime(f"created lt comp graph for ut = {upperThreshold} and metric {metric.name}")
+
+        labels = upperThresholdLabels
+        for lowerThreshold in lowerThresholds:
+            subtitle = f"Global - upper threshold comparison \nwith lower threshold = {lowerThreshold} - events at 2000 and 6000"
+            modelParams = []
+            simulationData = []
+            colours = []
+            switchTypeValues = []
+            for upperThreshold in upperThresholds:
+                modelParamsDensity, simulationDataDensity, coloursDensity, switchTypeValuesDensity = ServiceSavedModel.loadModels([
+                                                                                                        f"ind_random_st=K_order=5_disorder=1_start={startValue}_d=0.01_LOD_noise=1_lt={lowerThreshold}_ut={upperThreshold}_events-t2000e{eventEffect.value}p30a180dtGaNone_t6000e{eventEffect.value}p30a180dtGaNone_1.json",
+                                                                                                        f"ind_random_st=K_order=5_disorder=1_start={startValue}_d=0.01_LOD_noise=1_lt={lowerThreshold}_ut={upperThreshold}_events-t2000e{eventEffect.value}p30a180dtGaNone_t6000e{eventEffect.value}p30a180dtGaNone_2.json",
+                                                                                                        f"ind_random_st=K_order=5_disorder=1_start={startValue}_d=0.01_LOD_noise=1_lt={lowerThreshold}_ut={upperThreshold}_events-t2000e{eventEffect.value}p30a180dtGaNone_t6000e{eventEffect.value}p30a180dtGaNone_3.json"
+
+                                                                                                        ], loadSwitchValues=True)
+                modelParams.append(modelParamsDensity)
+                simulationData.append(simulationDataDensity)
+                colours.append(coloursDensity)
+                switchTypeValues.append(switchTypeValuesDensity)
+
+            #savePath = f"order-ot_comp-K-ordered-d={density}-noise={noisePercentage}-{mode.name}-ot={orderThreshold}-events-t{eventTimestep}p{eventPercentage}a{angle}dt{distributionType.value}a{area}.svg"
+            savePath = f"{metric.value}_ut-comp_ind_random_st=K_order=5_disorder=1_start={startValue}_d=0.01_LOD_noise=1_lt={lowerThreshold}_events-t2000e{eventEffect.value}p30a180dtGaNone_t6000e{eventEffect.value}p30a180dtGaNone.svg"
+            evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=100, switchTypeValues=switchTypeValues, switchTypeOptions=switchTypeOptions)
+            evaluator.evaluateAndVisualize(labels=labels, xLabel=xLabel, yLabel=yLabel, subtitle=subtitle, savePath=savePath)
+            ServiceGeneral.logWithTime(f"created ut comp graph for lt = {lowerThreshold} and metric {metric.name}")
