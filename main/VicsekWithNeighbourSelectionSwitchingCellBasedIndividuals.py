@@ -11,7 +11,11 @@ import ServiceMetric
 
 class VicsekWithNeighbourSelection:
 
-    def __init__(self, neighbourSelectionModel, domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, speed=dv.DEFAULT_SPEED, radius=dv.DEFAULT_RADIUS, noise=dv.DEFAULT_NOISE, numberOfParticles=dv.DEFAULT_NUM_PARTICLES, k=dv.DEFAULT_K_NEIGHBOURS, showExample=dv.DEFAULT_SHOW_EXAMPLE_PARTICLE, numCells=dv.DEFAULT_NUM_CELLS, switchType=None, switchValues=(None, None), switchDifferenceThresholdUpper=0.8, switchDifferenceThresholdLower=0.2, stimuli=[]):
+    def __init__(self, neighbourSelectionModel, domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, speed=dv.DEFAULT_SPEED, 
+                 radius=dv.DEFAULT_RADIUS, noise=dv.DEFAULT_NOISE, numberOfParticles=dv.DEFAULT_NUM_PARTICLES, 
+                 k=dv.DEFAULT_K_NEIGHBOURS, showExample=dv.DEFAULT_SHOW_EXAMPLE_PARTICLE, numCells=dv.DEFAULT_NUM_CELLS, 
+                 switchType=None, switchValues=(None, None), orderThresholds=None, numberPreviousStepsForThreshold=10, 
+                 stimuli=[]):
         """
         Initialize the model with all its parameters
 
@@ -24,6 +28,15 @@ class VicsekWithNeighbourSelection:
             - numberOfParticles (int) [optional]: the number of particles within the domain, n
             - k (int) [optional]: the number of neighbours a particle considers when updating its orientation at every time step
             - showExample (bool) [optional]: whether a random example particle should be coloured in red with its influencing neighbours in yellow
+            - numCells (int) [optional]: the number of cells that make up the grid for the cellbased evaluation
+            - switchType (EnumSwitchType) [optional]: The type of switching that should be performed
+            - switchValues (tuple (orderValue, disorderValue)) [optional]: the value that is supposed to create order and the value that is supposed to create disorder.
+                    Must be the same type as the switchType
+            - orderThresholds (array) [optional]: the difference in local order compared to the previous timesteps that will cause a switch.
+                    If only one number is supplied (as an array with one element), will be used to check if the difference between the previous and the current local order is greater than the threshold.
+                    If two numbers are supplied, will be used as a lower and an upper threshold that triggers a switch
+            - numberPreviousStepsForThreshold (int) [optional]: the number of previous timesteps that are considered for the average to be compared to the threshold value(s)
+            - stimuli (array of ExternalStimulusOrientationChangeEvent) [optional]: events that alter the orientations of the particles
 
         Returns:
             No return.
@@ -39,8 +52,13 @@ class VicsekWithNeighbourSelection:
         self.numCells = numCells
         self.switchType = switchType
         self.orderSwitchValue, self.disorderSwitchValue = switchValues
-        self.switchDifferenceThresholdUpper = switchDifferenceThresholdUpper
-        self.switchDifferenceThresholdLower = switchDifferenceThresholdLower
+        if len(orderThresholds) > 1:       
+            self.switchDifferenceThresholdUpper = orderThresholds[0]
+            self.switchDifferenceThresholdLower = orderThresholds[1]
+        else:
+            self.singleOrderThreshold = orderThresholds[0]
+
+        self.numberPreviousStepsForThreshold = numberPreviousStepsForThreshold
         self.stimuli = stimuli
 
     def getParameterSummary(self, asString=False):
@@ -136,7 +154,8 @@ class VicsekWithNeighbourSelection:
         numIntervals=int(tmax/dt+1)
         
         positionsHistory = np.zeros((numIntervals,self.numberOfParticles,len(self.domainSize)))
-        orientationsHistory = np.zeros((numIntervals,self.numberOfParticles,len(self.domainSize)))     
+        orientationsHistory = np.zeros((numIntervals,self.numberOfParticles,len(self.domainSize)))  
+        self.localOrderHistory = np.zeros((numIntervals,self.numberOfParticles))        
         switchTypeValuesHistory = numIntervals * [self.numberOfParticles * [None]]
         coloursHistory = numIntervals * [self.numberOfParticles * ['k']]
 
@@ -151,7 +170,8 @@ class VicsekWithNeighbourSelection:
         cellToParticleDistribution, particleToCellDistribution = self.createCellDistributions(positions)
 
         localOrders = self.__initialiseLocalOrders(positions, orientations, cellToParticleDistribution, particleToCellDistribution)
-        
+        self.localOrderHistory[0,:]=localOrders
+
         # for every time step, the positions, orientations, switchTypeValue and colours for each particle are updated and added to the histories
         for it in range(numIntervals):
             self.t = it
@@ -172,7 +192,7 @@ class VicsekWithNeighbourSelection:
 
             previousLocalOrders = localOrders
             localOrders = self.__getLocalOrders(orientations, neighbourCandidates)
-            switchTypeValues = self.computeSwitchTypeValues(previousSwitchTypeValues=switchTypeValues, neighbours=neighbourCandidates, localOrders=localOrders, previousLocalOrders=previousLocalOrders)
+            switchTypeValues = self.computeSwitchTypeValues(timestep=it, previousSwitchTypeValues=switchTypeValues, neighbours=neighbourCandidates, localOrders=localOrders, previousLocalOrders=previousLocalOrders)
 
             colours = self.__colourGroups(switchTypeValues)
 
@@ -181,6 +201,7 @@ class VicsekWithNeighbourSelection:
 
             positionsHistory[it,:,:]=positions
             orientationsHistory[it,:,:]=orientations
+            self.localOrderHistory[it,:]=localOrders
             switchTypeValuesHistory[it]=switchTypeValues
             coloursHistory[it]=colours
 
@@ -434,7 +455,7 @@ class VicsekWithNeighbourSelection:
             
         return switchTypeValues, localOrders
 """
-    def computeSwitchTypeValues(self, previousSwitchTypeValues, neighbours, localOrders, previousLocalOrders):
+    def computeSwitchTypeValues(self, timestep, previousSwitchTypeValues, neighbours, localOrders, previousLocalOrders):
         """
         Determines the selected switch type value for every particle at the current timestep.
 
@@ -450,10 +471,12 @@ class VicsekWithNeighbourSelection:
         switchTypeValues = self.numberOfParticles * [None]
         for i in range(self.numberOfParticles):
             hasNeighbours = len(neighbours[i]) > 1
-            switchTypeValues[i] = self.__getSingleSwitchTypeValue(previousSwitchTypeValues[i], hasNeighbours, previousLocalOrders[i], localOrders[i])
+
+            #switchTypeValues[i] = self.__getSingleSwitchTypeValue(previousSwitchTypeValues[i], hasNeighbours, previousLocalOrders[i], localOrders[i])
+            switchTypeValues[i] = self.__getSingleSwitchTypeValue(i, timestep, previousSwitchTypeValues[i], hasNeighbours, localOrders[i])
         return switchTypeValues
             
-    def __getSingleSwitchTypeValue(self, previousValue, hasNeighbours, localOrder, previousLocalOrder):
+    def __getSingleSwitchTypeValue(self, idx, timestep, previousValue, hasNeighbours, localOrder):
         """
         Determines the switch type value for a single particle for the current timestep.
 
@@ -466,10 +489,17 @@ class VicsekWithNeighbourSelection:
         Returns:
             The updated switch type value for the current timestep.
         """
-        hasPassedUpperThreshold = (localOrder >= self.switchDifferenceThresholdUpper and previousLocalOrder < self.switchDifferenceThresholdUpper) or (localOrder <= self.switchDifferenceThresholdUpper and previousLocalOrder > self.switchDifferenceThresholdUpper)
-        hasPassedLowerThreshold = (localOrder <= self.switchDifferenceThresholdLower and previousLocalOrder > self.switchDifferenceThresholdLower) or (localOrder >= self.switchDifferenceThresholdLower and previousLocalOrder < self.switchDifferenceThresholdLower)
+        startAvg = max(timestep-self.numberPreviousStepsForThreshold, 0)
+        endAvg = max(timestep, 1)
+        previousLocalOrder = np.average(self.localOrderHistory[startAvg:endAvg][:,idx])
 
-        if hasNeighbours == True:
+        if hasNeighbours == False:
+            return previousValue
+
+        if self.switchDifferenceThresholdLower and self.switchDifferenceThresholdUpper:
+            hasPassedUpperThreshold = (localOrder >= self.switchDifferenceThresholdUpper and previousLocalOrder < self.switchDifferenceThresholdUpper) or (localOrder <= self.switchDifferenceThresholdUpper and previousLocalOrder > self.switchDifferenceThresholdUpper)
+            hasPassedLowerThreshold = (localOrder <= self.switchDifferenceThresholdLower and previousLocalOrder > self.switchDifferenceThresholdLower) or (localOrder >= self.switchDifferenceThresholdLower and previousLocalOrder < self.switchDifferenceThresholdLower)
+
             if hasPassedUpperThreshold:
                 if localOrder >= self.switchDifferenceThresholdUpper:
                     return self.orderSwitchValue
@@ -480,7 +510,16 @@ class VicsekWithNeighbourSelection:
                     return self.disorderSwitchValue
                 else:
                     return self.orderSwitchValue
+        elif self.singleOrderThreshold:
+            absoluteDiff = np.absolute(localOrder - previousLocalOrder)
+            if absoluteDiff > self.singleOrderThreshold:
+                if localOrder > previousLocalOrder:
+                    return self.orderSwitchValue
+                elif localOrder < previousLocalOrder:
+                    return self.disorderSwitchValue
         return previousValue
+
+            
     
     def __getLocalOrders(self, orientations, neighbours):
         """
