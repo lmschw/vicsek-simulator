@@ -34,7 +34,7 @@ class VicsekWithNeighbourSelection:
                     Must be the same type as the switchType
             - orderThresholds (array) [optional]: the difference in local order compared to the previous timesteps that will cause a switch.
                     If only one number is supplied (as an array with one element), will be used to check if the difference between the previous and the current local order is greater than the threshold.
-                    If two numbers are supplied, will be used as a lower and an upper threshold that triggers a switch
+                    If two numbers are supplied, will be used as a lower and an upper threshold that triggers a switch: [lowerThreshold, upperThreshold]
             - numberPreviousStepsForThreshold (int) [optional]: the number of previous timesteps that are considered for the average to be compared to the threshold value(s)
             - stimuli (array of ExternalStimulusOrientationChangeEvent) [optional]: events that alter the orientations of the particles
 
@@ -52,12 +52,7 @@ class VicsekWithNeighbourSelection:
         self.numCells = numCells
         self.switchType = switchType
         self.orderSwitchValue, self.disorderSwitchValue = switchValues
-        if len(orderThresholds) > 1:       
-            self.switchDifferenceThresholdUpper = orderThresholds[0]
-            self.switchDifferenceThresholdLower = orderThresholds[1]
-        else:
-            self.singleOrderThreshold = orderThresholds[0]
-
+        self.orderThresholds = orderThresholds
         self.numberPreviousStepsForThreshold = numberPreviousStepsForThreshold
         self.stimuli = stimuli
 
@@ -496,23 +491,25 @@ class VicsekWithNeighbourSelection:
         if hasNeighbours == False:
             return previousValue
 
-        if self.switchDifferenceThresholdLower and self.switchDifferenceThresholdUpper:
-            hasPassedUpperThreshold = (localOrder >= self.switchDifferenceThresholdUpper and previousLocalOrder < self.switchDifferenceThresholdUpper) or (localOrder <= self.switchDifferenceThresholdUpper and previousLocalOrder > self.switchDifferenceThresholdUpper)
-            hasPassedLowerThreshold = (localOrder <= self.switchDifferenceThresholdLower and previousLocalOrder > self.switchDifferenceThresholdLower) or (localOrder >= self.switchDifferenceThresholdLower and previousLocalOrder < self.switchDifferenceThresholdLower)
+        if len(self.orderThresholds) > 1:       
+            switchDifferenceThresholdLower = self.orderThresholds[0]
+            switchDifferenceThresholdUpper = self.orderThresholds[1]
+            hasPassedUpperThreshold = (localOrder >= switchDifferenceThresholdUpper and previousLocalOrder < switchDifferenceThresholdUpper) or (localOrder <= switchDifferenceThresholdUpper and previousLocalOrder > switchDifferenceThresholdUpper)
+            hasPassedLowerThreshold = (localOrder <= switchDifferenceThresholdLower and previousLocalOrder > switchDifferenceThresholdLower) or (localOrder >= switchDifferenceThresholdLower and previousLocalOrder < switchDifferenceThresholdLower)
 
             if hasPassedUpperThreshold:
-                if localOrder >= self.switchDifferenceThresholdUpper:
+                if localOrder >= switchDifferenceThresholdUpper:
                     return self.orderSwitchValue
                 else:
                     return self.disorderSwitchValue
             elif hasPassedLowerThreshold:
-                if localOrder <= self.switchDifferenceThresholdLower:
+                if localOrder <= switchDifferenceThresholdLower:
                     return self.disorderSwitchValue
                 else:
                     return self.orderSwitchValue
-        elif self.singleOrderThreshold:
+        elif len(self.orderThresholds) == 1:
             absoluteDiff = np.absolute(localOrder - previousLocalOrder)
-            if absoluteDiff > self.singleOrderThreshold:
+            if absoluteDiff > self.orderThresholds[0]:
                 if localOrder > previousLocalOrder:
                     return self.orderSwitchValue
                 elif localOrder < previousLocalOrder:
