@@ -83,7 +83,7 @@ class EvaluatorMultiAvgComp(object):
                 self.__createClusterSizePlot(data, labels)
             case EnumMetrics.Metrics.CLUSTER_NUMBER_OVER_PARTICLE_LIFETIME:
                 self.__createClusterNumberOverParticleLifetimePlot(data, labels)
-            case EnumMetrics.Metrics.SWITCH_VALUE_DISTRIBUTION:
+            case EnumMetrics.Metrics.ORDER_VALUE_PERCENTAGE:
                 self.__createSwitchValuePlot(data, labels)
 
         if xLabel != None:
@@ -94,8 +94,8 @@ class EvaluatorMultiAvgComp(object):
             plt.title(f"""Model comparison: {subtitle}""")
         if savePath != None:
             plt.savefig(savePath)
-        plt.show()
-        #plt.close()
+        #plt.show()
+        plt.close()
 
     
     def evaluateAndVisualize(self, labels, xLabel=None, yLabel=None, subtitle=None, savePath=None):
@@ -183,4 +183,4 @@ class EvaluatorMultiAvgComp(object):
         """
         sorted(data.items())
         df = pd.DataFrame(data, index=labels).T
-        df.plot()
+        df.plot(ylim=(0,100.1))

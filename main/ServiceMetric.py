@@ -43,9 +43,9 @@ def evaluateSingleTimestep(positions, orientations, metric, radius=None, thresho
             # for every cluster, how often does the number or identity of the clusters change
             _, clusters = findClusters(positions, orientations, threshold)
             return clusters
-        case Metrics.SWITCH_VALUE_DISTRIBUTION:
+        case Metrics.ORDER_VALUE_PERCENTAGE:
             orderCount, disorderCount = getNumbersPerSwitchTypeValue(switchTypeValues, switchTypeOptions)
-            return disorderCount
+            return orderCount
      
 def computeOrder(orientations):
     """
@@ -153,6 +153,9 @@ def isNeighbour(radius, positions, targetIdx, candidateIdx):
         A boolean stating whether or not the two particles are neighbours.
     """
     return ((positions[candidateIdx][0] - positions[targetIdx][0])**2 + (positions[candidateIdx][1] - positions[targetIdx][1])**2) <= radius **2 
+
+def angleBetweenTwoVectors(vec1, vec2):
+    return np.arccos(cosAngle(vec1, vec2))
 
 def cosAngle(vec1, vec2):
     """
@@ -294,4 +297,4 @@ def getNumbersPerSwitchTypeValue(switchTypeValues, switchTypeOptions):
     else:
         percentageDisordered = 0
 
-    return percentageOrdered, percentageDisordered 
+    return percentageOrdered * 100, percentageDisordered * 100
