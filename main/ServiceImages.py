@@ -14,6 +14,8 @@ import ServiceMetric
 import ServiceGeneral
 import AnimatorScatter
 import AnimatorScatterMulti
+import DefaultValues as dv
+from matplotlib.ticker import MultipleLocator  # <- HERE
 
 xOffsetsByNCol = {1: 0, 2: -0.5, 3: -0.8, 4: -1.5, 5: -2.2, 6: -3}
 
@@ -325,3 +327,39 @@ def createNeighbourScatterplotVideoMulti(positions, orientations, startTime=0, e
 
     # Display Animation
     #preparedAnimator.showAnimation()
+
+def createNeighourDistributionPlotDistance(positions, orientations, startTime=0, endTime=None, numberOfExampleParticles=5, selectRandomly=True, title=None, radius=10, savePath=None):
+    if selectRandomly == True:
+        i = random.choice(range(len(positions[0])))
+    else:
+        i = range(numberOfExampleParticles)
+    
+
+    if endTime == None or (endTime+1) > len(positions):
+        endTime = len(positions)
+    else:
+        endTime += 1 # to include the last time step
+
+    times = []
+    pointsForI = []
+    for timestep in range(startTime, endTime):
+        times.append(timestep)
+        neighbours = ServiceMetric.findNeighbours(i, positions[timestep], radius)
+        pointsForTimestep = radius * [0]
+        for neighbourIdx in neighbours:
+            distance = math.sqrt((positions[timestep][i][0]-positions[timestep][neighbourIdx][0])**2 + (positions[timestep][i][1]-positions[timestep][neighbourIdx][1])**2)
+            pointsForTimestep[math.floor(distance)] += 1
+        pointsForI.append(pointsForTimestep)
+
+
+    figure = plt.figure()
+    axes = figure.add_subplot(111)
+    
+    # using the matshow() function 
+    caxes = axes.matshow(np.array(pointsForI), interpolation ='nearest')
+    figure.colorbar(caxes)
+
+    axes.yaxis.set_major_locator(MultipleLocator(1))  # <- HERE
+    axes.xaxis.set_major_locator(MultipleLocator(5))  # <- HERE
+    plt.show()
+    print(pointsForTimestep[0])
