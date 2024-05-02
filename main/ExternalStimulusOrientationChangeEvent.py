@@ -103,6 +103,8 @@ class ExternalStimulusOrientationChangeEvent:
                     orientations[idx] = orientations[selectedIndices[0]]
                 case EventEffect.AWAY_FROM_ORIGIN:
                     orientations[idx] = self.__computeAwayFromOrigin(positions[idx])
+                case EventEffect.TOWARDS_ORIGIN:
+                    orientations[idx] = self.__computeTowardsOrigin(positions[idx])
 
         return orientations
 
@@ -228,18 +230,30 @@ class ExternalStimulusOrientationChangeEvent:
         return self.__computeUvCoordinates(newAngle)
     
     def __computeAwayFromOrigin(self, position):
+        angle = self.__computeAngleWithRegardToOrigin(position)
+        if (position[0] < self.__getOriginPoint()[0]):
+            angle += 180
+        return self.__computeUvCoordinates(angle)
+
+    def __computeTowardsOrigin(self, position):
+        angle = self.__computeAngleWithRegardToOrigin(position)
+        if (position[0] > self.__getOriginPoint()[0]):
+            angle += 180
+        return self.__computeUvCoordinates(angle)
+
+    def __computeAngleWithRegardToOrigin(self, position):
+        orientationFromOrigin = position - self.__getOriginPoint()
+        angleRadian = np.arctan(orientationFromOrigin[1]/orientationFromOrigin[0])
+        return math.degrees(angleRadian)
+
+    def __getOriginPoint(self):
         match self.distributionType:
             case DistributionType.GLOBAL:
                 origin = (self.domainSize[0]/2, self.domainSize[1]/2)
             case DistributionType.LOCAL_SINGLE_SITE:
                 origin = self.areas[0][:2]
-        orientationFromOrigin = position - origin
-        angleRadian = np.arctan(orientationFromOrigin[1]/orientationFromOrigin[0])
-        angle = math.degrees(angleRadian)
-        if (position[0] < origin[0]):
-            angle += 180
-        return self.__computeUvCoordinates(angle)
-
+        return origin
+    
     def __computeCurrentAngle(self, orientation):
         # determine the current angle
         previousU = orientation[0]
