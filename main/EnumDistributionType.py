@@ -6,5 +6,4 @@ an event.
 """
 class DistributionType(str, Enum):
     GLOBAL = "G",
-    LOCAL_SINGLE_SITE = "LSS",
-    LOCAL_MULTI_SITE = "LMS"
+    LOCAL_SINGLE_SITE = "LSS"
