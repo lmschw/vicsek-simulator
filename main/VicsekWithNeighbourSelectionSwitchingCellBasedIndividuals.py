@@ -183,7 +183,7 @@ class VicsekWithNeighbourSelection:
             # check if any events take effect at this timestep before anything except the positions is updates
             if events != None:
                 for event in events:
-                    orientations = event.check(self.numberOfParticles, it, positions, orientations, self.cells, self.neighbouringCells, cellToParticleDistribution)
+                    orientations = event.check(self.numberOfParticles, it, positions, orientations, self.cells, self.cellDims, cellToParticleDistribution)
 
             previousLocalOrders = localOrders
             localOrders = self.__getLocalOrders(orientations, neighbourCandidates)

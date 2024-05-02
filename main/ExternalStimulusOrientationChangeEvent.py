@@ -5,13 +5,16 @@ import numpy as np
 from EnumDistributionType import DistributionType
 from EnumEventEffect import EventEffect
 
+import DefaultValues as dv
+import ServiceMetric
+
 class ExternalStimulusOrientationChangeEvent:
     # TODO refactor to allow areas with a radius bigger than the radius of a particle, i.e. remove neighbourCells and determine all affected cells here
     """
     Representation of an event occurring at a specified time and place within the domain and affecting 
     a specified percentage of particles. After creation, the check()-method takes care of everything.
     """
-    def __init__(self, timestep, percentage, angle, eventEffect, distributionType=DistributionType.GLOBAL, areas=None):
+    def __init__(self, timestep, percentage, angle, eventEffect, distributionType=DistributionType.GLOBAL, areas=None, domainSize=dv.DEFAULT_DOMAIN_SIZE_2D):
         """
         Creates an external stimulus event that affects part of the swarm at a given timestep.
 
@@ -32,6 +35,7 @@ class ExternalStimulusOrientationChangeEvent:
         self.eventEffect = eventEffect
         self.distributionType = distributionType
         self.areas = areas
+        self.domainSize = domainSize
 
         if self.distributionType != DistributionType.GLOBAL and self.areas == None:
             raise Exception("Local effects require the area to be specified")
@@ -39,7 +43,7 @@ class ExternalStimulusOrientationChangeEvent:
     def getShortPrintVersion(self):
         return f"t{self.timestep}e{self.eventEffect.value}p{self.percentage}a{self.angle}dt{self.distributionType.value}a{self.areas}"
 
-    def check(self, totalNumberOfParticles, currentTimestep, positions, orientations, cells, neighbouringCells, cellToParticleDistribution):
+    def check(self, totalNumberOfParticles, currentTimestep, positions, orientations, cells, cellDims, cellToParticleDistribution):
         """
         Checks if the event is triggered at the current timestep and executes it if relevant.
 
@@ -56,7 +60,8 @@ class ExternalStimulusOrientationChangeEvent:
             The orientations of all particles - altered if the event has taken place, unaltered otherwise.
         """
         if self.checkTimestep(currentTimestep):
-            orientations = self.executeEvent(totalNumberOfParticles, positions, orientations, cells, neighbouringCells, cellToParticleDistribution)
+            print(f"executing event at timestep {currentTimestep}")
+            orientations = self.executeEvent(totalNumberOfParticles, positions, orientations, cells, cellDims, cellToParticleDistribution)
         return orientations
 
     def checkTimestep(self, currentTimestep):
@@ -71,9 +76,9 @@ class ExternalStimulusOrientationChangeEvent:
         """
         return self.timestep == currentTimestep
     
-    def executeEvent(self, totalNumberOfParticles, positions, orientations, cells, neighbouringCells, cellToParticleDistribution):
+    def executeEvent(self, totalNumberOfParticles, positions, orientations, cells, cellDims, cellToParticleDistribution):
         """
-        Executed the event.
+        Executes the event.
 
         Params:
             - totalNumberOfParticles (int): the total number of particles within the domain. Used to compute the number of affected particles
@@ -87,7 +92,7 @@ class ExternalStimulusOrientationChangeEvent:
         Returns:
             The orientations of all particles after the event has been executed.
         """
-        selectedIndices = self.__determineAffectedParticles(totalNumberOfParticles, positions, cells, neighbouringCells, cellToParticleDistribution)
+        selectedIndices = self.__determineAffectedParticles(totalNumberOfParticles, positions, cells, cellDims, cellToParticleDistribution)
         for idx in selectedIndices:
             match self.eventEffect:
                 case EventEffect.TURN_BY_FIXED_ANGLE:
@@ -96,10 +101,12 @@ class ExternalStimulusOrientationChangeEvent:
                     orientations[idx] = self.__computeUvCoordinates(self.angle)
                 case EventEffect.ALIGN_TO_FIRST_PARTICLE:
                     orientations[idx] = orientations[selectedIndices[0]]
+                case EventEffect.AWAY_FROM_ORIGIN:
+                    orientations[idx] = self.__computeAwayFromOrigin(positions[idx])
 
         return orientations
 
-    def __determineAffectedParticles(self, totalNumberOfParticles, positions, cells, neighbouringCells, cellToParticleDistribution):
+    def __determineAffectedParticles(self, totalNumberOfParticles, positions, cells, cellDims, cellToParticleDistribution):
         """
         Determines which particles should be affected by the event.
 
@@ -114,7 +121,7 @@ class ExternalStimulusOrientationChangeEvent:
             An array of the indices of the affected particles.
         """
         # determine which particles might potentially be affected
-        candidateIndices = self.__determineCandidates(positions, cells, neighbouringCells, cellToParticleDistribution)
+        candidateIndices = self.__determineCandidates(positions, cells, cellDims, cellToParticleDistribution)
         
         # how many particles will be affected
         numberOfAffectedParticles = math.ceil((self.percentage / 100) * totalNumberOfParticles)
@@ -125,7 +132,7 @@ class ExternalStimulusOrientationChangeEvent:
         return random.sample(candidateIndices, numberOfAffectedParticles)
         
 
-    def __determineCandidates(self, positions, cells, neighbouringCells, cellToParticleDistribution):
+    def __determineCandidates(self, positions, cells, cellDims, cellToParticleDistribution):
         """
         Determines which particles could potentially be affected based on the distributionType and the areas if relevant.
 
@@ -144,11 +151,11 @@ class ExternalStimulusOrientationChangeEvent:
             case _: # all other options are local and can be handled in the same way
                 candidateIndices = []
                 for area in self.areas:
-                    cellIdx = self.__findCell(area, cells)
-                    for cellToCheck in neighbouringCells[cellIdx]:
-                        for particleIdx in cellToParticleDistribution[cellToCheck]:
-                            if ((area[0] - positions[particleIdx][0])**2 + (area[1] - positions[particleIdx][1])**2) <= area[2] **2:
-                                candidateIndices.append(particleIdx)
+                        cellsToCheck = self.__findCells(area, cells, cellDims)
+                        for cellToCheck in cellsToCheck:
+                            for particleIdx in cellToParticleDistribution[cellToCheck]:
+                                if ((area[0] - positions[particleIdx][0])**2 + (area[1] - positions[particleIdx][1])**2) <= area[2] **2:
+                                    candidateIndices.append(particleIdx)
                 candidates = list(set(candidateIndices))
         return candidates
 
@@ -169,6 +176,39 @@ class ExternalStimulusOrientationChangeEvent:
                 break
         return targetCell
     
+    def __findCells(self, area, cells, cellDims):
+        areaminx = max(area[0] - area[2], 0) # the radius may be greater than the available space
+        areamaxx = min(area[0] + area[2], self.domainSize[0]) # the radius may be greater than the available space
+        areaminy = max(area[1] - area[2], 0) # the radius may be greater than the available space
+        areamaxy = min(area[1] + area[2], self.domainSize[1]) # the radius may be greater than the available space
+
+        for cellidx, cell in enumerate(cells):
+            xmin = cell[0][0]
+            xmax = cell[1][0]
+            ymin = cell[0][1]
+            ymax = cell[1][1]
+
+            if xmin <= areaminx and xmax > areaminx and area[1] >= ymin and area[1] <= ymax:
+                left = cellidx
+            if xmin < areamaxx and xmax >= areamaxx and area[1] >= ymin and area[1] <= ymax:
+                right = cellidx
+            if ymin <= areaminy and ymax > areaminy and area[0] >= xmin and area[0] <= xmax:
+                upper = cellidx
+            if ymin < areamaxy and ymax >= areamaxy and area[0] >= xmin and area[0] <= xmax:
+                lower = cellidx
+
+        colLeft = math.floor(left / cellDims[1])
+        colRight = math.floor(right / cellDims[1])
+        rowUpper = (upper % cellDims[1])
+        rowLower = (lower % cellDims[1])
+
+        affectedCells = []
+        for cellidx, cell in enumerate(cells):
+            if (cellidx / cellDims[1]) >= (colLeft-1)  and (cellidx / cellDims[1]) <= (colRight+1) and (cellidx % cellDims[1]) >= (rowUpper-1) and (cellidx % cellDims[1]) <= (rowLower+1):
+                affectedCells.append(cellidx)
+
+        return affectedCells
+
     def __computeFixedAngleTurn(self, orientation):
         """
         Determines the new uv-coordinates after turning the particle by the specified angle.
@@ -180,14 +220,31 @@ class ExternalStimulusOrientationChangeEvent:
         Returns:
             The new uv-coordinates for the orientation of the particle.
         """
-        # determine the current angle
-        previousU = orientation[0]
-        previousAngle = np.arccos(previousU) * 180 / np.pi
+        previousAngle = self.__computeCurrentAngle(orientation)
 
         # add the event angle to the current angle
         newAngle = (previousAngle + self.angle) % 360
 
         return self.__computeUvCoordinates(newAngle)
+    
+    def __computeAwayFromOrigin(self, position):
+        match self.distributionType:
+            case DistributionType.GLOBAL:
+                origin = (self.domainSize[0]/2, self.domainSize[1]/2)
+            case DistributionType.LOCAL_SINGLE_SITE:
+                origin = self.areas[0][:2]
+        orientationFromOrigin = position - origin
+        angleRadian = np.arctan(orientationFromOrigin[1]/orientationFromOrigin[0])
+        angle = math.degrees(angleRadian)
+        if (position[0] < origin[0]):
+            angle += 180
+        return self.__computeUvCoordinates(angle)
+
+    def __computeCurrentAngle(self, orientation):
+        # determine the current angle
+        previousU = orientation[0]
+        return np.arccos(previousU) * 180 / np.pi
+
 
     def __computeUvCoordinates(self, angle):
         # compute the uv-coordinates
