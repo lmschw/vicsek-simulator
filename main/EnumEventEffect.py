@@ -8,5 +8,5 @@ class EventEffect(str, Enum):
     ALIGN_TO_FIXED_ANGLE = "align_fixed", # the same angle is imposed on all particles
     ALIGN_TO_FIRST_PARTICLE = "align_first", # the first particle's orientation is imposed on all
     AWAY_FROM_ORIGIN = "origin_away", # turn away from the point of origin of the event
-    TOWARDS_ORIGIN = "origin_towards", # turn towards the point of origin of the event
+    TOWARDS_ORIGIN = "origin_to", # turn towards the point of origin of the event
 
