@@ -92,3 +92,11 @@ additional: try with borders (necessary to reproduce fish experiments)
 - implement switching to alignment
 - average window for local order or running average: avg(t+1) = avg(t) + alpha * (local order + avg(t)) with alpha between 0 and 1
 - global/local, small/large difference, random/alignment changes
+
+
+new:
+- what if quick dip across threshold -> add conditions that above threshold always order, below lower threshold always disorder
+- use tau to determine lower and upper thresholds (tau and 1-tau)
+- anamoly detection -> variance -> 2sigma variance -> switch
+    - plot variance and standard deviation -> highlight outlies -> for single particles
+- run single experiment until it works as expected
