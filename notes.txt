@@ -100,3 +100,4 @@ new:
 - anamoly detection -> variance -> 2sigma variance -> switch
     - plot variance and standard deviation -> highlight outlies -> for single particles
 - run single experiment until it works as expected
+- find a more formal expression for both threshold mechanisms -> discrete or continuous, formula etc.
