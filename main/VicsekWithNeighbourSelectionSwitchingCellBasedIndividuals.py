@@ -7,6 +7,7 @@ from heapq import nsmallest
 import DefaultValues as dv
 import EnumNeighbourSelectionMode
 from EnumSwitchType import SwitchType
+from EnumThresholdType import ThresholdType
 import ServiceMetric
 
 class VicsekWithNeighbourSelection:
@@ -14,8 +15,8 @@ class VicsekWithNeighbourSelection:
     def __init__(self, neighbourSelectionModel, domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, speed=dv.DEFAULT_SPEED, 
                  radius=dv.DEFAULT_RADIUS, noise=dv.DEFAULT_NOISE, numberOfParticles=dv.DEFAULT_NUM_PARTICLES, 
                  k=dv.DEFAULT_K_NEIGHBOURS, showExample=dv.DEFAULT_SHOW_EXAMPLE_PARTICLE, numCells=dv.DEFAULT_NUM_CELLS, 
-                 switchType=None, switchValues=(None, None), orderThresholds=None, numberPreviousStepsForThreshold=10, 
-                 switchBlockedAfterEventTimesteps=-1):
+                 switchType=None, switchValues=(None, None), thresholdType=None, orderThresholds=None, 
+                 numberPreviousStepsForThreshold=10, switchBlockedAfterEventTimesteps=-1):
         """
         Initialize the model with all its parameters
 
@@ -51,6 +52,7 @@ class VicsekWithNeighbourSelection:
         self.numCells = numCells
         self.switchType = switchType
         self.orderSwitchValue, self.disorderSwitchValue = switchValues
+        self.thresholdType = thresholdType
         self.orderThresholds = orderThresholds
         self.numberPreviousStepsForThreshold = numberPreviousStepsForThreshold
         self.switchBlockedAfterEventTimesteps = switchBlockedAfterEventTimesteps
@@ -495,33 +497,38 @@ class VicsekWithNeighbourSelection:
         if hasNeighbours == False:
             return previousValue
 
-        if len(self.orderThresholds) > 1:       
-            switchDifferenceThresholdLower = self.orderThresholds[0]
-            switchDifferenceThresholdUpper = self.orderThresholds[1]
-            hasPassedUpperThreshold = (localOrder >= switchDifferenceThresholdUpper and previousLocalOrder < switchDifferenceThresholdUpper) or (localOrder <= switchDifferenceThresholdUpper and previousLocalOrder > switchDifferenceThresholdUpper)
-            hasPassedLowerThreshold = (localOrder <= switchDifferenceThresholdLower and previousLocalOrder > switchDifferenceThresholdLower) or (localOrder >= switchDifferenceThresholdLower and previousLocalOrder < switchDifferenceThresholdLower)
+        match self.thresholdType: 
+            case ThresholdType.TWO_THRESHOLDS:
+                # setting the two thresholds
+                if len(self.orderThresholds) == 1:
+                    switchDifferenceThresholdLower = self.orderThresholds[0]
+                    switchDifferenceThresholdUpper = 1 - self.orderThresholds[0]
+                else:
+                    switchDifferenceThresholdLower = self.orderThresholds[0]
+                    switchDifferenceThresholdUpper = self.orderThresholds[1]
 
-            if hasPassedUpperThreshold:
-                if localOrder >= switchDifferenceThresholdUpper:
+                # determining the switchTypeValue
+                if localOrder >= switchDifferenceThresholdUpper: 
+                    # uppermost order zone
                     return self.orderSwitchValue
-                else:
+                elif localOrder <= switchDifferenceThresholdLower: 
+                    # lowermost order zone
                     return self.disorderSwitchValue
-            elif hasPassedLowerThreshold:
-                if localOrder <= switchDifferenceThresholdLower:
+                elif localOrder <= switchDifferenceThresholdUpper and previousLocalOrder > switchDifferenceThresholdUpper: 
+                    # neutral middle zone coming from above
                     return self.disorderSwitchValue
-                else:
+                elif localOrder >= switchDifferenceThresholdLower and previousLocalOrder < switchDifferenceThresholdLower:
+                    # neutral middle zone coming from below
                     return self.orderSwitchValue
-        elif len(self.orderThresholds) == 1:
-            absoluteDiff = np.absolute(localOrder - previousLocalOrder)
-            if absoluteDiff > self.orderThresholds[0]:
-                if localOrder > previousLocalOrder:
-                    return self.orderSwitchValue
-                elif localOrder < previousLocalOrder:
-                    return self.disorderSwitchValue
+            case ThresholdType.SINGLE_DIFFERENCE_THRESHOLD:
+                absoluteDiff = np.absolute(localOrder - previousLocalOrder)
+                if absoluteDiff > self.orderThresholds[0]:
+                    if localOrder > previousLocalOrder:
+                        return self.orderSwitchValue
+                    elif localOrder < previousLocalOrder:
+                        return self.disorderSwitchValue
         return previousValue
 
-            
-    
     def __getLocalOrders(self, orientations, neighbours):
         """
         Computes the local order for every particle at the current time step.

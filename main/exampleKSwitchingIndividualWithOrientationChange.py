@@ -12,6 +12,7 @@ import Animator2D
 from EnumSwitchType import SwitchType
 from EnumDistributionType import DistributionType
 from EnumEventEffect import EventEffect
+from EnumThresholdType import ThresholdType
 
 
 domainSize = (100, 100)
@@ -106,6 +107,7 @@ for eventEffect in [EventEffect.AWAY_FROM_ORIGIN,
 endTotal = time.time()
 ServiceGeneral.logWithTime(f"Completed local random start in {ServiceGeneral.formatTime(endTotal-startTotal)}")
 """
+"""
 initialStateString = "ordered"
 targetSwitchValue=disorderValue
 startValue = orderValue
@@ -163,7 +165,7 @@ for eventEffect in [EventEffect.TURN_BY_FIXED_ANGLE,
                         savePath = f"avg_and_single_ind_{initialStateString}_st={switchType.value}_o={orderValue}_do={disorderValue}_st={startValue}_d={density}_{neighbourSelectionMode.value}_noise={noisePercentage}_sth={singleThreshold}_psteps={previousSteps}_bl={numberOfBlockedSteps}_tsv={targetSwitchValue}_e-{eventsString}_{i}"
                         ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
                         ServiceGeneral.logWithTime(f"Completed eventEffect={eventEffect.name}, i={i}, blocked={numberOfBlockedSteps}, steps={previousSteps}, threshold={singleThreshold}")
-
+"""
 
 """
 domainSize = (100, 100)
@@ -359,3 +361,60 @@ preparedAnimator.setParams(simulator.getParameterSummary())
 preparedAnimator.saveAnimation(f"{savePath}.mp4")
 preparedAnimator.showAnimation()
 """
+
+initialStateString = "ordered"
+targetSwitchValue=disorderValue
+startValue = orderValue
+
+thresholdType = ThresholdType.TWO_THRESHOLDS
+thresholds = [0.1]
+
+numberOfPreviousSteps = 100
+tmax = 15000
+i = 1
+
+for percentage in [10, 30, 50, 70]:
+    for eventEffect in [EventEffect.TURN_BY_FIXED_ANGLE,
+                        EventEffect.ALIGN_TO_FIXED_ANGLE,
+                        EventEffect.ALIGN_TO_FIRST_PARTICLE,
+                        EventEffect.AWAY_FROM_ORIGIN,
+                        EventEffect.TOWARDS_ORIGIN]:
+
+
+        event1 = ExternalStimulusOrientationChangeEvent(timestep=5000,
+                                        percentage=percentage,
+                                        angle=angle,
+                                        eventEffect=eventEffect,
+                                        distributionType=DistributionType.GLOBAL
+                                        )
+
+        events = [event1]
+
+        startRun = time.time()
+
+        ServiceGeneral.logWithTime(f"Started")
+        initialState = ServicePreparation.createOrderedInitialDistributionEquidistancedIndividual(startValue, domainSize, n)
+
+        simulator = VicsekWithNeighbourSelectionSwitchingCellBasedIndividuals.VicsekWithNeighbourSelection(
+                                                                        neighbourSelectionModel=neighbourSelectionMode, 
+                                                                        domainSize=domainSize, 
+                                                                        numberOfParticles=n, 
+                                                                        k=startValue, 
+                                                                        noise=noise, 
+                                                                        radius=radius,
+                                                                        switchType=switchType,
+                                                                        switchValues=(orderValue, disorderValue),
+                                                                        thresholdType=thresholdType,
+                                                                        orderThresholds=thresholds,
+                                                                        numberPreviousStepsForThreshold=numberOfPreviousSteps
+                                                                        )
+
+        simulationData, colours, switchValues = simulator.simulate(tmax=tmax, initialState=initialState, events=events)
+        #simulationData, colours, switchValues = simulator.simulate(tmax=tmax, events=events)
+
+        # Save model values for future use
+        eventsString = "_".join([event.getShortPrintVersion() for event in events])
+        savePath = f"ind_avg_{thresholdType.value}_{initialStateString}_st={switchType.value}_o={orderValue}_do={disorderValue}_s={startValue}_d={density}_{neighbourSelectionMode.value}_noise={noisePercentage}_th={thresholds}_psteps={numberOfPreviousSteps}_e-{eventsString}_{i}"
+        ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
+        endTime = time.time()
+        ServiceGeneral.logWithTime(f"Completed eventEffect={eventEffect.name} in {endTime-startRun}")
