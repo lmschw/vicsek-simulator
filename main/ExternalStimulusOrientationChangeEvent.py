@@ -14,7 +14,7 @@ class ExternalStimulusOrientationChangeEvent:
     Representation of an event occurring at a specified time and place within the domain and affecting 
     a specified percentage of particles. After creation, the check()-method takes care of everything.
     """
-    def __init__(self, timestep, percentage, angle, eventEffect, distributionType=DistributionType.GLOBAL, areas=None, domainSize=dv.DEFAULT_DOMAIN_SIZE_2D):
+    def __init__(self, timestep, percentage, angle, eventEffect, distributionType=DistributionType.GLOBAL, areas=None, domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, targetSwitchValue=None):
         """
         Creates an external stimulus event that affects part of the swarm at a given timestep.
 
@@ -36,6 +36,7 @@ class ExternalStimulusOrientationChangeEvent:
         self.distributionType = distributionType
         self.areas = areas
         self.domainSize = domainSize
+        self.targetSwitchValue = targetSwitchValue
 
         if self.distributionType != DistributionType.GLOBAL and self.areas == None:
             raise Exception("Local effects require the area to be specified")
@@ -43,7 +44,7 @@ class ExternalStimulusOrientationChangeEvent:
     def getShortPrintVersion(self):
         return f"t{self.timestep}e{self.eventEffect.value}p{self.percentage}a{self.angle}dt{self.distributionType.value}a{self.areas}"
 
-    def check(self, totalNumberOfParticles, currentTimestep, positions, orientations, cells, cellDims, cellToParticleDistribution):
+    def check(self, totalNumberOfParticles, currentTimestep, positions, orientations, switchValues, cells, cellDims, cellToParticleDistribution):
         """
         Checks if the event is triggered at the current timestep and executes it if relevant.
 
@@ -59,10 +60,11 @@ class ExternalStimulusOrientationChangeEvent:
         Returns:
             The orientations of all particles - altered if the event has taken place, unaltered otherwise.
         """
+        selectedIndices = []
         if self.checkTimestep(currentTimestep):
             print(f"executing event at timestep {currentTimestep}")
-            orientations = self.executeEvent(totalNumberOfParticles, positions, orientations, cells, cellDims, cellToParticleDistribution)
-        return orientations
+            orientations, switchValues, selectedIndices = self.executeEvent(totalNumberOfParticles, positions, orientations, switchValues, cells, cellDims, cellToParticleDistribution)
+        return orientations, switchValues, selectedIndices
 
     def checkTimestep(self, currentTimestep):
         """
@@ -76,7 +78,7 @@ class ExternalStimulusOrientationChangeEvent:
         """
         return self.timestep == currentTimestep
     
-    def executeEvent(self, totalNumberOfParticles, positions, orientations, cells, cellDims, cellToParticleDistribution):
+    def executeEvent(self, totalNumberOfParticles, positions, orientations, switchValues, cells, cellDims, cellToParticleDistribution):
         """
         Executes the event.
 
@@ -105,8 +107,10 @@ class ExternalStimulusOrientationChangeEvent:
                     orientations[idx] = self.__computeAwayFromOrigin(positions[idx])
                 case EventEffect.TOWARDS_ORIGIN:
                     orientations[idx] = self.__computeTowardsOrigin(positions[idx])
+            if self.targetSwitchValue != None:
+                switchValues[idx] = self.targetSwitchValue
 
-        return orientations
+        return orientations, switchValues, selectedIndices
 
     def __determineAffectedParticles(self, totalNumberOfParticles, positions, cells, cellDims, cellToParticleDistribution):
         """

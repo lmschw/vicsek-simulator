@@ -35,6 +35,7 @@ disorderValue = 1
 n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
 noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(noisePercentage)
 
+"""
 startTotal = time.time()
 for eventEffect in [EventEffect.AWAY_FROM_ORIGIN,
                     EventEffect.TOWARDS_ORIGIN]:
@@ -61,8 +62,8 @@ for eventEffect in [EventEffect.AWAY_FROM_ORIGIN,
     startValue = orderValue
 
     for i in range(1,4):
-        for previousSteps in [1, 2, 5, 10, 50, 100, tmax]:
-            for singleThreshold in [0.1,0.3,0.5,0.7,0.9]:
+        for previousSteps in [10, 50, tmax]:
+            for singleThreshold in [0.5,0.7]:
                 ServiceGeneral.logWithTime(f"Start local random start effect={eventEffect.name}, i={i}, previousSteps={previousSteps}, singleThreshold={singleThreshold}")
 
                 initialState = ServicePreparation.createOrderedInitialDistributionEquidistancedIndividual(startValue, domainSize, n)
@@ -71,7 +72,7 @@ for eventEffect in [EventEffect.AWAY_FROM_ORIGIN,
                                                                                 neighbourSelectionModel=neighbourSelectionMode, 
                                                                                 domainSize=domainSize, 
                                                                                 numberOfParticles=n, 
-                                                                                 k=startValue, 
+                                                                                k=startValue, 
                                                                                 noise=noise, 
                                                                                 radius=radius,
                                                                                 switchType=switchType,
@@ -104,7 +105,64 @@ for eventEffect in [EventEffect.AWAY_FROM_ORIGIN,
                 ServiceGeneral.logWithTime(f"Completed local random effect={eventEffect.name}, start i={i}, previousSteps={previousSteps}, threshold={singleThreshold} in {ServiceGeneral.formatTime(endRun-startRun)}")
 endTotal = time.time()
 ServiceGeneral.logWithTime(f"Completed local random start in {ServiceGeneral.formatTime(endTotal-startTotal)}")
+"""
+initialStateString = "ordered"
+targetSwitchValue=disorderValue
+startValue = orderValue
 
+
+for eventEffect in [EventEffect.TURN_BY_FIXED_ANGLE,
+                    EventEffect.ALIGN_TO_FIXED_ANGLE]:
+        event1 = ExternalStimulusOrientationChangeEvent(timestep=2000,
+                                        percentage=percentage,
+                                        angle=angle,
+                                        eventEffect=eventEffect,
+                                        distributionType=DistributionType.LOCAL_SINGLE_SITE,
+                                        areas=areas,
+                                        targetSwitchValue=targetSwitchValue
+                                        )
+
+        event2 = ExternalStimulusOrientationChangeEvent(timestep=6000,
+                                        percentage=percentage,
+                                        angle=angle,
+                                        eventEffect=eventEffect,
+                                        distributionType=DistributionType.LOCAL_SINGLE_SITE,
+                                        areas=areas,
+                                        targetSwitchValue=targetSwitchValue
+                                        )
+
+        events = [event1]
+
+        startRun = time.time()
+        for i in range(1,4):
+            for numberOfBlockedSteps in [10, 100, 500, 1000]:
+                for previousSteps in [10, 50, tmax]:
+                    for singleThreshold in [0.5,0.7]:
+                        ServiceGeneral.logWithTime(f"Started eventEffect={eventEffect.name}, i={i}, blocked={numberOfBlockedSteps}, steps={previousSteps}, threshold={singleThreshold}")
+                        initialState = ServicePreparation.createOrderedInitialDistributionEquidistancedIndividual(startValue, domainSize, n)
+
+                        simulator = VicsekWithNeighbourSelectionSwitchingCellBasedIndividuals.VicsekWithNeighbourSelection(
+                                                                                        neighbourSelectionModel=neighbourSelectionMode, 
+                                                                                        domainSize=domainSize, 
+                                                                                        numberOfParticles=n, 
+                                                                                        k=startValue, 
+                                                                                        noise=noise, 
+                                                                                        radius=radius,
+                                                                                        switchType=switchType,
+                                                                                        switchValues=(orderValue, disorderValue),
+                                                                                        orderThresholds=[singleThreshold],
+                                                                                        numberPreviousStepsForThreshold=previousSteps,
+                                                                                        switchBlockedAfterEventTimesteps=numberOfBlockedSteps
+                                                                                        )
+
+                        simulationData, colours, switchValues = simulator.simulate(tmax=tmax, initialState=initialState, events=events)
+                        #simulationData, colours, switchValues = simulator.simulate(tmax=tmax, events=events)
+
+                        # Save model values for future use
+                        eventsString = "_".join([event.getShortPrintVersion() for event in events])
+                        savePath = f"avg_and_single_ind_{initialStateString}_st={switchType.value}_o={orderValue}_do={disorderValue}_st={startValue}_d={density}_{neighbourSelectionMode.value}_noise={noisePercentage}_sth={singleThreshold}_psteps={previousSteps}_bl={numberOfBlockedSteps}_tsv={targetSwitchValue}_e-{eventsString}_{i}"
+                        ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
+                        ServiceGeneral.logWithTime(f"Completed eventEffect={eventEffect.name}, i={i}, blocked={numberOfBlockedSteps}, steps={previousSteps}, threshold={singleThreshold}")
 
 
 """

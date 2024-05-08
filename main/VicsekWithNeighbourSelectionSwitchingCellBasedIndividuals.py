@@ -15,7 +15,7 @@ class VicsekWithNeighbourSelection:
                  radius=dv.DEFAULT_RADIUS, noise=dv.DEFAULT_NOISE, numberOfParticles=dv.DEFAULT_NUM_PARTICLES, 
                  k=dv.DEFAULT_K_NEIGHBOURS, showExample=dv.DEFAULT_SHOW_EXAMPLE_PARTICLE, numCells=dv.DEFAULT_NUM_CELLS, 
                  switchType=None, switchValues=(None, None), orderThresholds=None, numberPreviousStepsForThreshold=10, 
-                 stimuli=[]):
+                 switchBlockedAfterEventTimesteps=-1):
         """
         Initialize the model with all its parameters
 
@@ -36,7 +36,6 @@ class VicsekWithNeighbourSelection:
                     If only one number is supplied (as an array with one element), will be used to check if the difference between the previous and the current local order is greater than the threshold.
                     If two numbers are supplied, will be used as a lower and an upper threshold that triggers a switch: [lowerThreshold, upperThreshold]
             - numberPreviousStepsForThreshold (int) [optional]: the number of previous timesteps that are considered for the average to be compared to the threshold value(s)
-            - stimuli (array of ExternalStimulusOrientationChangeEvent) [optional]: events that alter the orientations of the particles
 
         Returns:
             No return.
@@ -54,7 +53,8 @@ class VicsekWithNeighbourSelection:
         self.orderSwitchValue, self.disorderSwitchValue = switchValues
         self.orderThresholds = orderThresholds
         self.numberPreviousStepsForThreshold = numberPreviousStepsForThreshold
-        self.stimuli = stimuli
+        self.switchBlockedAfterEventTimesteps = switchBlockedAfterEventTimesteps
+        self.selectedIndices = {}
 
     def getParameterSummary(self, asString=False):
         """
@@ -170,6 +170,7 @@ class VicsekWithNeighbourSelection:
         # for every time step, the positions, orientations, switchTypeValue and colours for each particle are updated and added to the histories
         for it in range(numIntervals):
             self.t = it
+
             if t % 1000 == 0:
                 print(f"t={t}/{numIntervals-1}")
 
@@ -180,10 +181,11 @@ class VicsekWithNeighbourSelection:
             
             neighbourCandidates = self.__findNeighbours(positions, cellToParticleDistribution, particleToCellDistribution)
 
+            self.cleanSelectedIndices(it)
             # check if any events take effect at this timestep before anything except the positions is updates
             if events != None:
                 for event in events:
-                    orientations = event.check(self.numberOfParticles, it, positions, orientations, self.cells, self.cellDims, cellToParticleDistribution)
+                    orientations, switchTypeValues, self.selectedIndices[it] = event.check(self.numberOfParticles, it, positions, orientations, switchTypeValues, self.cells, self.cellDims, cellToParticleDistribution)
 
             previousLocalOrders = localOrders
             localOrders = self.__getLocalOrders(orientations, neighbourCandidates)
@@ -466,9 +468,11 @@ class VicsekWithNeighbourSelection:
         switchTypeValues = self.numberOfParticles * [None]
         for i in range(self.numberOfParticles):
             hasNeighbours = len(neighbours[i]) > 1
-
-            #switchTypeValues[i] = self.__getSingleSwitchTypeValue(previousSwitchTypeValues[i], hasNeighbours, previousLocalOrders[i], localOrders[i])
-            switchTypeValues[i] = self.__getSingleSwitchTypeValue(i, timestep, previousSwitchTypeValues[i], hasNeighbours, localOrders[i])
+            # only update the switchTypeValue after the event lock has passed
+            if any(i in val for val in self.selectedIndices.values()):
+                switchTypeValues[i] = previousSwitchTypeValues[i]
+            else:
+                switchTypeValues[i] = self.__getSingleSwitchTypeValue(i, timestep, previousSwitchTypeValues[i], hasNeighbours, localOrders[i])
         return switchTypeValues
             
     def __getSingleSwitchTypeValue(self, idx, timestep, previousValue, hasNeighbours, localOrder):
@@ -565,9 +569,13 @@ class VicsekWithNeighbourSelection:
         # blue for order, red for disorder
         colours=self.numberOfParticles * ['k']
         for i in range(len(colours)):
-            if switchTypeValues[i] == self.orderSwitchValue:
+            if any(i in val for val in self.selectedIndices.values()):
+                colours[i] = 'g'
+            elif switchTypeValues[i] == self.orderSwitchValue:
                 colours[i] = 'b'
             elif switchTypeValues[i] == self.disorderSwitchValue:
                 colours[i] = 'r'
         return colours
         
+    def cleanSelectedIndices(self, timestep):
+        self.selectedIndices = {k: v for k, v in self.selectedIndices.items() if (k + self.switchBlockedAfterEventTimesteps) >= timestep}
