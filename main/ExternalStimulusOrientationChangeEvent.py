@@ -42,7 +42,7 @@ class ExternalStimulusOrientationChangeEvent:
             raise Exception("Local effects require the area to be specified")
         
     def getShortPrintVersion(self):
-        return f"t{self.timestep}e{self.eventEffect.value}p{self.percentage}a{self.angle}dt{self.distributionType.value}a{self.areas}"
+        return f"t{self.timestep}e{self.eventEffect.val}p{self.percentage}a{self.angle}dt{self.distributionType.value}a{self.areas}"
 
     def check(self, totalNumberOfParticles, currentTimestep, positions, orientations, switchValues, cells, cellDims, cellToParticleDistribution):
         """

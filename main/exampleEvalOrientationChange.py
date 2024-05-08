@@ -69,6 +69,53 @@ previousSteps = [1, 2, 5, 10, 50, 100, 10000]
 differenceThresholdLabels = ["0.1", "0.3", "0.5", "0.7", "0.9"]
 previousStepsLabels = ["1", "2", "5", "10", "50", "100", "10000"]
 
+
+for metric in [Metrics.ORDER]:
+    if metric == Metrics.ORDER:
+        yLabel = "order"
+    else:
+        yLabel = "percentage of particles with order value"
+    for distributionType in [DistributionType.GLOBAL]:
+        if distributionType == DistributionType.GLOBAL:
+            area = None
+            dist = "Global"
+        else:
+            area = "[(20, 20, 10)]"
+            dist = "Local"
+        for initialState in ["ordered"]:
+            if initialState == "random":
+                startValue = disorderValue
+            else:
+                startValue = orderValue
+
+            for threshold in [0.1]:
+
+                labels = [""]
+                for threshold in [0.1]:
+                    subtitle = f"{dist} - number of previous steps comparison with \ndifference threshold = {threshold} - events at 5000"
+                    modelParams = []
+                    simulationData = []
+                    colours = []
+                    switchTypeValues = []
+                    for previousStep in [100]:
+                        modelParamsDensity, simulationDataDensity, coloursDensity, switchTypeValuesDensity = ServiceSavedModel.loadModels([
+                                                                                                                f"ind_avg_tt_ordered_st=K_o=5_do=1_s=5_d=0.01_LOD_noise=1_th=[0.1]_psteps=100_e-t5000eorigin_awayp30a180dtGaNone_1.json",
+
+                                                                                                                ], loadSwitchValues=True)
+                        modelParams.append(modelParamsDensity)
+                        simulationData.append(simulationDataDensity)
+                        colours.append(coloursDensity)
+                        switchTypeValues.append(switchTypeValuesDensity)
+
+                    #savePath = f"order-ot_comp-K-ordered-d={density}-noise={noisePercentage}-{mode.name}-ot={orderThreshold}-events-t{eventTimestep}p{eventPercentage}a{angle}dt{distributionType.value}a{area}.svg"
+                    #savePath = f"{metric.value}_ps-comp_avg_and_single_ind_{initialState}_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d=0.01_LOD_noise=1_ot=[{singleThreshold}]_events-t2000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.val}p30a180dt{distributionType.value}a{area}.svg"
+                    savePath = f"test_order_{eventEffect.val}_th=0.1_density=0.01.svg"
+                    evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=100, switchTypeValues=switchTypeValues, switchTypeOptions=switchTypeOptions)
+                    evaluator.evaluateAndVisualize(labels=labels, xLabel=xLabel, yLabel=yLabel, subtitle=subtitle, savePath=savePath)
+                    ServiceGeneral.logWithTime(f"created ps comp graph for effect={eventEffect.name}, sth = {threshold} and metric {metric.name}")
+
+
+"""
 for metric in [Metrics.ORDER, Metrics.ORDER_VALUE_PERCENTAGE]:
     if metric == Metrics.ORDER:
         yLabel = "order"
@@ -99,9 +146,9 @@ for metric in [Metrics.ORDER, Metrics.ORDER_VALUE_PERCENTAGE]:
                     switchTypeValues = []
                     for previousStep in previousSteps:
                         modelParamsDensity, simulationDataDensity, coloursDensity, switchTypeValuesDensity = ServiceSavedModel.loadModels([
-                                                                                                                f"D:/vicsek-data/ind-single-with-previous-steps/avg_and_single_ind_{initialState}_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d=0.01_LOD_noise=1_sth={singleThreshold}_psteps={previousStep}_events-t2000e{eventEffect.value}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.value}p30a180dt{distributionType.value}a{area}_1.json",
-                                                                                                                f"D:/vicsek-data/ind-single-with-previous-steps/avg_and_single_ind_{initialState}_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d=0.01_LOD_noise=1_sth={singleThreshold}_psteps={previousStep}_events-t2000e{eventEffect.value}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.value}p30a180dt{distributionType.value}a{area}_2.json",
-                                                                                                                f"D:/vicsek-data/ind-single-with-previous-steps/avg_and_single_ind_{initialState}_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d=0.01_LOD_noise=1_sth={singleThreshold}_psteps={previousStep}_events-t2000e{eventEffect.value}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.value}p30a180dt{distributionType.value}a{area}_3.json",
+                                                                                                                f"D:/vicsek-data/ind-single-with-previous-steps/avg_and_single_ind_{initialState}_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d=0.01_LOD_noise=1_sth={singleThreshold}_psteps={previousStep}_events-t2000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_1.json",
+                                                                                                                f"D:/vicsek-data/ind-single-with-previous-steps/avg_and_single_ind_{initialState}_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d=0.01_LOD_noise=1_sth={singleThreshold}_psteps={previousStep}_events-t2000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_2.json",
+                                                                                                                f"D:/vicsek-data/ind-single-with-previous-steps/avg_and_single_ind_{initialState}_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d=0.01_LOD_noise=1_sth={singleThreshold}_psteps={previousStep}_events-t2000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_3.json",
 
                                                                                                                 ], loadSwitchValues=True)
                         modelParams.append(modelParamsDensity)
@@ -110,7 +157,7 @@ for metric in [Metrics.ORDER, Metrics.ORDER_VALUE_PERCENTAGE]:
                         switchTypeValues.append(switchTypeValuesDensity)
 
                     #savePath = f"order-ot_comp-K-ordered-d={density}-noise={noisePercentage}-{mode.name}-ot={orderThreshold}-events-t{eventTimestep}p{eventPercentage}a{angle}dt{distributionType.value}a{area}.svg"
-                    savePath = f"{metric.value}_ps-comp_avg_and_single_ind_{initialState}_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d=0.01_LOD_noise=1_ot=[{singleThreshold}]_events-t2000e{eventEffect.value}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.value}p30a180dt{distributionType.value}a{area}.svg"
+                    savePath = f"{metric.value}_ps-comp_avg_and_single_ind_{initialState}_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d=0.01_LOD_noise=1_ot=[{singleThreshold}]_events-t2000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.val}p30a180dt{distributionType.value}a{area}.svg"
                     evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=100, switchTypeValues=switchTypeValues, switchTypeOptions=switchTypeOptions)
                     evaluator.evaluateAndVisualize(labels=labels, xLabel=xLabel, yLabel=yLabel, subtitle=subtitle, savePath=savePath)
                     ServiceGeneral.logWithTime(f"created ps comp graph for effect={eventEffect.name}, sth = {singleThreshold} and metric {metric.name}")
@@ -124,9 +171,9 @@ for metric in [Metrics.ORDER, Metrics.ORDER_VALUE_PERCENTAGE]:
                     switchTypeValues = []
                     for singleThreshold in differenceThresholds:
                         modelParamsDensity, simulationDataDensity, coloursDensity, switchTypeValuesDensity = ServiceSavedModel.loadModels([
-                                                                                                                f"D:/vicsek-data/ind-single-with-previous-steps/avg_and_single_ind_{initialState}_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d=0.01_LOD_noise=1_sth={singleThreshold}_psteps={previousStep}_events-t2000e{eventEffect.value}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.value}p30a180dt{distributionType.value}a{area}_1.json",
-                                                                                                                f"D:/vicsek-data/ind-single-with-previous-steps/avg_and_single_ind_{initialState}_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d=0.01_LOD_noise=1_sth={singleThreshold}_psteps={previousStep}_events-t2000e{eventEffect.value}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.value}p30a180dt{distributionType.value}a{area}_2.json",
-                                                                                                                f"D:/vicsek-data/ind-single-with-previous-steps/avg_and_single_ind_{initialState}_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d=0.01_LOD_noise=1_sth={singleThreshold}_psteps={previousStep}_events-t2000e{eventEffect.value}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.value}p30a180dt{distributionType.value}a{area}_3.json",
+                                                                                                                f"D:/vicsek-data/ind-single-with-previous-steps/avg_and_single_ind_{initialState}_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d=0.01_LOD_noise=1_sth={singleThreshold}_psteps={previousStep}_events-t2000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_1.json",
+                                                                                                                f"D:/vicsek-data/ind-single-with-previous-steps/avg_and_single_ind_{initialState}_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d=0.01_LOD_noise=1_sth={singleThreshold}_psteps={previousStep}_events-t2000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_2.json",
+                                                                                                                f"D:/vicsek-data/ind-single-with-previous-steps/avg_and_single_ind_{initialState}_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d=0.01_LOD_noise=1_sth={singleThreshold}_psteps={previousStep}_events-t2000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_3.json",
 
                                                                                                                 ], loadSwitchValues=True)
                         modelParams.append(modelParamsDensity)
@@ -135,11 +182,11 @@ for metric in [Metrics.ORDER, Metrics.ORDER_VALUE_PERCENTAGE]:
                         switchTypeValues.append(switchTypeValuesDensity)
 
                     #savePath = f"order-ot_comp-K-ordered-d={density}-noise={noisePercentage}-{mode.name}-ot={orderThreshold}-events-t{eventTimestep}p{eventPercentage}a{angle}dt{distributionType.value}a{area}.svg"
-                    savePath = f"{metric.value}_th-comp_avg_and_single_ind_{initialState}_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d=0.01_LOD_noise=1_psteps={previousStep}_events-t2000e{eventEffect.value}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.value}p30a180dt{distributionType.value}a{area}.svg"
+                    savePath = f"{metric.value}_th-comp_avg_and_single_ind_{initialState}_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d=0.01_LOD_noise=1_psteps={previousStep}_events-t2000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.val}p30a180dt{distributionType.value}a{area}.svg"
                     evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=100, switchTypeValues=switchTypeValues, switchTypeOptions=switchTypeOptions)
                     evaluator.evaluateAndVisualize(labels=labels, xLabel=xLabel, yLabel=yLabel, subtitle=subtitle, savePath=savePath)
                     ServiceGeneral.logWithTime(f"created sth comp graph for for effect={eventEffect.name}, ps = {previousStep} and metric {metric.name}")
-
+"""
 """
 mode = NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE
 xLabel = "Timestep"
@@ -203,9 +250,9 @@ for metric in [Metrics.ORDER, Metrics.ORDER_VALUE_PERCENTAGE]:
                         switchTypeValues = []
                         for lowerThreshold in lowerThresholds:
                             modelParamsDensity, simulationDataDensity, coloursDensity, switchTypeValuesDensity = ServiceSavedModel.loadModels([
-                                                                                                                    f"d:/vicsek-data/ind-single-with-previous-steps/avg_double_ind_{initialState}_st=K_order=5_disorder=1_start={startValue}_d=0.01_LOD_noise=1_ot=[{lowerThreshold}, {upperThreshold}]_psteps={previousStep}_events-t2000e{eventEffect.value}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.value}p30a180dt{distributionType.value}a{area}_1.json",
-                                                                                                                    f"d:/vicsek-data/ind-single-with-previous-steps/avg_double_ind_{initialState}_st=K_order=5_disorder=1_start={startValue}_d=0.01_LOD_noise=1_ot=[{lowerThreshold}, {upperThreshold}]_psteps={previousStep}_events-t2000e{eventEffect.value}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.value}p30a180dt{distributionType.value}a{area}_2.json",
-                                                                                                                    f"d:/vicsek-data/ind-single-with-previous-steps/avg_double_ind_{initialState}_st=K_order=5_disorder=1_start={startValue}_d=0.01_LOD_noise=1_ot=[{lowerThreshold}, {upperThreshold}]_psteps={previousStep}_events-t2000e{eventEffect.value}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.value}p30a180dt{distributionType.value}a{area}_3.json"
+                                                                                                                    f"d:/vicsek-data/ind-single-with-previous-steps/avg_double_ind_{initialState}_st=K_order=5_disorder=1_start={startValue}_d=0.01_LOD_noise=1_ot=[{lowerThreshold}, {upperThreshold}]_psteps={previousStep}_events-t2000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_1.json",
+                                                                                                                    f"d:/vicsek-data/ind-single-with-previous-steps/avg_double_ind_{initialState}_st=K_order=5_disorder=1_start={startValue}_d=0.01_LOD_noise=1_ot=[{lowerThreshold}, {upperThreshold}]_psteps={previousStep}_events-t2000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_2.json",
+                                                                                                                    f"d:/vicsek-data/ind-single-with-previous-steps/avg_double_ind_{initialState}_st=K_order=5_disorder=1_start={startValue}_d=0.01_LOD_noise=1_ot=[{lowerThreshold}, {upperThreshold}]_psteps={previousStep}_events-t2000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_3.json"
 
                                                                                                                     ], loadSwitchValues=True)
                             modelParams.append(modelParamsDensity)
@@ -214,10 +261,10 @@ for metric in [Metrics.ORDER, Metrics.ORDER_VALUE_PERCENTAGE]:
                             switchTypeValues.append(switchTypeValuesDensity)
 
                         #savePath = f"order-ot_comp-K-ordered-d={density}-noise={noisePercentage}-{mode.name}-ot={orderThreshold}-events-t{eventTimestep}p{eventPercentage}a{angle}dt{distributionType.value}a{area}.svg"
-                        savePath = f"{metric.value}_lt-comp_avg_and_double_ind_{initialState}_st=K_order=5_disorder=1_start={startValue}_d=0.01_LOD_noise=1_ut={upperThreshold}_psteps={previousStep}_events-t2000e{eventEffect.value}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.value}p30a180dt{distributionType.value}a{area}.svg"
+                        savePath = f"{metric.value}_lt-comp_avg_and_double_ind_{initialState}_st=K_order=5_disorder=1_start={startValue}_d=0.01_LOD_noise=1_ut={upperThreshold}_psteps={previousStep}_events-t2000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.val}p30a180dt{distributionType.value}a{area}.svg"
                         evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=100, switchTypeValues=switchTypeValues, switchTypeOptions=switchTypeOptions)
                         evaluator.evaluateAndVisualize(labels=labels, xLabel=xLabel, yLabel=yLabel, subtitle=subtitle, savePath=savePath)
-                        ServiceGeneral.logWithTime(f"created lt comp graph for {dist} with effect = {eventEffect.value}, previous steps = {previousStep}, ut = {upperThreshold} and metric {metric.name}")
+                        ServiceGeneral.logWithTime(f"created lt comp graph for {dist} with effect = {eventEffect}, previous steps = {previousStep}, ut = {upperThreshold} and metric {metric.name}")
 
                     labels = upperThresholdLabels
                     for lowerThreshold in lowerThresholds:
@@ -228,9 +275,9 @@ for metric in [Metrics.ORDER, Metrics.ORDER_VALUE_PERCENTAGE]:
                         switchTypeValues = []
                         for upperThreshold in upperThresholds:
                             modelParamsDensity, simulationDataDensity, coloursDensity, switchTypeValuesDensity = ServiceSavedModel.loadModels([
-                                                                                                                    f"d:/vicsek-data/ind-single-with-previous-steps/avg_double_ind_{initialState}_st=K_order=5_disorder=1_start={startValue}_d=0.01_LOD_noise=1_ot=[{lowerThreshold}, {upperThreshold}]_psteps={previousStep}_events-t2000e{eventEffect.value}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.value}p30a180dt{distributionType.value}a{area}_1.json",
-                                                                                                                    f"d:/vicsek-data/ind-single-with-previous-steps/avg_double_ind_{initialState}_st=K_order=5_disorder=1_start={startValue}_d=0.01_LOD_noise=1_ot=[{lowerThreshold}, {upperThreshold}]_psteps={previousStep}_events-t2000e{eventEffect.value}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.value}p30a180dt{distributionType.value}a{area}_2.json",
-                                                                                                                    f"d:/vicsek-data/ind-single-with-previous-steps/avg_double_ind_{initialState}_st=K_order=5_disorder=1_start={startValue}_d=0.01_LOD_noise=1_ot=[{lowerThreshold}, {upperThreshold}]_psteps={previousStep}_events-t2000e{eventEffect.value}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.value}p30a180dt{distributionType.value}a{area}_3.json"
+                                                                                                                    f"d:/vicsek-data/ind-single-with-previous-steps/avg_double_ind_{initialState}_st=K_order=5_disorder=1_start={startValue}_d=0.01_LOD_noise=1_ot=[{lowerThreshold}, {upperThreshold}]_psteps={previousStep}_events-t2000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_1.json",
+                                                                                                                    f"d:/vicsek-data/ind-single-with-previous-steps/avg_double_ind_{initialState}_st=K_order=5_disorder=1_start={startValue}_d=0.01_LOD_noise=1_ot=[{lowerThreshold}, {upperThreshold}]_psteps={previousStep}_events-t2000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_2.json",
+                                                                                                                    f"d:/vicsek-data/ind-single-with-previous-steps/avg_double_ind_{initialState}_st=K_order=5_disorder=1_start={startValue}_d=0.01_LOD_noise=1_ot=[{lowerThreshold}, {upperThreshold}]_psteps={previousStep}_events-t2000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_3.json"
 
                                                                                                                     ], loadSwitchValues=True)
                             modelParams.append(modelParamsDensity)
@@ -239,9 +286,9 @@ for metric in [Metrics.ORDER, Metrics.ORDER_VALUE_PERCENTAGE]:
                             switchTypeValues.append(switchTypeValuesDensity)
 
                         #savePath = f"order-ot_comp-K-ordered-d={density}-noise={noisePercentage}-{mode.name}-ot={orderThreshold}-events-t{eventTimestep}p{eventPercentage}a{angle}dt{distributionType.value}a{area}.svg"
-                        savePath = f"{metric.value}_ut-comp_avg_and_double_ind_{initialState}_st=K_order=5_disorder=1_start={startValue}_d=0.01_LOD_noise=1_lt={lowerThreshold}_psteps={previousStep}_events-t2000e{eventEffect.value}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.value}p30a180dt{distributionType.value}a{area}.svg"
+                        savePath = f"{metric.value}_ut-comp_avg_and_double_ind_{initialState}_st=K_order=5_disorder=1_start={startValue}_d=0.01_LOD_noise=1_lt={lowerThreshold}_psteps={previousStep}_events-t2000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.val}p30a180dt{distributionType.value}a{area}.svg"
                         evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=100, switchTypeValues=switchTypeValues, switchTypeOptions=switchTypeOptions)
                         evaluator.evaluateAndVisualize(labels=labels, xLabel=xLabel, yLabel=yLabel, subtitle=subtitle, savePath=savePath)
-                        ServiceGeneral.logWithTime(f"created ut comp graph for {dist} with effect = {eventEffect.value}, previous steps = {previousStep}, lt = {lowerThreshold} and metric {metric.name}")
+                        ServiceGeneral.logWithTime(f"created ut comp graph for {dist} with effect = {eventEffect.val}, previous steps = {previousStep}, lt = {lowerThreshold} and metric {metric.name}")
 
 """
