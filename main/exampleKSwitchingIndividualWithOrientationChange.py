@@ -362,10 +362,6 @@ preparedAnimator.saveAnimation(f"{savePath}.mp4")
 preparedAnimator.showAnimation()
 """
 
-initialStateString = "ordered"
-targetSwitchValue=disorderValue
-startValue = orderValue
-
 thresholdType = ThresholdType.TWO_THRESHOLDS
 thresholds = [0.1]
 
@@ -373,48 +369,58 @@ numberOfPreviousSteps = 100
 tmax = 15000
 i = 1
 
-for percentage in [10, 30, 50, 70]:
-    for eventEffect in [EventEffect.TURN_BY_FIXED_ANGLE,
-                        EventEffect.ALIGN_TO_FIXED_ANGLE,
-                        EventEffect.ALIGN_TO_FIRST_PARTICLE,
-                        EventEffect.AWAY_FROM_ORIGIN,
-                        EventEffect.TOWARDS_ORIGIN]:
+for initialStateString in ["ordered", "random"]:
+    if initialStateString == "ordered":
+        targetSwitchValue=disorderValue
+        startValue = orderValue
+    else:
+        targetSwitchValue=orderValue
+        startValue = disorderValue
 
+    for percentage in [10, 30, 50, 70, 100]:
+        for eventEffect in [EventEffect.TURN_BY_FIXED_ANGLE,
+                            EventEffect.ALIGN_TO_FIXED_ANGLE,
+                            EventEffect.ALIGN_TO_FIRST_PARTICLE,
+                            EventEffect.AWAY_FROM_ORIGIN,
+                            EventEffect.TOWARDS_ORIGIN]:
+            
+            for i in range(1, 11):
+                event1 = ExternalStimulusOrientationChangeEvent(timestep=5000,
+                                                percentage=percentage,
+                                                angle=angle,
+                                                eventEffect=eventEffect,
+                                                distributionType=DistributionType.GLOBAL
+                                                )
 
-        event1 = ExternalStimulusOrientationChangeEvent(timestep=5000,
-                                        percentage=percentage,
-                                        angle=angle,
-                                        eventEffect=eventEffect,
-                                        distributionType=DistributionType.GLOBAL
-                                        )
+                events = [event1]
 
-        events = [event1]
+                startRun = time.time()
 
-        startRun = time.time()
+                ServiceGeneral.logWithTime(f"Started percentage={percentage}, eventEffect={eventEffect.name}")
+                if initialStateString == "ordered":
+                    initialState = ServicePreparation.createOrderedInitialDistributionEquidistancedIndividual(startValue, domainSize, n)
 
-        ServiceGeneral.logWithTime(f"Started")
-        initialState = ServicePreparation.createOrderedInitialDistributionEquidistancedIndividual(startValue, domainSize, n)
+                simulator = VicsekWithNeighbourSelectionSwitchingCellBasedIndividuals.VicsekWithNeighbourSelection(
+                                                                                neighbourSelectionModel=neighbourSelectionMode, 
+                                                                                domainSize=domainSize, 
+                                                                                numberOfParticles=n, 
+                                                                                k=startValue, 
+                                                                                noise=noise, 
+                                                                                radius=radius,
+                                                                                switchType=switchType,
+                                                                                switchValues=(orderValue, disorderValue),
+                                                                                thresholdType=thresholdType,
+                                                                                orderThresholds=thresholds,
+                                                                                numberPreviousStepsForThreshold=numberOfPreviousSteps
+                                                                                )
+                if initialStateString == "ordered":
+                    simulationData, colours, switchValues = simulator.simulate(tmax=tmax, initialState=initialState, events=events)
+                else:
+                    simulationData, colours, switchValues = simulator.simulate(tmax=tmax, events=events)
 
-        simulator = VicsekWithNeighbourSelectionSwitchingCellBasedIndividuals.VicsekWithNeighbourSelection(
-                                                                        neighbourSelectionModel=neighbourSelectionMode, 
-                                                                        domainSize=domainSize, 
-                                                                        numberOfParticles=n, 
-                                                                        k=startValue, 
-                                                                        noise=noise, 
-                                                                        radius=radius,
-                                                                        switchType=switchType,
-                                                                        switchValues=(orderValue, disorderValue),
-                                                                        thresholdType=thresholdType,
-                                                                        orderThresholds=thresholds,
-                                                                        numberPreviousStepsForThreshold=numberOfPreviousSteps
-                                                                        )
-
-        simulationData, colours, switchValues = simulator.simulate(tmax=tmax, initialState=initialState, events=events)
-        #simulationData, colours, switchValues = simulator.simulate(tmax=tmax, events=events)
-
-        # Save model values for future use
-        eventsString = "_".join([event.getShortPrintVersion() for event in events])
-        savePath = f"ind_avg_{thresholdType.value}_{initialStateString}_st={switchType.value}_o={orderValue}_do={disorderValue}_s={startValue}_d={density}_{neighbourSelectionMode.value}_noise={noisePercentage}_th={thresholds}_psteps={numberOfPreviousSteps}_e-{eventsString}_{i}"
-        ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
-        endTime = time.time()
-        ServiceGeneral.logWithTime(f"Completed eventEffect={eventEffect.name} in {endTime-startRun}")
+                # Save model values for future use
+                eventsString = "_".join([event.getShortPrintVersion() for event in events])
+                savePath = f"ind_avg_{thresholdType.value}_{initialStateString}_st={switchType.value}_o={orderValue}_do={disorderValue}_s={startValue}_d={density}_{neighbourSelectionMode.value}_noise={noisePercentage}_th={thresholds}_psteps={numberOfPreviousSteps}_e-{eventsString}_{i}"
+                ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
+                endRun = time.time()
+                ServiceGeneral.logWithTime(f"Completed percentage={percentage}, eventEffect={eventEffect.name} in {ServiceGeneral.formatTime(endRun-startRun)}")
