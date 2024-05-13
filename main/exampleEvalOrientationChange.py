@@ -70,7 +70,7 @@ differenceThresholdLabels = ["0.1", "0.3", "0.5", "0.7", "0.9"]
 previousStepsLabels = ["1", "2", "5", "10", "50", "100", "10000"]
 
 
-for metric in [Metrics.ORDER]:
+for metric in [Metrics.ORDER, Metrics.ORDER_VALUE_PERCENTAGE]:
     if metric == Metrics.ORDER:
         yLabel = "order"
     else:
@@ -82,24 +82,46 @@ for metric in [Metrics.ORDER]:
         else:
             area = "[(20, 20, 10)]"
             dist = "Local"
-        for initialState in ["ordered"]:
+        for initialState in ["ordered", "random"]:
             if initialState == "random":
                 startValue = disorderValue
+                targetSwitchValue=orderValue
+
             else:
                 startValue = orderValue
+                targetSwitchValue=disorderValue
 
-            for threshold in [0.1]:
 
-                labels = [""]
-                for threshold in [0.1]:
-                    subtitle = f"{dist} - number of previous steps comparison with \ndifference threshold = {threshold} - events at 5000"
+            threshold = 0.1
+
+            labels = [EventEffect.TURN_BY_FIXED_ANGLE.label,
+                    EventEffect.ALIGN_TO_FIXED_ANGLE.label,
+                    EventEffect.ALIGN_TO_FIRST_PARTICLE.label,
+                    EventEffect.AWAY_FROM_ORIGIN.label,
+                    EventEffect.TOWARDS_ORIGIN.label]
+            for percentage in [10, 30, 50, 70]:
+
+                    subtitle = f"{dist} - event effect comparison with \nthreshold = {threshold} and percentage = {percentage} - events at 5000"
                     modelParams = []
                     simulationData = []
                     colours = []
                     switchTypeValues = []
-                    for previousStep in [100]:
+                    for eventEffect in [EventEffect.TURN_BY_FIXED_ANGLE,
+                                    EventEffect.ALIGN_TO_FIXED_ANGLE,
+                                    EventEffect.ALIGN_TO_FIRST_PARTICLE,
+                                    EventEffect.AWAY_FROM_ORIGIN,
+                                    EventEffect.TOWARDS_ORIGIN]:
                         modelParamsDensity, simulationDataDensity, coloursDensity, switchTypeValuesDensity = ServiceSavedModel.loadModels([
-                                                                                                                f"ind_avg_tt_ordered_st=K_o=5_do=1_s=5_d=0.01_LOD_noise=1_th=[0.1]_psteps=100_e-t5000eorigin_awayp30a180dtGaNone_1.json",
+                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_1.json",
+                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_2.json",
+                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_3.json",
+                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_4.json",
+                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_5.json",
+                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_6.json",
+                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_7.json",
+                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_8.json",
+                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_9.json",
+                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_10.json",
 
                                                                                                                 ], loadSwitchValues=True)
                         modelParams.append(modelParamsDensity)
@@ -109,10 +131,49 @@ for metric in [Metrics.ORDER]:
 
                     #savePath = f"order-ot_comp-K-ordered-d={density}-noise={noisePercentage}-{mode.name}-ot={orderThreshold}-events-t{eventTimestep}p{eventPercentage}a{angle}dt{distributionType.value}a{area}.svg"
                     #savePath = f"{metric.value}_ps-comp_avg_and_single_ind_{initialState}_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d=0.01_LOD_noise=1_ot=[{singleThreshold}]_events-t2000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.val}p30a180dt{distributionType.value}a{area}.svg"
-                    savePath = f"test_order_{eventEffect.val}_th=0.1_density=0.01.svg"
+                    savePath = f"avg_{metric.value}_effect-comp_p={percentage}_ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100.svg"
                     evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=100, switchTypeValues=switchTypeValues, switchTypeOptions=switchTypeOptions)
                     evaluator.evaluateAndVisualize(labels=labels, xLabel=xLabel, yLabel=yLabel, subtitle=subtitle, savePath=savePath)
-                    ServiceGeneral.logWithTime(f"created ps comp graph for effect={eventEffect.name}, sth = {threshold} and metric {metric.name}")
+                    ServiceGeneral.logWithTime(f"created effect comp graph for percentage={percentage}, sth = {threshold} and metric {metric.name}")
+
+            labels = ["10", "30", "50", "70"]
+            for eventEffect in [EventEffect.TURN_BY_FIXED_ANGLE,
+                            EventEffect.ALIGN_TO_FIXED_ANGLE,
+                            EventEffect.ALIGN_TO_FIRST_PARTICLE,
+                            EventEffect.AWAY_FROM_ORIGIN,
+                            EventEffect.TOWARDS_ORIGIN]:
+                    subtitle = f"{dist} - percentage comparison with \nthreshold = {threshold} and effect = {eventEffect.label} - events at 5000"
+                    modelParams = []
+                    simulationData = []
+                    colours = []
+                    switchTypeValues = []
+                    for percentage in [10, 30, 50, 70]:
+
+
+                        modelParamsDensity, simulationDataDensity, coloursDensity, switchTypeValuesDensity = ServiceSavedModel.loadModels([
+                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_1.json",
+                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_2.json",
+                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_3.json",
+                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_4.json",
+                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_5.json",
+                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_6.json",
+                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_7.json",
+                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_8.json",
+                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_9.json",
+                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_10.json",
+
+                                                                                                                ], loadSwitchValues=True)
+                        modelParams.append(modelParamsDensity)
+                        simulationData.append(simulationDataDensity)
+                        colours.append(coloursDensity)
+                        switchTypeValues.append(switchTypeValuesDensity)
+
+                    #savePath = f"order-ot_comp-K-ordered-d={density}-noise={noisePercentage}-{mode.name}-ot={orderThreshold}-events-t{eventTimestep}p{eventPercentage}a{angle}dt{distributionType.value}a{area}.svg"
+                    #savePath = f"{metric.value}_ps-comp_avg_and_single_ind_{initialState}_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d=0.01_LOD_noise=1_ot=[{singleThreshold}]_events-t2000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.val}p30a180dt{distributionType.value}a{area}.svg"
+                    savePath = f"avg_{metric.value}_p-comp_eventEffect={eventEffect.val}_ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100.svg"
+                    evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=100, switchTypeValues=switchTypeValues, switchTypeOptions=switchTypeOptions)
+                    evaluator.evaluateAndVisualize(labels=labels, xLabel=xLabel, yLabel=yLabel, subtitle=subtitle, savePath=savePath)
+                    ServiceGeneral.logWithTime(f"created p comp graph for effect={eventEffect.name}, sth = {threshold} and metric {metric.name}")
 
 
 """
