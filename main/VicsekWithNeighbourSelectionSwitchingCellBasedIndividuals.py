@@ -590,4 +590,4 @@ class VicsekWithNeighbourSelection:
         return colours
         
     def cleanSelectedIndices(self, timestep):
-        self.selectedIndices = {k: v for k, v in self.selectedIndices.items() if (k + self.switchBlockedAfterEventTimesteps) >= timestep}
+        self.selectedIndices = {k: v for k, v in self.selectedIndices.items() if (k + self.switchBlockedAfterEventTimesteps) > timestep}
