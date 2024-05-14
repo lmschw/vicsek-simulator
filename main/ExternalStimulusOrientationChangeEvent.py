@@ -95,6 +95,7 @@ class ExternalStimulusOrientationChangeEvent:
             The orientations of all particles after the event has been executed.
         """
         selectedIndices = self.__determineAffectedParticles(totalNumberOfParticles, positions, cells, cellDims, cellToParticleDistribution)
+        alteredIndices = []
         for idx in selectedIndices:
             match self.eventEffect:
                 case EventEffect.TURN_BY_FIXED_ANGLE:
@@ -109,8 +110,9 @@ class ExternalStimulusOrientationChangeEvent:
                     orientations[idx] = self.__computeTowardsOrigin(positions[idx])
             if self.targetSwitchValue != None:
                 switchValues[idx] = self.targetSwitchValue
+                alteredIndices.append(idx)
 
-        return orientations, switchValues, selectedIndices
+        return orientations, switchValues, alteredIndices
 
     def __determineAffectedParticles(self, totalNumberOfParticles, positions, cells, cellDims, cellToParticleDistribution):
         """
