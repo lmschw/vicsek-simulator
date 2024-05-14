@@ -112,3 +112,6 @@ additional: try with borders (necessary to reproduce fish experiments)
     - higher number of previous steps (150 or 200)
     - blocking the decision making after every decision for (10-100 steps)
     - increase radius/change domainSize to achieve different levels of connectivity -> certain range of average number of neighbours
+
+
++ find a way to investigate why random switches to order in the beginning
