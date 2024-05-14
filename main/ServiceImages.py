@@ -363,3 +363,62 @@ def createNeighourDistributionPlotDistance(positions, orientations, startTime=0,
     axes.xaxis.set_major_locator(MultipleLocator(5))  # <- HERE
     plt.show()
     print(pointsForTimestep[0])
+
+# ANALYSIS
+def createSwitchAnalysisPlot(positions, orientations, switchValues, startTime=0, endTime=None, previousSteps=1, idx=None, radius=10, orderValue=5,savePath=None):
+    n = len(positions[0])
+    if idx == None:
+        i = random.choice(range(n))
+    else:
+        i = idx
+    
+    if endTime == None or (endTime+1) > len(positions):
+        endTime = len(positions)
+    else:
+        endTime += 1 # to include the last time step
+
+    times = []
+    pointsForI = []
+
+    numPrevSteps = startTime - max(0, startTime-previousSteps)
+    previousLocalOrders = []
+    if numPrevSteps > 0:
+        for ts in range(max(0, startTime-previousSteps), startTime):
+            neighbours = ServiceMetric.findNeighbours(i, positions[ts], radius)
+            neighbourOrientations = [orientation for idx, orientation in enumerate(orientations[ts]) if idx in neighbours]
+            localOrder = ServiceMetric.computeOrder(neighbourOrientations)
+            previousLocalOrders.append(localOrder)
+
+    for timestep in range(startTime, endTime):
+        times.append(timestep)
+        neighbours = ServiceMetric.findNeighbours(i, positions[timestep], radius)
+        neighbourOrientations = [orientation for idx, orientation in enumerate(orientations[timestep]) if idx in neighbours]
+        if switchValues[timestep][i] == orderValue:
+            switchVal = 1
+        else:
+            switchVal = 0
+        localOrder = ServiceMetric.computeOrder(neighbourOrientations)
+        if timestep == 0:
+            avgPreviousLocalOrder = 0
+        else:
+            print(f"{timestep}: {max(len(previousLocalOrders)-previousSteps, 0)}, {len(previousLocalOrders)}")
+            avgPreviousLocalOrder = np.average(previousLocalOrders[max(len(previousLocalOrders)-previousSteps, 0):])
+        previousLocalOrders.append(localOrder)
+        numNeighbours = len(neighbours)
+        neighbourLocalOrders = []
+        for neighbour in neighbours:
+            neighs = ServiceMetric.findNeighbours(neighbour, positions[timestep], radius)
+            orients = [orientation for idx, orientation in enumerate(orientations[timestep]) if idx in neighs]
+            neighbourLocalOrders.append(ServiceMetric.computeOrder(orients))
+        avgNeighbourLocalOrders = np.average(neighbourLocalOrders)
+
+        pointsForI.append([switchVal, localOrder, avgPreviousLocalOrder, avgNeighbourLocalOrders, numNeighbours])
+
+    df = pd.DataFrame(np.array(pointsForI), columns=["value", "local order", "avg previous local order", "avg neighbour local order", "number neighbours"])
+    norm_df = df.copy()
+    norm_df["number neighbours"] = (df["number neighbours"] - df["number neighbours"].min(0)) / (df["number neighbours"].max(0) - df["number neighbours"].min(0))
+    norm_df.plot.line()
+
+    if savePath != None:
+        plt.savefig(savePath)
+    plt.show()
