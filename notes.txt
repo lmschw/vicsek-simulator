@@ -101,3 +101,14 @@ additional: try with borders (necessary to reproduce fish experiments)
     - plot variance and standard deviation -> highlight outlies -> for single particles
 - run single experiment until it works as expected
 - find a more formal expression for both threshold mechanisms -> discrete or continuous, formula etc.
+
+14.05.24:
+- assign random orientation as baseline event effect
+- increase radius to make 10% or 20% or the domain visible to the particle
+- increase density/decrease domainSize
+- plot min, average, max number of neighbours visible to individual particles
+- plot matrix: per timestep show number of particles with x neighbours (0, 1, 2-3, 4-6, 7-10, >10)
+- try the following:
+    - higher number of previous steps (150 or 200)
+    - blocking the decision making after every decision for (10-100 steps)
+    - increase radius/change domainSize to achieve different levels of connectivity -> certain range of average number of neighbours
