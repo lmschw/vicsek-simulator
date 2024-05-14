@@ -401,7 +401,6 @@ def createSwitchAnalysisPlot(positions, orientations, switchValues, startTime=0,
         if timestep == 0:
             avgPreviousLocalOrder = 0
         else:
-            print(f"{timestep}: {max(len(previousLocalOrders)-previousSteps, 0)}, {len(previousLocalOrders)}")
             avgPreviousLocalOrder = np.average(previousLocalOrders[max(len(previousLocalOrders)-previousSteps, 0):])
         previousLocalOrders.append(localOrder)
         numNeighbours = len(neighbours)
