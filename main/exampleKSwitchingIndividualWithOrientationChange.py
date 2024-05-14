@@ -369,7 +369,10 @@ numberOfPreviousSteps = 100
 tmax = 15000
 i = 1
 
-for initialStateString in ["ordered", "random"]:
+blockSteps = 100
+
+initialStateString = "random"
+for blockSteps in [5, 10, 20, 50, 100]:
     if initialStateString == "ordered":
         targetSwitchValue=disorderValue
         startValue = orderValue
@@ -377,14 +380,15 @@ for initialStateString in ["ordered", "random"]:
         targetSwitchValue=orderValue
         startValue = disorderValue
 
-    for percentage in [10, 30, 50, 70, 100]:
-        for eventEffect in [EventEffect.TURN_BY_FIXED_ANGLE,
-                            EventEffect.ALIGN_TO_FIXED_ANGLE,
-                            EventEffect.ALIGN_TO_FIRST_PARTICLE,
-                            EventEffect.AWAY_FROM_ORIGIN,
-                            EventEffect.TOWARDS_ORIGIN]:
+    for i in range(1, 11):
+        for percentage in [50]:
+            for eventEffect in [EventEffect.TURN_BY_FIXED_ANGLE,
+                                EventEffect.ALIGN_TO_FIXED_ANGLE,
+                                EventEffect.ALIGN_TO_FIRST_PARTICLE,
+                                EventEffect.AWAY_FROM_ORIGIN,
+                                EventEffect.TOWARDS_ORIGIN]:
+                
             
-            for i in range(1, 11):
                 event1 = ExternalStimulusOrientationChangeEvent(timestep=5000,
                                                 percentage=percentage,
                                                 angle=angle,
@@ -411,7 +415,8 @@ for initialStateString in ["ordered", "random"]:
                                                                                 switchValues=(orderValue, disorderValue),
                                                                                 thresholdType=thresholdType,
                                                                                 orderThresholds=thresholds,
-                                                                                numberPreviousStepsForThreshold=numberOfPreviousSteps
+                                                                                numberPreviousStepsForThreshold=numberOfPreviousSteps,
+                                                                                switchBlockedAfterEventTimesteps=blockSteps
                                                                                 )
                 if initialStateString == "ordered":
                     simulationData, colours, switchValues = simulator.simulate(tmax=tmax, initialState=initialState, events=events)
@@ -420,7 +425,7 @@ for initialStateString in ["ordered", "random"]:
 
                 # Save model values for future use
                 eventsString = "_".join([event.getShortPrintVersion() for event in events])
-                savePath = f"ind_avg_{thresholdType.value}_{initialStateString}_st={switchType.value}_o={orderValue}_do={disorderValue}_s={startValue}_d={density}_{neighbourSelectionMode.value}_noise={noisePercentage}_th={thresholds}_psteps={numberOfPreviousSteps}_e-{eventsString}_{i}"
+                savePath = f"ind_avg_{thresholdType.value}_{initialStateString}_st={switchType.value}_o={orderValue}_do={disorderValue}_s={startValue}_d={density}_{neighbourSelectionMode.value}_noise={noisePercentage}_th={thresholds}_psteps={numberOfPreviousSteps}_bs={blockSteps}_e-{eventsString}_{i}"
                 ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
                 endRun = time.time()
-                ServiceGeneral.logWithTime(f"Completed percentage={percentage}, eventEffect={eventEffect.name} in {ServiceGeneral.formatTime(endRun-startRun)}")
+                ServiceGeneral.logWithTime(f"Completed i={i}, percentage={percentage}, eventEffect={eventEffect.name} in {ServiceGeneral.formatTime(endRun-startRun)}")
