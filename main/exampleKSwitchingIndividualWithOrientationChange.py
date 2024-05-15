@@ -380,15 +380,10 @@ for blockSteps in [5, 10, 20, 50, 100]:
         targetSwitchValue=orderValue
         startValue = disorderValue
 
-    for i in range(1, 11):
-        for percentage in [50]:
-            for eventEffect in [EventEffect.TURN_BY_FIXED_ANGLE,
-                                EventEffect.ALIGN_TO_FIXED_ANGLE,
-                                EventEffect.ALIGN_TO_FIRST_PARTICLE,
-                                EventEffect.AWAY_FROM_ORIGIN,
-                                EventEffect.TOWARDS_ORIGIN]:
-                
-            
+    for percentage in [50]:
+        for eventEffect in [EventEffect.RANDOM,
+                            ]:
+            for i in range(1, 11):
                 event1 = ExternalStimulusOrientationChangeEvent(timestep=5000,
                                                 percentage=percentage,
                                                 angle=angle,
