@@ -9,6 +9,7 @@ import EnumNeighbourSelectionMode
 from EnumSwitchType import SwitchType
 from EnumThresholdType import ThresholdType
 import ServiceMetric
+import ServiceVicsekHelper
 
 class VicsekWithNeighbourSelection:
 
@@ -105,7 +106,7 @@ class VicsekWithNeighbourSelection:
 
         neighbours = self.__selectNeighbours(neighbourCandidates, positions, orientations, switchTypeValues)
         summedOrientations = np.sum(neighbours[:,:,np.newaxis]*orientations[np.newaxis,:,:],axis=1)
-        return self.__normalizeOrientations(summedOrientations)
+        return ServiceVicsekHelper.normalizeOrientations(summedOrientations)
 
     def generateNoise(self):
         """
@@ -196,7 +197,7 @@ class VicsekWithNeighbourSelection:
             colours = self.__colourGroups(switchTypeValues)
 
             orientations = self.calculateMeanOrientations(positions, orientations, switchTypeValues, neighbourCandidates)
-            orientations = self.__normalizeOrientations(orientations+self.generateNoise())
+            orientations = ServiceVicsekHelper.normalizeOrientations(orientations+self.generateNoise())
 
             positionsHistory[it,:,:]=positions
             orientationsHistory[it,:,:]=orientations
@@ -336,17 +337,6 @@ class VicsekWithNeighbourSelection:
         return cellToParticleDistribution, particleToCellDistribution
 
 
-    def __normalizeOrientations(self,orientations):
-        """
-        Normalises the orientations of all particles for the current time step
-
-        Parameters:
-            - orientations (array): The current orientations of all particles
-
-        Returns:
-            The normalised orientations of all particles as an array.
-        """
-        return orientations/(np.sqrt(np.sum(orientations**2,axis=1))[:,np.newaxis])
 
 
     def __initializeState(self, domainSize, numberOfParticles):
@@ -361,7 +351,7 @@ class VicsekWithNeighbourSelection:
             2 arrays, the first containing the positions, the second containing the orientations. Initialised randomly.
         """
         positions = domainSize*np.random.rand(numberOfParticles,len(domainSize))
-        orientations = self.__normalizeOrientations(np.random.rand(numberOfParticles, len(domainSize))-0.5)
+        orientations = ServiceVicsekHelper.normalizeOrientations(np.random.rand(numberOfParticles, len(domainSize))-0.5)
         match self.switchType:
             case SwitchType.NEIGHBOUR_SELECTION_MODE:
                 switchTypeValues = numberOfParticles * [self.neighbourSelectionMode]

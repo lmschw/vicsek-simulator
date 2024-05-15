@@ -97,7 +97,8 @@ for metric in [Metrics.ORDER, Metrics.ORDER_VALUE_PERCENTAGE]:
                     EventEffect.ALIGN_TO_FIXED_ANGLE.label,
                     EventEffect.ALIGN_TO_FIRST_PARTICLE.label,
                     EventEffect.AWAY_FROM_ORIGIN.label,
-                    EventEffect.TOWARDS_ORIGIN.label]
+                    EventEffect.TOWARDS_ORIGIN.label,
+                    EventEffect.RANDOM.label]
             for blockSteps in [5, 10, 20, 50, 100]:
 
                     subtitle = f"{dist} - event effect comparison with \nthreshold = {threshold} and number of blocked steps = {blockSteps} - event at 5000"
@@ -109,7 +110,8 @@ for metric in [Metrics.ORDER, Metrics.ORDER_VALUE_PERCENTAGE]:
                                     EventEffect.ALIGN_TO_FIXED_ANGLE,
                                     EventEffect.ALIGN_TO_FIRST_PARTICLE,
                                     EventEffect.AWAY_FROM_ORIGIN,
-                                    EventEffect.TOWARDS_ORIGIN]:
+                                    EventEffect.TOWARDS_ORIGIN,
+                                    EventEffect.RANDOM]:
                         modelParamsDensity, simulationDataDensity, coloursDensity, switchTypeValuesDensity = ServiceSavedModel.loadModels([
                                                                                                                 f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_bs={blockSteps}_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_1.json",
                                                                                                                 f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_bs={blockSteps}_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_2.json",
@@ -140,7 +142,8 @@ for metric in [Metrics.ORDER, Metrics.ORDER_VALUE_PERCENTAGE]:
                             EventEffect.ALIGN_TO_FIXED_ANGLE,
                             EventEffect.ALIGN_TO_FIRST_PARTICLE,
                             EventEffect.AWAY_FROM_ORIGIN,
-                            EventEffect.TOWARDS_ORIGIN]:
+                            EventEffect.TOWARDS_ORIGIN,
+                            EventEffect.RANDOM]:
                     subtitle = f"{dist} - block steps comparison with \nthreshold = {threshold} and effect = {eventEffect.label} - event at 5000"
                     modelParams = []
                     simulationData = []

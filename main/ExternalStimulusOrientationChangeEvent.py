@@ -7,6 +7,7 @@ from EnumEventEffect import EventEffect
 
 import DefaultValues as dv
 import ServiceMetric
+import ServiceVicsekHelper
 
 class ExternalStimulusOrientationChangeEvent:
     # TODO refactor to allow areas with a radius bigger than the radius of a particle, i.e. remove neighbourCells and determine all affected cells here
@@ -108,6 +109,8 @@ class ExternalStimulusOrientationChangeEvent:
                     orientations[idx] = self.__computeAwayFromOrigin(positions[idx])
                 case EventEffect.TOWARDS_ORIGIN:
                     orientations[idx] = self.__computeTowardsOrigin(positions[idx])
+                case EventEffect.RANDOM:
+                    orientations[idx] = self.__getRandomOrientation()
             if self.targetSwitchValue != None:
                 switchValues[idx] = self.targetSwitchValue
                 alteredIndices.append(idx)
@@ -272,4 +275,7 @@ class ExternalStimulusOrientationChangeEvent:
         V = np.sin(angle*np.pi/180)
         
         return [U,V]
+
+    def __getRandomOrientation(self):
+        return ServiceVicsekHelper.normalizeOrientations(np.random.rand(1, len(self.domainSize))-0.5)
 
