@@ -369,10 +369,10 @@ numberOfPreviousSteps = 100
 tmax = 15000
 i = 1
 
-blockSteps = 100
+blockSteps = -1
 
 initialStateString = "random"
-for blockSteps in [5, 10, 20, 50, 100]:
+for previousStep in [150, 200, 500, 1000]:
     if initialStateString == "ordered":
         targetSwitchValue=disorderValue
         startValue = orderValue
@@ -381,7 +381,13 @@ for blockSteps in [5, 10, 20, 50, 100]:
         startValue = disorderValue
 
     for percentage in [50]:
-        for eventEffect in [EventEffect.RANDOM,
+        for eventEffect in [
+                            EventEffect.TURN_BY_FIXED_ANGLE,
+                            EventEffect.ALIGN_TO_FIXED_ANGLE,
+                            EventEffect.ALIGN_TO_FIRST_PARTICLE,
+                            EventEffect.AWAY_FROM_ORIGIN,
+                            EventEffect.TOWARDS_ORIGIN,
+                            EventEffect.RANDOM,
                             ]:
             for i in range(1, 11):
                 event1 = ExternalStimulusOrientationChangeEvent(timestep=5000,
