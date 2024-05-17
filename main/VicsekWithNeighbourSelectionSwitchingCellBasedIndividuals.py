@@ -79,7 +79,7 @@ class VicsekWithNeighbourSelection:
                     "tmax": self.tmax,
                     "dt": self.dt,
                     "numCells": self.numCells,
-                    "cellDims": self.cellDims.tolist(),
+                    "cellDims": self.cellDims,
                     "switchType": self.switchType.name,
                     "orderValue": self.orderSwitchValue,
                     "disorderValue": self.disorderSwitchValue,
