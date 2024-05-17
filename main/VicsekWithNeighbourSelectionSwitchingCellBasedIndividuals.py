@@ -15,7 +15,7 @@ class VicsekWithNeighbourSelection:
 
     def __init__(self, neighbourSelectionModel, domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, speed=dv.DEFAULT_SPEED, 
                  radius=dv.DEFAULT_RADIUS, noise=dv.DEFAULT_NOISE, numberOfParticles=dv.DEFAULT_NUM_PARTICLES, 
-                 k=dv.DEFAULT_K_NEIGHBOURS, showExample=dv.DEFAULT_SHOW_EXAMPLE_PARTICLE, numCells=dv.DEFAULT_NUM_CELLS, 
+                 k=dv.DEFAULT_K_NEIGHBOURS, showExample=dv.DEFAULT_SHOW_EXAMPLE_PARTICLE, numCells=None, 
                  switchType=None, switchValues=(None, None), thresholdType=None, orderThresholds=None, 
                  numberPreviousStepsForThreshold=10, switchBlockedAfterEventTimesteps=-1):
         """
@@ -50,7 +50,6 @@ class VicsekWithNeighbourSelection:
         self.numberOfParticles = numberOfParticles
         self.k = k
         self.showExample = showExample
-        self.numCells = numCells
         self.switchType = switchType
         self.orderSwitchValue, self.disorderSwitchValue = switchValues
         self.thresholdType = thresholdType
@@ -58,6 +57,13 @@ class VicsekWithNeighbourSelection:
         self.numberPreviousStepsForThreshold = numberPreviousStepsForThreshold
         self.switchBlockedAfterEventTimesteps = switchBlockedAfterEventTimesteps
         self.selectedIndices = {}
+
+        if numCells == None:
+            self.numCells = math.ceil((domainSize[0] * domainSize[1]) / (radius**2))
+            print(f"domainSize = {domainSize}, radius = {radius}, numCells = {self.numCells}")
+        else:
+            self.numCells = numCells
+
 
     def getParameterSummary(self, asString=False):
         """
