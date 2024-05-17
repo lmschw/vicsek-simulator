@@ -59,7 +59,7 @@ class VicsekWithNeighbourSelection:
         self.selectedIndices = {}
 
         if numCells == None:
-            self.numCells = math.ceil((domainSize[0] * domainSize[1]) / (radius**2))
+            self.numCells = math.floor(math.sqrt((domainSize[0] * domainSize[1]) / (radius**2))) ** 2
             print(f"domainSize = {domainSize}, radius = {radius}, numCells = {self.numCells}")
         else:
             self.numCells = numCells
@@ -238,7 +238,7 @@ class VicsekWithNeighbourSelection:
         length = np.sqrt(pointArea)
 
         cells = []
-        self.cellDims = (int(self.domainSize[0]/length), int(self.domainSize[1]/length))
+        self.cellDims = (self.domainSize[0]/length, self.domainSize[1]/length)
         for x in np.arange(0, self.domainSize[0], length):
             for y in np.arange(0, self.domainSize[1], length):
                 cells.append([(x, y), (x+length, y+length)])
