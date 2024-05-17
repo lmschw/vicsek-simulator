@@ -77,7 +77,17 @@ class VicsekWithNeighbourSelection:
                     "neighbourSelectionMode": self.neighbourSelectionMode.name,
                     "domainSize": self.domainSize.tolist(),
                     "tmax": self.tmax,
-                    "dt": self.dt}
+                    "dt": self.dt,
+                    "numCells": self.numCells,
+                    "cellDims": self.cellDims.tolist(),
+                    "switchType": self.switchType.name,
+                    "orderValue": self.orderSwitchValue,
+                    "disorderValue": self.disorderSwitchValue,
+                    "thresholdType": self.thresholdType.name,
+                    "thresholds": self.orderThresholds,
+                    "previousSteps": self.numberPreviousStepsForThreshold,
+                    "blockedSteps": self.switchBlockedAfterEventTimesteps,
+                    }
         if asString:
             strPrep = [tup[0] + ": " + tup[1] for tup in summary.values()]
             return ", ".join(strPrep)
