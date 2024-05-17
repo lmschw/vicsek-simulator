@@ -391,7 +391,7 @@ class VicsekWithNeighbourSelection:
         neighbourCandidates = []
         for part, cell in particleToCellDistribution.items():
             cellsToCheck = self.neighbouringCells.get(cell)
-            candidates = [cand for candCell in cellsToCheck for cand in cellToParticleDistribution[candCell]]
+            candidates = [cand for candCell in cellsToCheck for cand in cellToParticleDistribution[int(candCell)]]
             neighbourCandidates.append([candIdx for candIdx in candidates if ServiceMetric.isNeighbour(self.radius, positions, part, candIdx)])
         return neighbourCandidates
 
