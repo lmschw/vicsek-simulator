@@ -59,7 +59,7 @@ class VicsekWithNeighbourSelection:
         self.selectedIndices = {}
 
         if numCells == None:
-            self.numCells = math.floor(math.sqrt((domainSize[0] * domainSize[1]) / (radius**2))) ** 2
+            self.numCells = min(math.floor(math.sqrt((domainSize[0] * domainSize[1]) / (radius**2))) ** 2, 1)
             print(f"domainSize = {domainSize}, radius = {radius}, numCells = {self.numCells}")
         else:
             self.numCells = numCells
