@@ -48,6 +48,8 @@ startValue = orderValue
 angle = 180
 eventPercentage = 10
 
+switchTypeOptions = (orderValue, disorderValue)
+
 modelParams = []
 simulationData = []
 colours = []
@@ -58,11 +60,87 @@ switchTypeValues = []
 #area = "[(20, 20, 10)]"
 #distributionType = DistributionType.GLOBAL
 #area = None
+thresholdVals = [[0.1,0.9], [0.2, 0.9], [0.3, 0.9], [0.4, 0.9], [0.5, 0.9], [0.6,0.9], [0.7,0.9]]
+thresholdLabels =  ["[0.1,0.9]", "[0.2, 0.9]", "[0.3, 0.9]", "[0.4, 0.9]", "[0.5, 0.9]", "[0.6,0.9]", "[0.7,0.9]"]
+radiusVals = [5, 10, 20, 30, 50, 100, 10000]
+radiusLabels = ["5", "10", "20", "30", "50", "100",  "10000"]
 
+for metric in [Metrics.ORDER, Metrics.ORDER_VALUE_PERCENTAGE]:
+    if metric == Metrics.ORDER:
+        yLabel = "order"
+    else:
+        yLabel = "percentage of particles with order value"
+    for distributionType in [DistributionType.GLOBAL]:
+        if distributionType == DistributionType.GLOBAL:
+            area = None
+            dist = "Global"
+        else:
+            area = "[(20, 20, 10)]"
+            dist = "Local"
+        for initialState in ["random"]:
+            if initialState == "random":
+                startValue = disorderValue
+                targetSwitchValue=orderValue
+
+            else:
+                startValue = orderValue
+                targetSwitchValue=disorderValue
+            for density in [0.01, 0.03, 0.05, 0.07, 0.09]:
+                labels = thresholdLabels
+                for radius in radiusVals:
+                        subtitle = f"{dist} - event effect comparison with \ndensity = {density} and radius = {radius} - no event"
+                        modelParams = []
+                        simulationData = []
+                        colours = []
+                        switchTypeValues = []
+                        for thresholds in thresholdVals:
+                            modelParamsDensity, simulationDataDensity, coloursDensity, switchTypeValuesDensity = ServiceSavedModel.loadModels([
+                                                                                                                    f"test_domsize-var_std_ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d={density}_n=100_r={radius}_LOD_noise=1_th={thresholds}_psteps=100_bs=-1_e-_1.json",
+
+                                                                                                                    ], loadSwitchValues=True)
+                            modelParams.append(modelParamsDensity)
+                            simulationData.append(simulationDataDensity)
+                            colours.append(coloursDensity)
+                            switchTypeValues.append(switchTypeValuesDensity)
+
+                        #savePath = f"order-ot_comp-K-ordered-d={density}-noise={noisePercentage}-{mode.name}-ot={orderThreshold}-events-t{eventTimestep}p{eventPercentage}a{angle}dt{distributionType.value}a{area}.svg"
+                        #savePath = f"{metric.value}_ps-comp_avg_and_single_ind_{initialState}_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d=0.01_LOD_noise=1_ot=[{singleThreshold}]_events-t2000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.val}p30a180dt{distributionType.value}a{area}.svg"
+                        savePath = f"single_{metric.value}_radius-comp_r={radius}_ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d={density}_r={radius}_LOD_noise=1_th={thresholds}_psteps=100_tsv={targetSwitchValue}.svg"
+                        evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=100, switchTypeValues=switchTypeValues, switchTypeOptions=switchTypeOptions)
+                        evaluator.evaluateAndVisualize(labels=labels, xLabel=xLabel, yLabel=yLabel, subtitle=subtitle, savePath=savePath)
+                        ServiceGeneral.logWithTime(f"created radius comp graph for density={density}, radius = {radius} and metric {metric.name}")
+
+                labels = radiusLabels
+                for thresholds in thresholdVals:
+                        subtitle = f"{dist} - block steps comparison with \ndensity = {density} and thresholds = {thresholds} - no event"
+                        modelParams = []
+                        simulationData = []
+                        colours = []
+                        switchTypeValues = []
+                        for radius in radiusVals:
+
+
+                            modelParamsDensity, simulationDataDensity, coloursDensity, switchTypeValuesDensity = ServiceSavedModel.loadModels([
+                                                                                                                    f"test_domsize-var_std_ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d={density}_n=100_r={radius}_LOD_noise=1_th={thresholds}_psteps=100_bs=-1_e-_1.json",
+                                                                                                                    ], loadSwitchValues=True)
+                            modelParams.append(modelParamsDensity)
+                            simulationData.append(simulationDataDensity)
+                            colours.append(coloursDensity)
+                            switchTypeValues.append(switchTypeValuesDensity)
+
+                        #savePath = f"order-ot_comp-K-ordered-d={density}-noise={noisePercentage}-{mode.name}-ot={orderThreshold}-events-t{eventTimestep}p{eventPercentage}a{angle}dt{distributionType.value}a{area}.svg"
+                        #savePath = f"{metric.value}_ps-comp_avg_and_single_ind_{initialState}_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d=0.01_LOD_noise=1_ot=[{singleThreshold}]_events-t2000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.val}p30a180dt{distributionType.value}a{area}.svg"
+                        savePath = f"single_{metric.value}_thresholds-comp_thresholds={thresholds}_ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th={thresholds}_psteps=100_tsv={targetSwitchValue}.svg"
+                        evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=100, switchTypeValues=switchTypeValues, switchTypeOptions=switchTypeOptions)
+                        evaluator.evaluateAndVisualize(labels=labels, xLabel=xLabel, yLabel=yLabel, subtitle=subtitle, savePath=savePath)
+                        ServiceGeneral.logWithTime(f"created bs comp graph for density={density} , thresholds = {thresholds} and metric {metric.name}")
+
+
+
+"""
 eventPercentage = 30
 angle = 180
 
-switchTypeOptions = (orderValue, disorderValue)
 
 differenceThresholds = [0.1,0.3,0.5,0.7,0.9]
 previousSteps = [1, 2, 5, 10, 50, 100, 10000]
@@ -113,16 +191,16 @@ for metric in [Metrics.ORDER, Metrics.ORDER_VALUE_PERCENTAGE]:
                                     EventEffect.TOWARDS_ORIGIN,
                                     EventEffect.RANDOM]:
                         modelParamsDensity, simulationDataDensity, coloursDensity, switchTypeValuesDensity = ServiceSavedModel.loadModels([
-                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_bs={blockSteps}_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_1.json",
-                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_bs={blockSteps}_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_2.json",
-                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_bs={blockSteps}_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_3.json",
-                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_bs={blockSteps}_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_4.json",
-                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_bs={blockSteps}_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_5.json",
-                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_bs={blockSteps}_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_6.json",
-                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_bs={blockSteps}_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_7.json",
-                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_bs={blockSteps}_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_8.json",
-                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_bs={blockSteps}_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_9.json",
-                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_bs={blockSteps}_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_10.json",
+                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_tsv={targetSwitchValue}_bs={blockSteps}_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_1.json",
+                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_tsv={targetSwitchValue}_bs={blockSteps}_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_2.json",
+                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_tsv={targetSwitchValue}_bs={blockSteps}_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_3.json",
+                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_tsv={targetSwitchValue}_bs={blockSteps}_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_4.json",
+                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_tsv={targetSwitchValue}_bs={blockSteps}_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_5.json",
+                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_tsv={targetSwitchValue}_bs={blockSteps}_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_6.json",
+                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_tsv={targetSwitchValue}_bs={blockSteps}_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_7.json",
+                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_tsv={targetSwitchValue}_bs={blockSteps}_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_8.json",
+                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_tsv={targetSwitchValue}_bs={blockSteps}_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_9.json",
+                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_tsv={targetSwitchValue}_bs={blockSteps}_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_10.json",
 
                                                                                                                 ], loadSwitchValues=True)
                         modelParams.append(modelParamsDensity)
@@ -132,7 +210,7 @@ for metric in [Metrics.ORDER, Metrics.ORDER_VALUE_PERCENTAGE]:
 
                     #savePath = f"order-ot_comp-K-ordered-d={density}-noise={noisePercentage}-{mode.name}-ot={orderThreshold}-events-t{eventTimestep}p{eventPercentage}a{angle}dt{distributionType.value}a{area}.svg"
                     #savePath = f"{metric.value}_ps-comp_avg_and_single_ind_{initialState}_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d=0.01_LOD_noise=1_ot=[{singleThreshold}]_events-t2000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.val}p30a180dt{distributionType.value}a{area}.svg"
-                    savePath = f"avg_{metric.value}_effect-comp_bs={blockSteps}_ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100.svg"
+                    savePath = f"avg_{metric.value}_effect-comp_bs={blockSteps}_ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_tsv={targetSwitchValue}.svg"
                     evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=100, switchTypeValues=switchTypeValues, switchTypeOptions=switchTypeOptions)
                     evaluator.evaluateAndVisualize(labels=labels, xLabel=xLabel, yLabel=yLabel, subtitle=subtitle, savePath=savePath)
                     ServiceGeneral.logWithTime(f"created effect comp graph for percentage={percentage}, sth = {threshold} and metric {metric.name}")
@@ -153,17 +231,7 @@ for metric in [Metrics.ORDER, Metrics.ORDER_VALUE_PERCENTAGE]:
 
 
                         modelParamsDensity, simulationDataDensity, coloursDensity, switchTypeValuesDensity = ServiceSavedModel.loadModels([
-                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_bs={blockSteps}_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_1.json",
-                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_bs={blockSteps}_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_2.json",
-                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_bs={blockSteps}_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_3.json",
-                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_bs={blockSteps}_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_4.json",
-                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_bs={blockSteps}_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_5.json",
-                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_bs={blockSteps}_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_6.json",
-                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_bs={blockSteps}_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_7.json",
-                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_bs={blockSteps}_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_8.json",
-                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_bs={blockSteps}_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_9.json",
-                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_bs={blockSteps}_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_10.json",
-
+                                                                                                                f"ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_tsv={targetSwitchValue}_bs={blockSteps}_e-t5000e{eventEffect.val}p{percentage}a180dtGaNone_1.json",
                                                                                                                 ], loadSwitchValues=True)
                         modelParams.append(modelParamsDensity)
                         simulationData.append(simulationDataDensity)
@@ -172,10 +240,11 @@ for metric in [Metrics.ORDER, Metrics.ORDER_VALUE_PERCENTAGE]:
 
                     #savePath = f"order-ot_comp-K-ordered-d={density}-noise={noisePercentage}-{mode.name}-ot={orderThreshold}-events-t{eventTimestep}p{eventPercentage}a{angle}dt{distributionType.value}a{area}.svg"
                     #savePath = f"{metric.value}_ps-comp_avg_and_single_ind_{initialState}_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d=0.01_LOD_noise=1_ot=[{singleThreshold}]_events-t2000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.val}p30a180dt{distributionType.value}a{area}.svg"
-                    savePath = f"avg_{metric.value}_bs-comp_eventEffect={eventEffect.val}_ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100.svg"
+                    savePath = f"avg_{metric.value}_bs-comp_eventEffect={eventEffect.val}_ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.01_LOD_noise=1_th=[{threshold}]_psteps=100_tsv={targetSwitchValue}.svg"
                     evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=100, switchTypeValues=switchTypeValues, switchTypeOptions=switchTypeOptions)
                     evaluator.evaluateAndVisualize(labels=labels, xLabel=xLabel, yLabel=yLabel, subtitle=subtitle, savePath=savePath)
                     ServiceGeneral.logWithTime(f"created bs comp graph for effect={eventEffect.name}, sth = {threshold} and metric {metric.name}")
+"""
 """
 for metric in [Metrics.ORDER, Metrics.ORDER_VALUE_PERCENTAGE]:
     if metric == Metrics.ORDER:
