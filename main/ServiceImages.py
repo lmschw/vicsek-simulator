@@ -421,3 +421,53 @@ def createSwitchAnalysisPlot(positions, orientations, switchValues, startTime=0,
     if savePath != None:
         plt.savefig(savePath)
     plt.show()
+
+def createDensityVsRadiusPlot(threshold, radiusVals, densityVals, initialState="random", startValue=1, switchTypeOptions=(5,1), i=1, savePath=None):
+    
+    metric = Metrics.ORDER
+    pointsForDensity = []
+    for density in densityVals:
+        pointsForRadius = []
+        for radius in radiusVals:
+            modelParams = []
+            simulationData = []
+            colours = []
+            switchTypeValues = []
+            modelParamsDensity, simulationDataDensity, coloursDensity, switchTypeValuesDensity = ServiceSavedModel.loadModels([
+                                                                                                    f"test_domsize-var_std_ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d={density}_n=100_r={radius}_LOD_noise=1_th={threshold}_psteps=100_bs=-1_e-_{i}.json",
+
+                                                                                                    ], loadSwitchValues=True)
+            modelParams.append(modelParamsDensity)
+            simulationData.append(simulationDataDensity)
+            colours.append(coloursDensity)
+            switchTypeValues.append(switchTypeValuesDensity)
+
+            evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=100, switchTypeValues=switchTypeValues, switchTypeOptions=switchTypeOptions)
+            results = evaluator.evaluate()
+            pointsForRadius.append(max(results.values())[0])
+        pointsForDensity.append(pointsForRadius)
+
+    figure = plt.figure()
+    ax = figure.add_subplot(111)
+    ax.set_title(f"i={i}, thresholds={threshold}")
+    
+    # using the matshow() function 
+    caxes = ax.matshow(np.array(pointsForDensity), interpolation ='nearest')
+    figure.colorbar(caxes)
+
+    #axes.yaxis.set_major_locator(MultipleLocator(1))  # <- HERE
+        #axes.xaxis.set_major_locator(MultipleLocator(5))  # <- HERE
+    ax.set_xticklabels(['']+radiusVals)
+    ax.set_yticklabels(['']+densityVals)
+    ax.set_xlabel("radius")
+    ax.set_ylabel("density")
+
+    for (i, j), z in np.ndenumerate(pointsForDensity):
+        ax.text(j, i, '{:0.2f}'.format(z), ha='center', va='center',
+                bbox=dict(boxstyle='round', facecolor='white', edgecolor='0.3'))
+   
+    if savePath != None:
+        plt.savefig(savePath)
+        plt.close()
+    else:
+        plt.show()
