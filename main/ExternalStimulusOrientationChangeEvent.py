@@ -106,7 +106,7 @@ class ExternalStimulusOrientationChangeEvent:
                 case EventEffect.ALIGN_TO_FIRST_PARTICLE:
                     orientations[idx] = orientations[selectedIndices[0]]
                 case EventEffect.AWAY_FROM_ORIGIN:
-                    orientations[idx] = self.__computeAwayFromOrigin(positions[idx])
+                    orientations[idx] = self.computeAwayFromOrigin(positions[idx])
                 case EventEffect.TOWARDS_ORIGIN:
                     orientations[idx] = self.__computeTowardsOrigin(positions[idx])
                 case EventEffect.RANDOM:
@@ -132,7 +132,7 @@ class ExternalStimulusOrientationChangeEvent:
             An array of the indices of the affected particles.
         """
         # determine which particles might potentially be affected
-        candidateIndices = self.__determineCandidates(positions, cells, cellDims, cellToParticleDistribution)
+        candidateIndices = self.determineCandidates(positions, cells, cellDims, cellToParticleDistribution)
         
         # how many particles will be affected
         numberOfAffectedParticles = math.ceil((self.percentage / 100) * totalNumberOfParticles)
@@ -143,7 +143,7 @@ class ExternalStimulusOrientationChangeEvent:
         return random.sample(candidateIndices, numberOfAffectedParticles)
         
 
-    def __determineCandidates(self, positions, cells, cellDims, cellToParticleDistribution):
+    def determineCandidates(self, positions, cells, cellDims, cellToParticleDistribution):
         """
         Determines which particles could potentially be affected based on the distributionType and the areas if relevant.
 
@@ -238,7 +238,7 @@ class ExternalStimulusOrientationChangeEvent:
 
         return self.computeUvCoordinates(newAngle)
     
-    def __computeAwayFromOrigin(self, position):
+    def computeAwayFromOrigin(self, position):
         angle = self.__computeAngleWithRegardToOrigin(position)
         if (position[0] < self.__getOriginPoint()[0]):
             angle += 180

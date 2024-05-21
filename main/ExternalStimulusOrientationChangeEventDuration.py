@@ -1,6 +1,7 @@
 import random
 import math
 import numpy as np
+from heapq import nsmallest
 
 import ExternalStimulusOrientationChangeEvent
 
@@ -17,7 +18,7 @@ class ExternalStimulusOrientationChangeEventDuration(ExternalStimulusOrientation
     Representation of an event occurring for a specified duration with a specified movement behaviour within the domain and 
     affecting a specified percentage of particles. After creation, the check()-method takes care of everything.
     """
-    def __init__(self, startTimestep, endTimestep, percentage, angle, eventEffect, movementPattern, movementSpeed, distributionType=DistributionType.GLOBAL, areas=None, orientation=[0,0], domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, targetSwitchValue=None):
+    def __init__(self, startTimestep, endTimestep, percentage, angle, eventEffect, movementPattern, movementSpeed, perceptionRadius=30, distributionType=DistributionType.GLOBAL, areas=None, orientation=[0,0], domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, targetSwitchValue=None):
         """
         Creates an external stimulus event that affects part of the swarm at a given timestep.
 
@@ -65,7 +66,7 @@ class ExternalStimulusOrientationChangeEventDuration(ExternalStimulusOrientation
         selectedIndices = []
         if self.checkTimestep(currentTimestep):
             if self.movementPattern != MovementPattern.STATIC:
-                self.updateAreas()
+                self.updateAreas(positions, cells, cellDims, cellToParticleDistribution)
             #print(f"executing event at timestep {currentTimestep}")
             orientations, switchValues, selectedIndices = self.executeEvent(totalNumberOfParticles, positions, orientations, switchValues, cells, cellDims, cellToParticleDistribution)
         if self.distributionType == DistributionType.GLOBAL:
@@ -86,7 +87,7 @@ class ExternalStimulusOrientationChangeEventDuration(ExternalStimulusOrientation
         """
         return self.startTimestep <= currentTimestep and currentTimestep <= self.endTimestep
     
-    def updateAreas(self):
+    def updateAreas(self, positions, cells, cellDims, cellToParticleDistribution):
         initialPosition = [self.areas[0][0], self.areas[0][1]]
         match self.movementPattern:
             case MovementPattern.STATIC:
@@ -95,9 +96,23 @@ class ExternalStimulusOrientationChangeEventDuration(ExternalStimulusOrientation
             case MovementPattern.RANDOM:
                 chosenAngle = random.random() * 360
                 orientation = self.computeUvCoordinates(chosenAngle)
-                change = (self.movementSpeed*orientation)
-                position = [initialPosition[0] + change[0], initialPosition[1] + change[1]]
-                position += -self.domainSize*np.floor(position/self.domainSize)
-                
+                position = self.__computeNewPosition(initialPosition, orientation)
+            case MovementPattern.PURSUIT_NEAREST:
+                candidates = self.determineCandidates(positions, cells, cellDims, cellToParticleDistribution)
+                candidateDistances = {candidateIdx: math.dist(initialPosition, positions[candidateIdx]) for candidateIdx in candidates}
+                pickedNeighbours = nsmallest(1, candidateDistances, candidateDistances.get)
+                if len(pickedNeighbours) >= 1:
+                    pickedNeighbour = pickedNeighbours[0] # nsmallest always returns a list
+                    orientation = self.computeAwayFromOrigin(positions[pickedNeighbour])
+                    position = self.__computeNewPosition(initialPosition, orientation)
+                else:
+                    position = initialPosition
+                    orientation = self.orientation
         self.areas = [(position[0], position[1], self.areas[0][2])]
         self.orientation = orientation
+
+    def __computeNewPosition(self, initialPosition, orientation):
+        change = (self.movementSpeed*orientation)
+        position = [initialPosition[0] + change[0], initialPosition[1] + change[1]]
+        position += -self.domainSize*np.floor(position/self.domainSize)
+        return position

@@ -48,7 +48,8 @@ eventEffect2 = EventEffect.ALIGN_TO_FIXED_ANGLE
 blockSteps = -1
 numberOfPreviousSteps = 1000
 percentage = 50
-initialStateString = "ordered"
+initialStateString = "random"
+
 for i in range(1,2):
     if initialStateString == "ordered":
         targetSwitchValue=disorderValue
@@ -56,7 +57,7 @@ for i in range(1,2):
     else:
         targetSwitchValue=orderValue
         startValue = disorderValue
-    for radius in [30]:
+    for radius in [20]:
 
         for thresholds in [[0.1,0.9]]:
             for density in [0.01]:
@@ -71,8 +72,9 @@ for i in range(1,2):
                                                     percentage=percentage,
                                                     angle=angle,
                                                     eventEffect=EventEffect.AWAY_FROM_ORIGIN,
-                                                    movementPattern=MovementPattern.RANDOM,
+                                                    movementPattern=MovementPattern.PURSUIT_NEAREST,
                                                     movementSpeed=1,
+                                                    perceptionRadius=30,
                                                     domainSize=domainSize,
                                                     distributionType=DistributionType.LOCAL_SINGLE_SITE,
                                                     areas=[(20,20,radius)]
