@@ -1,0 +1,175 @@
+import numpy as np
+import random
+import math
+from heapq import nlargest
+from heapq import nsmallest
+
+import DefaultValues as dv
+import EnumNeighbourSelectionMode
+from EnumSwitchType import SwitchType
+from EnumThresholdType import ThresholdType
+import ServiceMetric
+import ServiceVicsekHelper
+
+import VicsekWithNeighbourSelectionSwitchingCellBasedIndividuals
+
+class VicsekWithNeighbourSelection(VicsekWithNeighbourSelectionSwitchingCellBasedIndividuals.VicsekWithNeighbourSelection):
+
+    def __init__(self, neighbourSelectionModel, domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, speed=dv.DEFAULT_SPEED, 
+                 radius=dv.DEFAULT_RADIUS, noise=dv.DEFAULT_NOISE, numberOfParticles=dv.DEFAULT_NUM_PARTICLES, 
+                 k=dv.DEFAULT_K_NEIGHBOURS, showExample=dv.DEFAULT_SHOW_EXAMPLE_PARTICLE, numCells=None, 
+                 switchType=None, switchValues=(None, None), thresholdType=None, orderThresholds=None, 
+                 numberPreviousStepsForThreshold=10, switchBlockedAfterEventTimesteps=-1):
+        """
+        Initialize the model with all its parameters
+
+        Params:
+            - neighbourSelectionMode (EnumNeighbourSelectionMode.NeighbourSelectionMode): how the particles select which of the other particles within their perception radius influence their orientation at any given time step
+            - domainSize (tuple x,y) [optional]: the size of the domain for the particle movement
+            - speed (int) [optional]: how fast the particles move
+            - radius (int) [optional]: defines the perception field of the individual particles, i.e. the area in which it can perceive other particles
+            - noise (float) [optional]: noise amplitude. adds noise to the orientation adaptation
+            - numberOfParticles (int) [optional]: the number of particles within the domain, n
+            - k (int) [optional]: the number of neighbours a particle considers when updating its orientation at every time step
+            - showExample (bool) [optional]: whether a random example particle should be coloured in red with its influencing neighbours in yellow
+            - numCells (int) [optional]: the number of cells that make up the grid for the cellbased evaluation
+            - switchType (EnumSwitchType) [optional]: The type of switching that should be performed
+            - switchValues (tuple (orderValue, disorderValue)) [optional]: the value that is supposed to create order and the value that is supposed to create disorder.
+                    Must be the same type as the switchType
+            - orderThresholds (array) [optional]: the difference in local order compared to the previous timesteps that will cause a switch.
+                    If only one number is supplied (as an array with one element), will be used to check if the difference between the previous and the current local order is greater than the threshold.
+                    If two numbers are supplied, will be used as a lower and an upper threshold that triggers a switch: [lowerThreshold, upperThreshold]
+            - numberPreviousStepsForThreshold (int) [optional]: the number of previous timesteps that are considered for the average to be compared to the threshold value(s)
+
+        Returns:
+            No return.
+        """
+        super().__init__(neighbourSelectionModel=neighbourSelectionModel,
+                         domainSize=domainSize,
+                         speed=speed,
+                         radius=radius,
+                         noise=noise,
+                         numberOfParticles=numberOfParticles,
+                         k=k,
+                         showExample=showExample,
+                         numCells=numCells,
+                         switchType=switchType,
+                         switchValues=switchValues,
+                         thresholdType=thresholdType,
+                         orderThresholds=orderThresholds,
+                         numberPreviousStepsForThreshold=numberPreviousStepsForThreshold,
+                         switchBlockedAfterEventTimesteps=switchBlockedAfterEventTimesteps)
+
+
+    def simulate(self, initialState=(None, None, None), dt=None, tmax=None, events=None):
+        """
+        Runs the simulation experiment.
+        First the parameters are computed if they are not passed. Then the positions, orientations and colours are computed for each particle at each time step.
+
+        Parameters:
+            - initialState (tuple of arrays) [optional]: A tuple containing the initial positions of all particles and their initial orientations
+            - dt (int) [optional]: time step
+            - tmax (int) [optional]: the total number of time steps of the experiment
+
+        Returns:
+            time points, positionsHistory, orientationsHistory, coloursHistory. All of them as ordered arrays so that they can be matched by index matching
+        """
+
+        # Preparations and setting of parameters if they are not passed to the method
+        positions, orientations, switchTypeValues = initialState
+        
+        if any(ele is None for ele in initialState):
+            positions, orientations, switchTypeValues = self.__initializeState(self.domainSize, self.numberOfParticles)
+            
+        if dt is None and tmax is not None:
+            dt = 1
+        
+        if tmax is None:
+            tmax = (10**3)*dt
+            dt = 10**(-2)*(np.max(self.domainSize)/self.speed)
+
+        self.tmax = tmax
+        self.dt = dt
+
+        # Initialisations for the loop and the return variables
+        t=0
+        numIntervals=int(tmax/dt+1)
+        
+        positionsHistory = np.zeros((numIntervals,self.numberOfParticles,len(self.domainSize)))
+        orientationsHistory = np.zeros((numIntervals,self.numberOfParticles,len(self.domainSize)))  
+        self.localOrderHistory = np.zeros((numIntervals,self.numberOfParticles))        
+        switchTypeValuesHistory = numIntervals * [self.numberOfParticles * [None]]
+        coloursHistory = numIntervals * [self.numberOfParticles * ['k']]
+        eventPositionHistory = np.zeros((numIntervals,1,len(self.domainSize)))
+        eventOrientationHistory = np.zeros((numIntervals,1,len(self.domainSize)))
+
+        positionsHistory[0,:,:]=positions
+        orientationsHistory[0,:,:]=orientations
+        switchTypeValuesHistory[0]=switchTypeValues
+
+
+        self.cells = self.initialiseCells()
+        self.neighbouringCells = self.determineNeighbouringCells()
+
+        cellToParticleDistribution, particleToCellDistribution = self.createCellDistributions(positions)
+
+        localOrders = self.__initialiseLocalOrders(positions, orientations, cellToParticleDistribution, particleToCellDistribution)
+        self.localOrderHistory[0,:]=localOrders
+
+        # for every time step, the positions, orientations, switchTypeValue and colours for each particle are updated and added to the histories
+        for it in range(numIntervals):
+            self.t = it
+
+            if t % 1000 == 0:
+                print(f"t={t}/{numIntervals-1}")
+
+            for i in range(len(positions)):
+                positions[i] += dt*(self.speed*orientations[i])
+                cellToParticleDistribution, particleToCellDistribution = self.updateCellForParticle(i, positions, cellToParticleDistribution, particleToCellDistribution)
+                positions[i] += -self.domainSize*np.floor(positions[i]/self.domainSize)
+            
+            neighbourCandidates = self.__findNeighbours(positions, cellToParticleDistribution, particleToCellDistribution)
+
+            self.cleanSelectedIndices(it)
+            # check if any events take effect at this timestep before anything except the positions is updates
+            if events != None:
+                for event in events:
+                    orientations, switchTypeValues, self.selectedIndices[it], eventPositionHistory[it], eventOrientationHistory[it] = event.check(self.numberOfParticles, it, positions, orientations, switchTypeValues, self.cells, self.cellDims, cellToParticleDistribution)
+                    #orientations, switchTypeValues, self.selectedIndices[it] = event.check(self.numberOfParticles, it, positions, orientations, switchTypeValues, self.cells, self.cellDims, cellToParticleDistribution)
+
+            previousLocalOrders = localOrders
+            localOrders = self.__getLocalOrders(orientations, neighbourCandidates)
+            switchTypeValues = self.computeSwitchTypeValues(timestep=it, previousSwitchTypeValues=switchTypeValues, neighbours=neighbourCandidates, localOrders=localOrders, previousLocalOrders=previousLocalOrders)
+
+            colours = self.__colourGroups(switchTypeValues)
+
+            orientations = self.calculateMeanOrientations(positions, orientations, switchTypeValues, neighbourCandidates)
+            orientations = ServiceVicsekHelper.normalizeOrientations(orientations+self.generateNoise())
+
+            positionsHistory[it,:,:]=positions
+            orientationsHistory[it,:,:]=orientations
+            self.localOrderHistory[it,:]=localOrders
+            switchTypeValuesHistory[it]=switchTypeValues
+            coloursHistory[it]=colours
+
+            t+=dt
+
+        positionsHistory, orientationsHistory, coloursHistory, switchTypeValuesHistory = self.addEventEntityToHistories(numIntervals, eventPositionHistory, eventOrientationHistory, positionsHistory, orientationsHistory, coloursHistory, switchTypeValuesHistory)
+
+        return (dt*np.arange(numIntervals), positionsHistory, orientationsHistory), coloursHistory, switchTypeValuesHistory
+    
+    def addEventEntityToHistories(self, numIntervals, eventPositionHistory, eventOrientationHistory, positionsHistory, orientationsHistory, coloursHistory, switchTypeValuesHistory):
+        newPositionsHistory = np.zeros((numIntervals,self.numberOfParticles+1,len(self.domainSize))) 
+        newOrientationsHistory = np.zeros((numIntervals,self.numberOfParticles+1,len(self.domainSize))) 
+
+        for t in range(len(positionsHistory)):
+            if any(ele is None for ele in eventPositionHistory[t]):
+                newPositionsHistory[t] = np.concatenate((positionsHistory[t], [[-1,-1]]), axis=0)
+            else:
+                newPositionsHistory[t] = np.concatenate((positionsHistory[t], eventPositionHistory[t]), axis=0)
+
+            newOrientationsHistory[t] = np.concatenate((orientationsHistory[t], eventOrientationHistory[t]), axis=0)
+
+            coloursHistory[t].append('y')
+            switchTypeValuesHistory[t].append(self.disorderSwitchValue)
+        return newPositionsHistory, newOrientationsHistory, coloursHistory, switchTypeValuesHistory

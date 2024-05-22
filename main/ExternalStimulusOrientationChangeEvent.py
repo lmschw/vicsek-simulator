@@ -36,7 +36,7 @@ class ExternalStimulusOrientationChangeEvent:
         self.eventEffect = eventEffect
         self.distributionType = distributionType
         self.areas = areas
-        self.domainSize = domainSize
+        self.domainSize = np.asarray(domainSize)
         self.targetSwitchValue = targetSwitchValue
 
         if self.distributionType != DistributionType.GLOBAL and self.areas == None:
@@ -102,11 +102,11 @@ class ExternalStimulusOrientationChangeEvent:
                 case EventEffect.TURN_BY_FIXED_ANGLE:
                     orientations[idx] = self.__computeFixedAngleTurn(orientations[idx])
                 case EventEffect.ALIGN_TO_FIXED_ANGLE:
-                    orientations[idx] = self.__computeUvCoordinates(self.angle)
+                    orientations[idx] = self.computeUvCoordinates(self.angle)
                 case EventEffect.ALIGN_TO_FIRST_PARTICLE:
                     orientations[idx] = orientations[selectedIndices[0]]
                 case EventEffect.AWAY_FROM_ORIGIN:
-                    orientations[idx] = self.__computeAwayFromOrigin(positions[idx])
+                    orientations[idx] = self.computeAwayFromOrigin(positions[idx])
                 case EventEffect.TOWARDS_ORIGIN:
                     orientations[idx] = self.__computeTowardsOrigin(positions[idx])
                 case EventEffect.RANDOM:
@@ -132,7 +132,7 @@ class ExternalStimulusOrientationChangeEvent:
             An array of the indices of the affected particles.
         """
         # determine which particles might potentially be affected
-        candidateIndices = self.__determineCandidates(positions, cells, cellDims, cellToParticleDistribution)
+        candidateIndices = self.determineCandidates(positions, cells, cellDims, cellToParticleDistribution)
         
         # how many particles will be affected
         numberOfAffectedParticles = math.ceil((self.percentage / 100) * totalNumberOfParticles)
@@ -143,7 +143,7 @@ class ExternalStimulusOrientationChangeEvent:
         return random.sample(candidateIndices, numberOfAffectedParticles)
         
 
-    def __determineCandidates(self, positions, cells, cellDims, cellToParticleDistribution):
+    def determineCandidates(self, positions, cells, cellDims, cellToParticleDistribution):
         """
         Determines which particles could potentially be affected based on the distributionType and the areas if relevant.
 
@@ -236,19 +236,19 @@ class ExternalStimulusOrientationChangeEvent:
         # add the event angle to the current angle
         newAngle = (previousAngle + self.angle) % 360
 
-        return self.__computeUvCoordinates(newAngle)
+        return self.computeUvCoordinates(newAngle)
     
-    def __computeAwayFromOrigin(self, position):
+    def computeAwayFromOrigin(self, position):
         angle = self.__computeAngleWithRegardToOrigin(position)
         if (position[0] < self.__getOriginPoint()[0]):
             angle += 180
-        return self.__computeUvCoordinates(angle)
+        return self.computeUvCoordinates(angle)
 
     def __computeTowardsOrigin(self, position):
         angle = self.__computeAngleWithRegardToOrigin(position)
         if (position[0] > self.__getOriginPoint()[0]):
             angle += 180
-        return self.__computeUvCoordinates(angle)
+        return self.computeUvCoordinates(angle)
 
     def __computeAngleWithRegardToOrigin(self, position):
         orientationFromOrigin = position - self.__getOriginPoint()
@@ -269,7 +269,7 @@ class ExternalStimulusOrientationChangeEvent:
         return np.arccos(previousU) * 180 / np.pi
 
 
-    def __computeUvCoordinates(self, angle):
+    def computeUvCoordinates(self, angle):
         # compute the uv-coordinates
         U = np.cos(angle*np.pi/180)
         V = np.sin(angle*np.pi/180)
