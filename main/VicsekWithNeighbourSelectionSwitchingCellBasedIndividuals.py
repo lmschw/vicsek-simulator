@@ -511,13 +511,7 @@ class VicsekWithNeighbourSelection:
         match self.thresholdType: 
             case ThresholdType.TWO_THRESHOLDS:
                 # setting the two thresholds
-                if len(self.orderThresholds) == 1:
-                    switchDifferenceThresholdLower = self.orderThresholds[0]
-                    switchDifferenceThresholdUpper = 1 - self.orderThresholds[0]
-                else:
-                    switchDifferenceThresholdLower = self.orderThresholds[0]
-                    switchDifferenceThresholdUpper = self.orderThresholds[1]
-
+                switchDifferenceThresholdLower, switchDifferenceThresholdUpper = self.__getLowerAndUpperThreshold()
                 # determining the switchTypeValue
                 if localOrder >= switchDifferenceThresholdUpper: 
                     # uppermost order zone
@@ -531,6 +525,22 @@ class VicsekWithNeighbourSelection:
                 elif localOrder >= switchDifferenceThresholdLower and previousLocalOrder < switchDifferenceThresholdLower:
                     # neutral middle zone coming from below
                     return self.orderSwitchValue
+            case ThresholdType.TWO_THRESHOLDS_SIMPLE:
+                switchDifferenceThresholdLower, switchDifferenceThresholdUpper = self.__getLowerAndUpperThreshold()
+                if localOrder >= switchDifferenceThresholdUpper: 
+                    # uppermost order zone
+                    return self.orderSwitchValue
+                elif localOrder <= switchDifferenceThresholdLower: 
+                    # lowermost order zone
+                    return self.disorderSwitchValue
+            case ThresholdType.TWO_THRESHOLDS_SIMPLE_REVERSE:
+                switchDifferenceThresholdLower, switchDifferenceThresholdUpper = self.__getLowerAndUpperThreshold()
+                if localOrder >= switchDifferenceThresholdUpper: 
+                    # uppermost order zone
+                    return self.disorderSwitchValue
+                elif localOrder <= switchDifferenceThresholdLower: 
+                    # lowermost order zone
+                    return self.orderSwitchValue
             case ThresholdType.SINGLE_DIFFERENCE_THRESHOLD:
                 absoluteDiff = np.absolute(localOrder - previousLocalOrder)
                 if absoluteDiff > self.orderThresholds[0]:
@@ -539,6 +549,16 @@ class VicsekWithNeighbourSelection:
                     elif localOrder < previousLocalOrder:
                         return self.disorderSwitchValue
         return previousValue
+    
+    def __getLowerAndUpperThreshold(self):
+        if len(self.orderThresholds) == 1:
+            switchDifferenceThresholdLower = self.orderThresholds[0]
+            switchDifferenceThresholdUpper = 1 - self.orderThresholds[0]
+        else:
+            switchDifferenceThresholdLower = self.orderThresholds[0]
+            switchDifferenceThresholdUpper = self.orderThresholds[1]
+        return switchDifferenceThresholdLower, switchDifferenceThresholdUpper
+
 
     def __getLocalOrders(self, orientations, neighbours):
         """
