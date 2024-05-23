@@ -422,7 +422,7 @@ def createSwitchAnalysisPlot(positions, orientations, switchValues, startTime=0,
         plt.savefig(savePath)
     plt.show()
 
-def createDensityVsRadiusPlot(type, threshold, radiusVals, densityVals, initialState="random", startValue=1, switchTypeOptions=(5,1), i=1, savePath=None):
+def createDensityVsRadiusPlot(type, thresholdType, threshold, radiusVals, densityVals, initialState="random", startValue=1, switchTypeOptions=(5,1), i=1, savePath=None):
     
     metric = Metrics.ORDER
     pointsForDensity = []
@@ -434,7 +434,7 @@ def createDensityVsRadiusPlot(type, threshold, radiusVals, densityVals, initialS
             colours = []
             switchTypeValues = []
             modelParamsDensity, simulationDataDensity, coloursDensity, switchTypeValuesDensity = ServiceSavedModel.loadModels([
-                                                                                                    f"test_domsize-var_std_ind_avg_tt_{initialState}_st=K_o=5_do=1_s={startValue}_d={density}_n=100_r={radius}_LOD_noise=1_th={threshold}_psteps=100_bs=-1_e-_{i}.json",
+                                                                                                    f"test_domsize-var_ind_avg_{thresholdType.value}_{initialState}_st=K_o=5_do=1_s={startValue}_d={density}_n=100_r={radius}_LOD_noise=1_th={threshold}_psteps=100_bs=-1_e-_{i}.json",
 
                                                                                                     ], loadSwitchValues=True)
             modelParams.append(modelParamsDensity)
