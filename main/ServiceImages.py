@@ -422,7 +422,7 @@ def createSwitchAnalysisPlot(positions, orientations, switchValues, startTime=0,
         plt.savefig(savePath)
     plt.show()
 
-def createDensityVsRadiusPlot(threshold, radiusVals, densityVals, initialState="random", startValue=1, switchTypeOptions=(5,1), i=1, savePath=None):
+def createDensityVsRadiusPlot(type, threshold, radiusVals, densityVals, initialState="random", startValue=1, switchTypeOptions=(5,1), i=1, savePath=None):
     
     metric = Metrics.ORDER
     pointsForDensity = []
@@ -444,7 +444,11 @@ def createDensityVsRadiusPlot(threshold, radiusVals, densityVals, initialState="
 
             evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=100, switchTypeValues=switchTypeValues, switchTypeOptions=switchTypeOptions)
             results = evaluator.evaluate()
-            pointsForRadius.append(max(results.values())[0])
+            if type == "minorder":
+                pointsForRadius.append(min(results.values())[0])
+            else:
+                pointsForRadius.append(max(results.values())[0])
+
         pointsForDensity.append(pointsForRadius)
 
     figure = plt.figure()
