@@ -8,4 +8,5 @@ class ThresholdType(str, Enum):
     SINGLE_DIFFERENCE_THRESHOLD = "sdt",
     TWO_THRESHOLDS_SIMPLE = "tts",
     TWO_THRESHOLDS_SIMPLE_REVERSE = "ttsr",
-    HYSTERESIS = "hst"
+    HYSTERESIS = "hst",
+    HYSTERESIS_REVERSED = "hstr"
