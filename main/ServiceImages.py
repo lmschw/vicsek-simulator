@@ -487,7 +487,7 @@ def createThresholdVsRadiusPlot(type, thresholdType, density, thresholdVals, rad
             colours = []
             switchTypeValues = []
             modelParamsDensity, simulationDataDensity, coloursDensity, switchTypeValuesDensity = ServiceSavedModel.loadModels([
-                                                                                                    f"test_domsize-var_ind_avg_{thresholdType.value}_{initialState}_st=K_o=5_do=1_s={startValue}_d={density}_n=100_r={radius}_LOD_noise=1_th={threshold[0]}_psteps=100_bs=-1_e-_{i}.json",
+                                                                                                    f"test_domsize-var_ind_avg_{thresholdType.value}_{initialState}_st=K_o=5_do=1_s={startValue}_d={density}_n=100_r={radius}_LOD_noise=1_th={threshold}_psteps=100_bs=-1_e-_{i}.json",
 
                                                                                                     ], loadSwitchValues=True)
             modelParams.append(modelParamsDensity)
@@ -540,7 +540,7 @@ def createDensityVsThresholdPlot(type, thresholdType, radius, thresholdVals, den
             colours = []
             switchTypeValues = []
             modelParamsDensity, simulationDataDensity, coloursDensity, switchTypeValuesDensity = ServiceSavedModel.loadModels([
-                                                                                                    f"test_domsize-var_ind_avg_{thresholdType.value}_{initialState}_st=K_o=5_do=1_s={startValue}_d={density}_n=100_r={radius}_LOD_noise=1_th={threshold[0]}_psteps=100_bs=-1_e-_{i}.json",
+                                                                                                    f"test_domsize-var_ind_avg_{thresholdType.value}_{initialState}_st=K_o=5_do=1_s={startValue}_d={density}_n=100_r={radius}_LOD_noise=1_th={threshold}_psteps=100_bs=-1_e-_{i}.json",
 
                                                                                                     ], loadSwitchValues=True)
             modelParams.append(modelParamsDensity)
