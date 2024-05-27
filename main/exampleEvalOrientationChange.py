@@ -92,7 +92,9 @@ for metric in [Metrics.ORDER, Metrics.ORDER_VALUE_PERCENTAGE]:
                 startValue = orderValue
                 targetSwitchValue=disorderValue
             for density in [0.05, 0.07, 0.09]:
-                labels = thresholdLabels
+                labels = [ThresholdType.TWO_THRESHOLDS.name,
+                                ThresholdType.TWO_THRESHOLDS_SIMPLE.name,
+                                ThresholdType.HYSTERESIS.name]
                 for eventEffect in [EventEffect.TURN_BY_FIXED_ANGLE,
                                     EventEffect.ALIGN_TO_FIXED_ANGLE, 
                                     EventEffect.ALIGN_TO_FIRST_PARTICLE, 
@@ -121,6 +123,12 @@ for metric in [Metrics.ORDER, Metrics.ORDER_VALUE_PERCENTAGE]:
                         evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=100, switchTypeValues=switchTypeValues, switchTypeOptions=switchTypeOptions)
                         evaluator.evaluateAndVisualize(labels=labels, xLabel=xLabel, yLabel=yLabel, subtitle=subtitle, savePath=savePath)
                         ServiceGeneral.logWithTime(f"created threshold type comp graph for distributionType={distributionType.name}, density={density}, eventEffect = {eventEffect} and metric {metric.name}")
+                labels = [EventEffect.TURN_BY_FIXED_ANGLE.label,
+                                                    EventEffect.ALIGN_TO_FIXED_ANGLE.label, 
+                                                    EventEffect.ALIGN_TO_FIRST_PARTICLE.label, 
+                                                    EventEffect.AWAY_FROM_ORIGIN.label, 
+                                                    EventEffect.TOWARDS_ORIGIN.label, 
+                                                    EventEffect.RANDOM.label]
                 for thresholdType in [ThresholdType.TWO_THRESHOLDS,
                                               ThresholdType.TWO_THRESHOLDS_SIMPLE,
                                               ThresholdType.HYSTERESIS]:
