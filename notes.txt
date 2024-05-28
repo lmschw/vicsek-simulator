@@ -115,3 +115,21 @@ additional: try with borders (necessary to reproduce fish experiments)
 
 
 + find a way to investigate why random switches to order in the beginning
+
+29.05.2024:
+- turn with 90°
+- place predator where there is low density
+- place predator outside of domain
+- does a higher threshold lead to slow converge to order?
+- find mechanisms for:
+    - switch only on event (both directions)
+    - always converge slowly to order
+-> eliminate options (choose threholdType, radius, density etc.)
+- practice run for the presentation next week
+- buy laptop
+- check GPU access -> Kevin
+- Rippers account -> Karen
+- do not include walls
+- Monday at uni (spontaneous meeting)
+
+maybe try adding a probability to choose order randomly to make slow converge possible?
