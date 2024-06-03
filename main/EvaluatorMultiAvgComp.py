@@ -61,7 +61,7 @@ class EvaluatorMultiAvgComp(object):
         return dd
 
     
-    def visualize(self, data, labels, xLabel=None, yLabel=None, subtitle=None, savePath=None):
+    def visualize(self, data, labels, xLabel=None, yLabel=None, subtitle=None, colourBackgroundForTimesteps=(None,None), savePath=None):
         """
         Visualizes and optionally saves the results of the evaluation as a graph.
 
@@ -92,13 +92,17 @@ class EvaluatorMultiAvgComp(object):
             plt.ylabel(yLabel)
         if subtitle != None:
             plt.title(f"""Model comparison: {subtitle}""")
+        if not any(ele is None for ele in colourBackgroundForTimesteps):
+            ax = plt.gca()
+            y = np.arange(0, 1, 0.01)
+            ax.fill_betweenx(y, colourBackgroundForTimesteps[0], colourBackgroundForTimesteps[1], facecolor='green', alpha=0.5)
         if savePath != None:
             plt.savefig(savePath)
         #plt.show()
         plt.close()
 
     
-    def evaluateAndVisualize(self, labels, xLabel=None, yLabel=None, subtitle=None, savePath=None):
+    def evaluateAndVisualize(self, labels, xLabel=None, yLabel=None, subtitle=None, colourBackgroundForTimesteps=(None,None), savePath=None):
         """
         Evaluates and subsequently visualises the results for multiple models.
 
@@ -110,7 +114,7 @@ class EvaluatorMultiAvgComp(object):
         Returns:
             Nothing.
         """
-        self.visualize(self.evaluate(), labels, xLabel=xLabel, yLabel=yLabel, subtitle=subtitle, savePath=savePath)
+        self.visualize(self.evaluate(), labels, xLabel=xLabel, yLabel=yLabel, subtitle=subtitle, colourBackgroundForTimesteps=colourBackgroundForTimesteps, savePath=savePath)
 
     def __createOrderPlot(self, data, labels):
         """

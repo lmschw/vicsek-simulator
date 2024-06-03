@@ -4,6 +4,7 @@ from EnumSwitchType import SwitchType
 from EnumDistributionType import DistributionType
 from EnumEventEffect import EventEffect
 from EnumThresholdType import ThresholdType
+from EnumMovementPattern import MovementPattern
 
 import ServiceSavedModel
 import EvaluatorMultiAvgComp
@@ -71,6 +72,7 @@ numberOfPreviousSteps = 100
 percentage = 50
 radius = 10
 threshold = [0.1]
+movementPattern = MovementPattern.STATIC
 for metric in [Metrics.ORDER, Metrics.ORDER_VALUE_PERCENTAGE]:
     if metric == Metrics.ORDER:
         yLabel = "order"
@@ -83,7 +85,7 @@ for metric in [Metrics.ORDER, Metrics.ORDER_VALUE_PERCENTAGE]:
         else:
             area = "[(20, 20, 10)]"
             dist = "Local"
-        for initialState in ["random"]:
+        for initialState in ["ordered"]:
             if initialState == "random":
                 startValue = disorderValue
                 targetSwitchValue=orderValue
@@ -110,7 +112,7 @@ for metric in [Metrics.ORDER, Metrics.ORDER_VALUE_PERCENTAGE]:
                                               ThresholdType.TWO_THRESHOLDS_SIMPLE,
                                               ThresholdType.HYSTERESIS]:
                             modelParamsDensity, simulationDataDensity, coloursDensity, switchTypeValuesDensity = ServiceSavedModel.loadModels([
-                                f"test_single-event-dom_ind_avg_{thresholdType.value}_{initialState}_st=K_o=5_do=1_s={startValue}_d={density}_n=100_r={radius}_LOD_noise=1_th={threshold}_psteps={numberOfPreviousSteps}_bs={blockSteps}_e-t5000e{eventEffect.val}p{percentage}a{angle}dt{distributionType.value}a{area}_1.json"
+                                f"test_single-event-duration=1000_dom_ind_avg_{thresholdType.value}_{initialState}_st=K_o=5_do=1_s={startValue}_d={density}_n=100_r={radius}_LOD_noise=1_th={threshold}_psteps={numberOfPreviousSteps}_bs={blockSteps}_e-t5000-6000e{eventEffect.val}m{movementPattern.val}p{percentage}a{angle}dt{distributionType.value}a{area}_1.json"
                                                                                                                     ], loadSwitchValues=True)
                             modelParams.append(modelParamsDensity)
                             simulationData.append(simulationDataDensity)
@@ -121,7 +123,7 @@ for metric in [Metrics.ORDER, Metrics.ORDER_VALUE_PERCENTAGE]:
                         #savePath = f"{metric.value}_ps-comp_avg_and_single_ind_{initialState}_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d=0.01_LOD_noise=1_ot=[{singleThreshold}]_events-t2000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.val}p30a180dt{distributionType.value}a{area}.svg"
                         savePath = f"single_{metric.value}_threshold-type-comp_eventEffect={eventEffect.val}_ind_avg_{initialState}_st=K_o=5_do=1_s={startValue}_d={density}_r={radius}_LOD_noise=1_th={threshold}_psteps={numberOfPreviousSteps}_dist={distributionType.value}.svg"
                         evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=100, switchTypeValues=switchTypeValues, switchTypeOptions=switchTypeOptions)
-                        evaluator.evaluateAndVisualize(labels=labels, xLabel=xLabel, yLabel=yLabel, subtitle=subtitle, savePath=savePath)
+                        evaluator.evaluateAndVisualize(labels=labels, xLabel=xLabel, yLabel=yLabel, subtitle=subtitle, colourBackgroundForTimesteps=(5000,6000), savePath=savePath)
                         ServiceGeneral.logWithTime(f"created threshold type comp graph for distributionType={distributionType.name}, density={density}, eventEffect = {eventEffect} and metric {metric.name}")
                 labels = [EventEffect.TURN_BY_FIXED_ANGLE.label,
                                                     EventEffect.ALIGN_TO_FIXED_ANGLE.label, 
@@ -145,7 +147,7 @@ for metric in [Metrics.ORDER, Metrics.ORDER_VALUE_PERCENTAGE]:
                                     EventEffect.RANDOM]:
 
                             modelParamsDensity, simulationDataDensity, coloursDensity, switchTypeValuesDensity = ServiceSavedModel.loadModels([
-                                f"test_single-event-dom_ind_avg_{thresholdType.value}_{initialState}_st=K_o=5_do=1_s={startValue}_d={density}_n=100_r={radius}_LOD_noise=1_th={threshold}_psteps={numberOfPreviousSteps}_bs={blockSteps}_e-t5000e{eventEffect.val}p{percentage}a{angle}dt{distributionType.value}a{area}_1.json"
+                                f"test_single-event-duration=1000_dom_ind_avg_{thresholdType.value}_{initialState}_st=K_o=5_do=1_s={startValue}_d={density}_n=100_r={radius}_LOD_noise=1_th={threshold}_psteps={numberOfPreviousSteps}_bs={blockSteps}_e-t5000-6000e{eventEffect.val}m{movementPattern.val}p{percentage}a{angle}dt{distributionType.value}a{area}_1.json"
                                                                                                                     ], loadSwitchValues=True)
                             modelParams.append(modelParamsDensity)
                             simulationData.append(simulationDataDensity)
@@ -154,9 +156,9 @@ for metric in [Metrics.ORDER, Metrics.ORDER_VALUE_PERCENTAGE]:
 
                         #savePath = f"order-ot_comp-K-ordered-d={density}-noise={noisePercentage}-{mode.name}-ot={orderThreshold}-events-t{eventTimestep}p{eventPercentage}a{angle}dt{distributionType.value}a{area}.svg"
                         #savePath = f"{metric.value}_ps-comp_avg_and_single_ind_{initialState}_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d=0.01_LOD_noise=1_ot=[{singleThreshold}]_events-t2000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.val}p30a180dt{distributionType.value}a{area}.svg"
-                        savePath = f"single_{metric.value}_event-effect-comp_thresholdType={thresholdType.value}_ind_avg_{initialState}_st=K_o=5_do=1_s={startValue}_d={density}_r={radius}_LOD_noise=1_th={threshold}_psteps={numberOfPreviousSteps}_dist={distributionType.value}.svg"
+                        savePath = f"single_{metric.value}_event-effect-comp_thresholdType={thresholdType.value}_duration_ind_avg_{initialState}_st=K_o=5_do=1_s={startValue}_d={density}_r={radius}_LOD_noise=1_th={threshold}_psteps={numberOfPreviousSteps}_dist={distributionType.value}.svg"
                         evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=100, switchTypeValues=switchTypeValues, switchTypeOptions=switchTypeOptions)
-                        evaluator.evaluateAndVisualize(labels=labels, xLabel=xLabel, yLabel=yLabel, subtitle=subtitle, savePath=savePath)
+                        evaluator.evaluateAndVisualize(labels=labels, xLabel=xLabel, yLabel=yLabel, subtitle=subtitle, colourBackgroundForTimesteps=(5000,6000), savePath=savePath)
                         ServiceGeneral.logWithTime(f"created event effect comp graph for distributionType={distributionType.name}, density={density}, thresholdType = {thresholdType.name} and metric {metric.name}")
 
                 
