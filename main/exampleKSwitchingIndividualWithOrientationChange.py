@@ -1,11 +1,13 @@
 import time
 
 import VicsekWithNeighbourSelectionSwitchingCellBasedIndividuals
+import VicsekWithNeighbourSelectionSwitchingCellBasedIndividualsDuration
 import ServiceSavedModel
 from EnumNeighbourSelectionMode import NeighbourSelectionMode
 import ServicePreparation
 import ServiceGeneral
 from ExternalStimulusOrientationChangeEvent import ExternalStimulusOrientationChangeEvent
+from ExternalStimulusOrientationChangeEventDuration import ExternalStimulusOrientationChangeEventDuration
 import AnimatorMatplotlib
 import Animator2D
 
@@ -13,6 +15,7 @@ from EnumSwitchType import SwitchType
 from EnumDistributionType import DistributionType
 from EnumEventEffect import EventEffect
 from EnumThresholdType import ThresholdType
+from EnumMovementPattern import MovementPattern
 
 
 domainSize = (100, 100)
@@ -513,95 +516,229 @@ for i in range(2,3):
 
 thresholdType = ThresholdType.TWO_THRESHOLDS
 
-tmax = 15000
+tmax = 25000
 i = 1
-
-
 
 blockSteps = -1
 numberOfPreviousSteps = 100
-percentage = 50
+angle = 90
 radius = 10
 threshold = [0.1]
-for i in range(2,11):
-    for initialStateString in ["ordered", "random"]:
-        if initialStateString == "ordered":
-            targetSwitchValue=disorderValue
-            startValue = orderValue
-        else:
-            targetSwitchValue=orderValue
-            startValue = disorderValue
-        for thresholdType in [ThresholdType.TWO_THRESHOLDS, ThresholdType.TWO_THRESHOLDS_SIMPLE, ThresholdType.HYSTERESIS]:
 
-            for eventEffect in [EventEffect.TURN_BY_FIXED_ANGLE,
-                                EventEffect.ALIGN_TO_FIXED_ANGLE,
-                                EventEffect.ALIGN_TO_FIRST_PARTICLE,
-                                EventEffect.AWAY_FROM_ORIGIN,
-                                EventEffect.TOWARDS_ORIGIN,
-                                EventEffect.RANDOM]:
-                for distributionType in [DistributionType.GLOBAL,
-                            DistributionType.LOCAL_SINGLE_SITE]:
-                    if distributionType == DistributionType.GLOBAL:
-                        event1 = ExternalStimulusOrientationChangeEvent(timestep=5000,
+for endTimestep in [6000, 7000]:
+    for i in range(1,6):
+        for initialStateString in ["random"]:
+            if initialStateString == "ordered":
+                targetSwitchValue=disorderValue
+                startValue = orderValue
+            else:
+                targetSwitchValue=orderValue
+                startValue = disorderValue
+            for thresholdType in [ThresholdType.HYSTERESIS]:
+
+                for eventEffectOrder in [EventEffect.TURN_BY_FIXED_ANGLE,
+                                    EventEffect.ALIGN_TO_FIXED_ANGLE,
+                                    EventEffect.ALIGN_TO_FIRST_PARTICLE]:
+
+                    for eventEffectDisorder in [EventEffect.AWAY_FROM_ORIGIN,
+                                    EventEffect.TOWARDS_ORIGIN,
+                                    EventEffect.RANDOM]:
+                        distTypeString = "lssmid"
+                        areas = [(16.67, 16.67, radius)]
+
+                        distributionType = DistributionType.LOCAL_SINGLE_SITE
+                        percentage = 100
+                        event1 = ExternalStimulusOrientationChangeEventDuration(
+                                        startTimestep=5000,
+                                        endTimestep=endTimestep,
                                         percentage=percentage,
                                         angle=angle,
-                                        eventEffect=eventEffect,
-                                        distributionType=DistributionType.GLOBAL
-                                        )
-                    else:
-                        event1 = ExternalStimulusOrientationChangeEvent(timestep=5000,
-                                        percentage=percentage,
-                                        angle=angle,
-                                        eventEffect=eventEffect,
+                                        eventEffect=eventEffectOrder,
+                                        movementPattern=MovementPattern.STATIC,
+                                        movementSpeed=1,
+                                        perceptionRadius=radius,
                                         distributionType=DistributionType.LOCAL_SINGLE_SITE,
-                                        areas=[(20, 20, radius)]
+                                        areas=areas
+                                        )
+                        event2 = ExternalStimulusOrientationChangeEventDuration(
+                                        startTimestep=10000,
+                                        endTimestep=endTimestep,
+                                        percentage=percentage,
+                                        angle=angle,
+                                        eventEffect=eventEffectDisorder,
+                                        movementPattern=MovementPattern.STATIC,
+                                        movementSpeed=1,
+                                        perceptionRadius=radius,
+                                        distributionType=DistributionType.LOCAL_SINGLE_SITE,
+                                        areas=areas
+                                        )
+                        event3 = ExternalStimulusOrientationChangeEventDuration(
+                                        startTimestep=15000,
+                                        endTimestep=endTimestep,
+                                        percentage=percentage,
+                                        angle=angle,
+                                        eventEffect=eventEffectOrder,
+                                        movementPattern=MovementPattern.STATIC,
+                                        movementSpeed=1,
+                                        perceptionRadius=radius,
+                                        distributionType=DistributionType.LOCAL_SINGLE_SITE,
+                                        areas=areas
                                         )
 
-                    events = [event1]
+                        events = [event1, event2, event3]
 
-                    for density in [0.05, 0.07, 0.09]:
-                        n = 100
-                        domainSize = ServicePreparation.getDomainSizeForConstantDensity(density, n)
-                        #n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
+                        for density in [0.09]:
+                            n = 100
+                            domainSize = ServicePreparation.getDomainSizeForConstantDensity(density, n)
+                            #n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
 
-                        startRun = time.time()
+                            startRun = time.time()
 
-                        if initialStateString == "ordered":
-                            initialState = ServicePreparation.createOrderedInitialDistributionEquidistancedIndividual(startValue, domainSize, n)
+                            if initialStateString == "ordered":
+                                initialState = ServicePreparation.createOrderedInitialDistributionEquidistancedIndividual(startValue, domainSize, n)
 
-                        simulator = VicsekWithNeighbourSelectionSwitchingCellBasedIndividuals.VicsekWithNeighbourSelection(
-                                                                                        neighbourSelectionModel=neighbourSelectionMode, 
-                                                                                        domainSize=domainSize, 
-                                                                                        numberOfParticles=n, 
-                                                                                        k=startValue, 
-                                                                                        noise=noise, 
-                                                                                        radius=radius,
-                                                                                        switchType=switchType,
-                                                                                        switchValues=(orderValue, disorderValue),
-                                                                                        thresholdType=thresholdType,
-                                                                                        orderThresholds=threshold,
-                                                                                        numberPreviousStepsForThreshold=numberOfPreviousSteps,
-                                                                                        switchBlockedAfterEventTimesteps=blockSteps
-                                                                                        )
-                        if initialStateString == "ordered":
-                            simulationData, colours, switchValues = simulator.simulate(tmax=tmax, initialState=initialState, events=events)
+                            simulator = VicsekWithNeighbourSelectionSwitchingCellBasedIndividualsDuration.VicsekWithNeighbourSelection(
+                                                                                            neighbourSelectionModel=neighbourSelectionMode, 
+                                                                                            domainSize=domainSize, 
+                                                                                            numberOfParticles=n, 
+                                                                                            k=startValue, 
+                                                                                            noise=noise, 
+                                                                                            radius=radius,
+                                                                                            switchType=switchType,
+                                                                                            switchValues=(orderValue, disorderValue),
+                                                                                            thresholdType=thresholdType,
+                                                                                            orderThresholds=threshold,
+                                                                                            numberPreviousStepsForThreshold=numberOfPreviousSteps,
+                                                                                            switchBlockedAfterEventTimesteps=blockSteps
+                                                                                            )
+                            if initialStateString == "ordered":
+                                simulationData, colours, switchValues = simulator.simulate(tmax=tmax, initialState=initialState, events=events)
+                            else:
+                                simulationData, colours, switchValues = simulator.simulate(tmax=tmax, events=events)
+
+                            # Save model values for future use
+                            #eventsString = "_".join([event.getShortPrintVersion() for event in events])
+                            eventsString = f"{event1.timestep}-{event1.eventEffect.val}_{event2.timestep}-{event2.eventEffect.val}_{event3.timestep}-{event3.eventEffect.val}"
+                            savePath = f"switch-{distTypeString}-drn={endTimestep-5000}_ind_avg_{thresholdType.value}_{initialStateString}_st={switchType.value}_o={orderValue}_do={disorderValue}_s={startValue}_d={density}_n={n}_r={radius}_{neighbourSelectionMode.value}_noise={noisePercentage}_th={threshold}_psteps={numberOfPreviousSteps}_bs={blockSteps}_e-{eventsString}_{i}"
+                            ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
+
+                            """
+                            # Initalise the animator
+                            animator = AnimatorMatplotlib.MatplotlibAnimator(simulationData, (100,100,100), colours)
+
+                            # prepare the animator
+                            preparedAnimator = animator.prepare(Animator2D.Animator2D(), frames=tmax)
+                            preparedAnimator.setParams(simulator.getParameterSummary())
+                            preparedAnimator.saveAnimation(f"{savePath}.mp4")
+            """
+                            endRun = time.time()
+                            ServiceGeneral.logWithTime(f"Completed i={i}, thresholdType={thresholdType}, eventEffectOrder={eventEffectOrder.name}, eventEffectDisorder={eventEffectDisorder.name}, distributionType={distTypeString}, density={density}, endTimestep={endTimestep}, init={initialStateString},  in {ServiceGeneral.formatTime(endRun-startRun)}")
+
+
+
+"""
+for endTimestep in [10000]:
+    for i in range(1,11):
+        for initialStateString in ["ordered", "random"]:
+            if initialStateString == "ordered":
+                targetSwitchValue=disorderValue
+                startValue = orderValue
+            else:
+                targetSwitchValue=orderValue
+                startValue = disorderValue
+            for thresholdType in [ThresholdType.HYSTERESIS]:
+
+                for eventEffect in [EventEffect.TURN_BY_FIXED_ANGLE,
+                                    EventEffect.ALIGN_TO_FIXED_ANGLE,
+                                    EventEffect.ALIGN_TO_FIRST_PARTICLE,
+                                    EventEffect.AWAY_FROM_ORIGIN,
+                                    EventEffect.TOWARDS_ORIGIN,
+                                    EventEffect.RANDOM]:
+                    for distTypeString in ["lssmid", "lss1"]:
+                        if distTypeString == "global":
+                            distributionType = DistributionType.GLOBAL
+                            percentage = 30
+                            event1 = ExternalStimulusOrientationChangeEventDuration(
+                                            startTimestep=5000,
+                                            endTimestep=endTimestep,
+                                            percentage=percentage,
+                                            angle=angle,
+                                            eventEffect=eventEffect,
+                                            movementPattern=MovementPattern.STATIC,
+                                            movementSpeed=1,
+                                            perceptionRadius=radius,
+                                            distributionType=DistributionType.GLOBAL
+                                            )
                         else:
-                            simulationData, colours, switchValues = simulator.simulate(tmax=tmax, events=events)
+                            distributionType = DistributionType.LOCAL_SINGLE_SITE
+                            percentage = 100
+                            if distTypeString == "lss20":
+                                areas = [(20, 20, radius)]
+                            elif distTypeString == "lssmid":
+                                areas = [(16.67, 16.67, radius)]
+                            elif distTypeString == "lss-1":
+                                areas = [(-1, -1, radius)]
+                            elif distTypeString == "lss1":
+                                areas = [(1, 1, radius)]
+                            else:
+                                raise Exception("typo")
+                            event1 = ExternalStimulusOrientationChangeEventDuration(
+                                            startTimestep=5000,
+                                            endTimestep=endTimestep,
+                                            percentage=percentage,
+                                            angle=angle,
+                                            eventEffect=eventEffect,
+                                            movementPattern=MovementPattern.STATIC,
+                                            movementSpeed=1,
+                                            perceptionRadius=radius,
+                                            distributionType=DistributionType.LOCAL_SINGLE_SITE,
+                                            areas=areas
+                                            )
 
-                        # Save model values for future use
-                        eventsString = "_".join([event.getShortPrintVersion() for event in events])
-                        savePath = f"test_single-event-dom_ind_avg_{thresholdType.value}_{initialStateString}_st={switchType.value}_o={orderValue}_do={disorderValue}_s={startValue}_d={density}_n={n}_r={radius}_{neighbourSelectionMode.value}_noise={noisePercentage}_th={threshold}_psteps={numberOfPreviousSteps}_bs={blockSteps}_e-{eventsString}_{i}"
-                        ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
+                        events = [event1]
 
-                        """
-                        # Initalise the animator
-                        animator = AnimatorMatplotlib.MatplotlibAnimator(simulationData, (100,100,100), colours)
+                        for density in [0.09]:
+                            n = 100
+                            domainSize = ServicePreparation.getDomainSizeForConstantDensity(density, n)
+                            #n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
 
-                        # prepare the animator
-                        preparedAnimator = animator.prepare(Animator2D.Animator2D(), frames=tmax)
-                        preparedAnimator.setParams(simulator.getParameterSummary())
-                        preparedAnimator.saveAnimation(f"{savePath}.mp4")
-        """
-                        endRun = time.time()
-                        ServiceGeneral.logWithTime(f"Completed i={i}, thresholdType={thresholdType}, eventEffect={eventEffect.name}, distributionType={distributionType.name}, density={density} in {ServiceGeneral.formatTime(endRun-startRun)}")
+                            startRun = time.time()
 
+                            if initialStateString == "ordered":
+                                initialState = ServicePreparation.createOrderedInitialDistributionEquidistancedIndividual(startValue, domainSize, n)
+
+                            simulator = VicsekWithNeighbourSelectionSwitchingCellBasedIndividualsDuration.VicsekWithNeighbourSelection(
+                                                                                            neighbourSelectionModel=neighbourSelectionMode, 
+                                                                                            domainSize=domainSize, 
+                                                                                            numberOfParticles=n, 
+                                                                                            k=startValue, 
+                                                                                            noise=noise, 
+                                                                                            radius=radius,
+                                                                                            switchType=switchType,
+                                                                                            switchValues=(orderValue, disorderValue),
+                                                                                            thresholdType=thresholdType,
+                                                                                            orderThresholds=threshold,
+                                                                                            numberPreviousStepsForThreshold=numberOfPreviousSteps,
+                                                                                            switchBlockedAfterEventTimesteps=blockSteps
+                                                                                            )
+                            if initialStateString == "ordered":
+                                simulationData, colours, switchValues = simulator.simulate(tmax=tmax, initialState=initialState, events=events)
+                            else:
+                                simulationData, colours, switchValues = simulator.simulate(tmax=tmax, events=events)
+
+                            # Save model values for future use
+                            eventsString = "_".join([event.getShortPrintVersion() for event in events])
+                            savePath = f"single-event-{distTypeString}-duration={endTimestep-5000}_ind_avg_{thresholdType.value}_{initialStateString}_st={switchType.value}_o={orderValue}_do={disorderValue}_s={startValue}_d={density}_n={n}_r={radius}_{neighbourSelectionMode.value}_noise={noisePercentage}_th={threshold}_psteps={numberOfPreviousSteps}_bs={blockSteps}_e-{eventsString}_{i}"
+                            ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
+
+                            # Initalise the animator
+                            #animator = AnimatorMatplotlib.MatplotlibAnimator(simulationData, (100,100,100), colours)
+
+                            # prepare the animator
+                            #preparedAnimator = animator.prepare(Animator2D.Animator2D(), frames=tmax)
+                            #preparedAnimator.setParams(simulator.getParameterSummary())
+                            #preparedAnimator.saveAnimation(f"{savePath}.mp4")
+                            endRun = time.time()
+                            ServiceGeneral.logWithTime(f"Completed i={i}, thresholdType={thresholdType}, eventEffect={eventEffect.name}, distributionType={distTypeString}, density={density}, endTimestep={endTimestep}, init={initialStateString},  in {ServiceGeneral.formatTime(endRun-startRun)}")
+
+"""
