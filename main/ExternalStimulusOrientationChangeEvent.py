@@ -8,6 +8,7 @@ from EnumEventEffect import EventEffect
 import DefaultValues as dv
 import ServiceMetric
 import ServiceVicsekHelper
+import ServiceOrientations
 
 class ExternalStimulusOrientationChangeEvent:
     # TODO refactor to allow areas with a radius bigger than the radius of a particle, i.e. remove neighbourCells and determine all affected cells here
@@ -102,7 +103,7 @@ class ExternalStimulusOrientationChangeEvent:
                 case EventEffect.TURN_BY_FIXED_ANGLE:
                     orientations[idx] = self.__computeFixedAngleTurn(orientations[idx])
                 case EventEffect.ALIGN_TO_FIXED_ANGLE:
-                    orientations[idx] = self.computeUvCoordinates(self.angle)
+                    orientations[idx] = ServiceOrientations.computeUvCoordinates(self.angle)
                 case EventEffect.ALIGN_TO_FIRST_PARTICLE:
                     orientations[idx] = orientations[selectedIndices[0]]
                 case EventEffect.AWAY_FROM_ORIGIN:
@@ -231,24 +232,24 @@ class ExternalStimulusOrientationChangeEvent:
         Returns:
             The new uv-coordinates for the orientation of the particle.
         """
-        previousAngle = self.__computeCurrentAngle(orientation)
+        previousAngle = ServiceOrientations.computeCurrentAngle(orientation)
 
         # add the event angle to the current angle
         newAngle = (previousAngle + self.angle) % 360
 
-        return self.computeUvCoordinates(newAngle)
+        return ServiceOrientations.computeUvCoordinates(newAngle)
     
     def computeAwayFromOrigin(self, position):
         angle = self.__computeAngleWithRegardToOrigin(position)
         if (position[0] < self.__getOriginPoint()[0]):
             angle += 180
-        return self.computeUvCoordinates(angle)
+        return ServiceOrientations.computeUvCoordinates(angle)
 
     def __computeTowardsOrigin(self, position):
         angle = self.__computeAngleWithRegardToOrigin(position)
         if (position[0] > self.__getOriginPoint()[0]):
             angle += 180
-        return self.computeUvCoordinates(angle)
+        return ServiceOrientations.computeUvCoordinates(angle)
 
     def __computeAngleWithRegardToOrigin(self, position):
         orientationFromOrigin = position - self.__getOriginPoint()
@@ -262,20 +263,7 @@ class ExternalStimulusOrientationChangeEvent:
             case DistributionType.LOCAL_SINGLE_SITE:
                 origin = self.areas[0][:2]
         return origin
-    
-    def __computeCurrentAngle(self, orientation):
-        # determine the current angle
-        previousU = orientation[0]
-        return np.arccos(previousU) * 180 / np.pi
 
-
-    def computeUvCoordinates(self, angle):
-        # compute the uv-coordinates
-        U = np.cos(angle*np.pi/180)
-        V = np.sin(angle*np.pi/180)
-        
-        return [U,V]
 
     def __getRandomOrientation(self):
         return ServiceVicsekHelper.normalizeOrientations(np.random.rand(1, len(self.domainSize))-0.5)
-

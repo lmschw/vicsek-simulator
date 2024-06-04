@@ -128,7 +128,7 @@ class VicsekWithNeighbourSelection(VicsekWithNeighbourSelectionSwitchingCellBase
                 cellToParticleDistribution, particleToCellDistribution = self.updateCellForParticle(i, positions, cellToParticleDistribution, particleToCellDistribution)
                 positions[i] += -self.domainSize*np.floor(positions[i]/self.domainSize)
             
-            neighbourCandidates = self.__findNeighbours(positions, cellToParticleDistribution, particleToCellDistribution)
+            neighbourCandidates = self.findNeighbours(positions, orientations, cellToParticleDistribution, particleToCellDistribution)
 
             self.cleanSelectedIndices(it)
             # check if any events take effect at this timestep before anything except the positions is updates

@@ -82,7 +82,7 @@ class VicsekWithNeighbourSelection:
         rij2 = np.sum(rij**2,axis=2)
         neighbourCandidates = (rij2 <= self.radius**2)
         """
-        neighbourCandidates = self.__findNeighbours(positions, cellToParticleDistribution, particleToCellDistribution)
+        neighbourCandidates = self.findNeighbours(positions, orientations, cellToParticleDistribution, particleToCellDistribution)
         neighbours = self.__selectNeighbours(neighbourCandidates, positions, orientations)
         summedOrientations = np.sum(neighbours[:,:,np.newaxis]*orientations[np.newaxis,:,:],axis=1)
         return self.__normalizeOrientations(summedOrientations)
@@ -347,7 +347,7 @@ class VicsekWithNeighbourSelection:
         return positions, orientations
     
         
-    def __findNeighbours(self, positions, cellToParticleDistribution, particleToCellDistribution):
+    def findNeighbours(self, positions, orientations, cellToParticleDistribution, particleToCellDistribution):
         """
         Finds all the neighbours for every particle.
 

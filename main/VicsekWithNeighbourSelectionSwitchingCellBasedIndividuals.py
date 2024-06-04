@@ -198,7 +198,7 @@ class VicsekWithNeighbourSelection:
                 cellToParticleDistribution, particleToCellDistribution = self.updateCellForParticle(i, positions, cellToParticleDistribution, particleToCellDistribution)
                 positions[i] += -self.domainSize*np.floor(positions[i]/self.domainSize)
             
-            neighbourCandidates = self.__findNeighbours(positions, cellToParticleDistribution, particleToCellDistribution)
+            neighbourCandidates = self.findNeighbours(positions, orientations, cellToParticleDistribution, particleToCellDistribution)
 
             self.cleanSelectedIndices(it)
             # check if any events take effect at this timestep before anything except the positions is updates
@@ -376,7 +376,7 @@ class VicsekWithNeighbourSelection:
         return positions, orientations, switchTypeValues
     
         
-    def __findNeighbours(self, positions, cellToParticleDistribution, particleToCellDistribution):
+    def findNeighbours(self, positions, orientations, cellToParticleDistribution, particleToCellDistribution):
         """
         Finds all the neighbours for every particle.
 
@@ -607,7 +607,7 @@ class VicsekWithNeighbourSelection:
         Returns:
             An array containing the local order as perceived by every particle.
         """
-        neighbourCandidates = self.__findNeighbours(positions, cellToParticleDistribution, particleToCellDistribution)
+        neighbourCandidates = self.findNeighbours(positions, orientations, cellToParticleDistribution, particleToCellDistribution)
         return self.__getLocalOrders(orientations, neighbourCandidates)
 
     def __colourGroups(self, switchTypeValues):
