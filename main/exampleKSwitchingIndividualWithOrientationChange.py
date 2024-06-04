@@ -635,7 +635,7 @@ for duration in [1000, 2000]:
                             preparedAnimator.saveAnimation(f"{savePath}.mp4")
             """
                             endRun = time.time()
-                            ServiceGeneral.logWithTime(f"Completed i={i}, thresholdType={thresholdType}, eventEffectOrder={eventEffectOrder.name}, eventEffectDisorder={eventEffectDisorder.name}, distributionType={distTypeString}, density={density}, endTimestep={endTimestep}, init={initialStateString},  in {ServiceGeneral.formatTime(endRun-startRun)}")
+                            ServiceGeneral.logWithTime(f"Completed i={i}, thresholdType={thresholdType}, eventEffectOrder={eventEffectOrder.name}, eventEffectDisorder={eventEffectDisorder.name}, distributionType={distTypeString}, density={density}, duration={duration}, init={initialStateString},  in {ServiceGeneral.formatTime(endRun-startRun)}")
 
 
 
