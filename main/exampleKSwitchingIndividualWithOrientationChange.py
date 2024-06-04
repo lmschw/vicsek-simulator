@@ -525,7 +525,7 @@ angle = 90
 radius = 10
 threshold = [0.1]
 
-for endTimestep in [6000, 7000]:
+for duration in [1000, 2000]:
     for i in range(1,6):
         for initialStateString in ["random"]:
             if initialStateString == "ordered":
@@ -548,9 +548,12 @@ for endTimestep in [6000, 7000]:
 
                         distributionType = DistributionType.LOCAL_SINGLE_SITE
                         percentage = 100
+                        e1Start = 5000
+                        e2Start = 10000
+                        e3Start = 15000
                         event1 = ExternalStimulusOrientationChangeEventDuration(
-                                        startTimestep=5000,
-                                        endTimestep=endTimestep,
+                                        startTimestep=e1Start,
+                                        endTimestep=e1Start + duration,
                                         percentage=percentage,
                                         angle=angle,
                                         eventEffect=eventEffectOrder,
@@ -561,8 +564,8 @@ for endTimestep in [6000, 7000]:
                                         areas=areas
                                         )
                         event2 = ExternalStimulusOrientationChangeEventDuration(
-                                        startTimestep=10000,
-                                        endTimestep=endTimestep,
+                                        startTimestep=e2Start,
+                                        endTimestep=e2Start + duration,
                                         percentage=percentage,
                                         angle=angle,
                                         eventEffect=eventEffectDisorder,
@@ -573,8 +576,8 @@ for endTimestep in [6000, 7000]:
                                         areas=areas
                                         )
                         event3 = ExternalStimulusOrientationChangeEventDuration(
-                                        startTimestep=15000,
-                                        endTimestep=endTimestep,
+                                        startTimestep=e3Start,
+                                        endTimestep=e3Start + duration,
                                         percentage=percentage,
                                         angle=angle,
                                         eventEffect=eventEffectOrder,
@@ -619,7 +622,7 @@ for endTimestep in [6000, 7000]:
                             # Save model values for future use
                             #eventsString = "_".join([event.getShortPrintVersion() for event in events])
                             eventsString = f"{event1.timestep}-{event1.eventEffect.val}_{event2.timestep}-{event2.eventEffect.val}_{event3.timestep}-{event3.eventEffect.val}"
-                            savePath = f"switch-{distTypeString}-drn={endTimestep-5000}_ind_avg_{thresholdType.value}_{initialStateString}_st={switchType.value}_o={orderValue}_do={disorderValue}_s={startValue}_d={density}_n={n}_r={radius}_{neighbourSelectionMode.value}_noise={noisePercentage}_th={threshold}_psteps={numberOfPreviousSteps}_bs={blockSteps}_e-{eventsString}_{i}"
+                            savePath = f"switch-{distTypeString}-drn={duration}_ind_avg_{thresholdType.value}_{initialStateString}_st={switchType.value}_o={orderValue}_do={disorderValue}_s={startValue}_d={density}_n={n}_r={radius}_{neighbourSelectionMode.value}_noise={noisePercentage}_th={threshold}_psteps={numberOfPreviousSteps}_bs={blockSteps}_e-{eventsString}_{i}"
                             ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
 
                             """
