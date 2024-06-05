@@ -133,3 +133,15 @@ additional: try with borders (necessary to reproduce fish experiments)
 - Monday at uni (spontaneous meeting)
 
 maybe try adding a probability to choose order randomly to make slow converge possible?
+
+todo 05.06. (no meeting):
+- measure the speed of information spread (duration until all of them have changed value)
+- replace HOD graph in presentation
+- add graphs to overleaf
+- add distance cohesion, criticality and 3D to list
+- improve food behaviour (stopping, depleting)
+- vary speed (stopping, accelerating depending on the event type)?
+- tidy code
+- update docstrings
+- find critical event percentage to cause switching
+- implement occlusion
