@@ -96,7 +96,7 @@ class ExternalStimulusOrientationChangeEvent:
         Returns:
             The orientations of all particles after the event has been executed.
         """
-        selectedIndices = self.__determineAffectedParticles(totalNumberOfParticles, positions, cells, cellDims, cellToParticleDistribution)
+        selectedIndices = self.__determineAffectedParticles(totalNumberOfParticles, positions,  orientations, cells, cellDims, cellToParticleDistribution)
         alteredIndices = []
         for idx in selectedIndices:
             match self.eventEffect:
@@ -118,7 +118,7 @@ class ExternalStimulusOrientationChangeEvent:
 
         return orientations, switchValues, alteredIndices
 
-    def __determineAffectedParticles(self, totalNumberOfParticles, positions, cells, cellDims, cellToParticleDistribution):
+    def __determineAffectedParticles(self, totalNumberOfParticles, positions, orientations, cells, cellDims, cellToParticleDistribution):
         """
         Determines which particles should be affected by the event.
 
@@ -133,7 +133,7 @@ class ExternalStimulusOrientationChangeEvent:
             An array of the indices of the affected particles.
         """
         # determine which particles might potentially be affected
-        candidateIndices = self.determineCandidates(positions, cells, cellDims, cellToParticleDistribution)
+        candidateIndices = self.determineCandidates(positions, orientations, cells, cellDims, cellToParticleDistribution)
         
         # how many particles will be affected
         numberOfAffectedParticles = math.ceil((self.percentage / 100) * totalNumberOfParticles)
@@ -144,7 +144,7 @@ class ExternalStimulusOrientationChangeEvent:
         return random.sample(candidateIndices, numberOfAffectedParticles)
         
 
-    def determineCandidates(self, positions, cells, cellDims, cellToParticleDistribution):
+    def determineCandidates(self, positions, orientations, cells, cellDims, cellToParticleDistribution):
         """
         Determines which particles could potentially be affected based on the distributionType and the areas if relevant.
 
@@ -163,7 +163,7 @@ class ExternalStimulusOrientationChangeEvent:
             case _: # all other options are local and can be handled in the same way
                 candidateIndices = []
                 for area in self.areas:
-                        cellsToCheck = self.__findCells(area, cells, cellDims)
+                        cellsToCheck = self.findCells(area, cells, cellDims)
                         for cellToCheck in cellsToCheck:
                             for particleIdx in cellToParticleDistribution[cellToCheck]:
                                 if ((area[0] - positions[particleIdx][0])**2 + (area[1] - positions[particleIdx][1])**2) <= area[2] **2:
@@ -188,7 +188,7 @@ class ExternalStimulusOrientationChangeEvent:
                 break
         return targetCell
     
-    def __findCells(self, area, cells, cellDims):
+    def findCells(self, area, cells, cellDims):
         areaminx = max(area[0] - area[2], 0) # the radius may be greater than the available space
         areamaxx = min(area[0] + area[2], self.domainSize[0]) # the radius may be greater than the available space
         areaminy = max(area[1] - area[2], 0) # the radius may be greater than the available space
@@ -241,22 +241,22 @@ class ExternalStimulusOrientationChangeEvent:
     
     def computeAwayFromOrigin(self, position):
         angle = self.__computeAngleWithRegardToOrigin(position)
-        if (position[0] < self.__getOriginPoint()[0]):
+        if (position[0] < self.getOriginPoint()[0]):
             angle += 180
         return ServiceOrientations.computeUvCoordinates(angle)
 
     def __computeTowardsOrigin(self, position):
         angle = self.__computeAngleWithRegardToOrigin(position)
-        if (position[0] > self.__getOriginPoint()[0]):
+        if (position[0] > self.getOriginPoint()[0]):
             angle += 180
         return ServiceOrientations.computeUvCoordinates(angle)
 
     def __computeAngleWithRegardToOrigin(self, position):
-        orientationFromOrigin = position - self.__getOriginPoint()
+        orientationFromOrigin = position - self.getOriginPoint()
         angleRadian = np.arctan(orientationFromOrigin[1]/orientationFromOrigin[0])
         return math.degrees(angleRadian)
 
-    def __getOriginPoint(self):
+    def getOriginPoint(self):
         match self.distributionType:
             case DistributionType.GLOBAL:
                 origin = (self.domainSize[0]/2, self.domainSize[1]/2)

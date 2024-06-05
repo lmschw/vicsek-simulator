@@ -88,7 +88,7 @@ class ExternalStimulusOrientationChangeEventDuration(ExternalStimulusOrientation
         """
         return self.startTimestep <= currentTimestep and currentTimestep <= self.endTimestep
     
-    def updateAreas(self, positions, cells, cellDims, cellToParticleDistribution):
+    def updateAreas(self, positions, orientations, cells, cellDims, cellToParticleDistribution):
         initialPosition = [self.areas[0][0], self.areas[0][1]]
         match self.movementPattern:
             case MovementPattern.STATIC:
@@ -99,7 +99,7 @@ class ExternalStimulusOrientationChangeEventDuration(ExternalStimulusOrientation
                 orientation = ServiceOrientations.computeUvCoordinates(chosenAngle)
                 position = self.__computeNewPosition(initialPosition, orientation)
             case MovementPattern.PURSUIT_NEAREST:
-                candidates = self.determineCandidates(positions, cells, cellDims, cellToParticleDistribution)
+                candidates = self.determineCandidates(positions, orientations, cells, cellDims, cellToParticleDistribution)
                 candidateDistances = {candidateIdx: math.dist(initialPosition, positions[candidateIdx]) for candidateIdx in candidates}
                 pickedNeighbours = nsmallest(1, candidateDistances, candidateDistances.get)
                 if len(pickedNeighbours) >= 1:

@@ -8,6 +8,7 @@ import ServicePreparation
 import ServiceGeneral
 from ExternalStimulusOrientationChangeEvent import ExternalStimulusOrientationChangeEvent
 from ExternalStimulusOrientationChangeEventDuration import ExternalStimulusOrientationChangeEventDuration
+from ExternalStimulusOrientationChangeEventDurationFov import ExternalStimulusOrientationChangeEventDurationFov
 import AnimatorMatplotlib
 import Animator2D
 
@@ -51,7 +52,7 @@ radius = 10
 threshold = [0.1]
 density = 0.09
 
-for duration in [0]:
+for duration in [2000]:
     for i in range(1,2):
         for initialStateString in ["random"]:
             if initialStateString == "ordered":
@@ -75,50 +76,55 @@ for duration in [0]:
                         e1Start = 5000
                         e2Start = 10000
                         e3Start = 15000
-                        event1 = ExternalStimulusOrientationChangeEventDuration(
-                                        startTimestep=e1Start,
-                                        endTimestep=e1Start + duration,
-                                        percentage=percentage,
-                                        angle=angle,
-                                        eventEffect=eventEffectOrder,
-                                        movementPattern=MovementPattern.STATIC,
-                                        movementSpeed=1,
-                                        perceptionRadius=radius,
-                                        distributionType=DistributionType.LOCAL_SINGLE_SITE,
-                                        areas=areas
-                                        )
-                        event2 = ExternalStimulusOrientationChangeEventDuration(
-                                        startTimestep=e2Start,
-                                        endTimestep=e2Start + duration,
-                                        percentage=percentage,
-                                        angle=angle,
-                                        eventEffect=eventEffectDisorder,
-                                        movementPattern=MovementPattern.STATIC,
-                                        movementSpeed=1,
-                                        perceptionRadius=radius,
-                                        distributionType=DistributionType.LOCAL_SINGLE_SITE,
-                                        areas=areas
-                                        )
-                        event3 = ExternalStimulusOrientationChangeEventDuration(
-                                        startTimestep=e3Start,
-                                        endTimestep=e3Start + duration,
-                                        percentage=percentage,
-                                        angle=angle,
-                                        eventEffect=eventEffectOrder,
-                                        movementPattern=MovementPattern.STATIC,
-                                        movementSpeed=1,
-                                        perceptionRadius=radius,
-                                        distributionType=DistributionType.LOCAL_SINGLE_SITE,
-                                        areas=areas
-                                        )
-
-                        #events = [event1, event2, event3]
-                        events = []
-
                         for degreesOfVision in [60, 120, 180, 240, 300, 360]:
+
+                            event1 = ExternalStimulusOrientationChangeEventDurationFov(
+                                            startTimestep=e1Start,
+                                            endTimestep=e1Start + duration,
+                                            percentage=percentage,
+                                            angle=angle,
+                                            eventEffect=eventEffectOrder,
+                                            movementPattern=MovementPattern.STATIC,
+                                            movementSpeed=1,
+                                            perceptionRadius=radius,
+                                            distributionType=DistributionType.LOCAL_SINGLE_SITE,
+                                            areas=areas,
+                                            degreesOfVision=degreesOfVision
+                                            )
+                            event2 = ExternalStimulusOrientationChangeEventDurationFov(
+                                            startTimestep=e2Start,
+                                            endTimestep=e2Start + duration,
+                                            percentage=percentage,
+                                            angle=angle,
+                                            eventEffect=eventEffectDisorder,
+                                            movementPattern=MovementPattern.STATIC,
+                                            movementSpeed=1,
+                                            perceptionRadius=radius,
+                                            distributionType=DistributionType.LOCAL_SINGLE_SITE,
+                                            areas=areas,
+                                            degreesOfVision=degreesOfVision
+                                            )
+                            event3 = ExternalStimulusOrientationChangeEventDurationFov(
+                                            startTimestep=e3Start,
+                                            endTimestep=e3Start + duration,
+                                            percentage=percentage,
+                                            angle=angle,
+                                            eventEffect=eventEffectOrder,
+                                            movementPattern=MovementPattern.STATIC,
+                                            movementSpeed=1,
+                                            perceptionRadius=radius,
+                                            distributionType=DistributionType.LOCAL_SINGLE_SITE,
+                                            areas=areas,
+                                            degreesOfVision=degreesOfVision
+                                            )
+
+                            events = [event1, event2, event3]
+                            #events = []
+
                             n = 100
                             domainSize = ServicePreparation.getDomainSizeForConstantDensity(density, n)
                             #n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
+                            n = 500
 
                             startRun = time.time()
 
@@ -148,7 +154,7 @@ for duration in [0]:
                             # Save model values for future use
                             #eventsString = "_".join([event.getShortPrintVersion() for event in events])
                             eventsString = f"{event1.timestep}-{event1.eventEffect.val}_{event2.timestep}-{event2.eventEffect.val}_{event3.timestep}-{event3.eventEffect.val}"
-                            savePath = f"fov-3ev-{degreesOfVision}-{distTypeString}-drn={duration}_ind_avg_{thresholdType.value}_{initialStateString}_st={switchType.value}_o={orderValue}_do={disorderValue}_s={startValue}_d={density}_n={n}_r={radius}_{neighbourSelectionMode.value}_noise={noisePercentage}_th={threshold}_psteps={numberOfPreviousSteps}_bs={blockSteps}_e-{eventsString}_{i}"
+                            savePath = f"fov-3ev-n=500-{degreesOfVision}-{distTypeString}-drn={duration}_ind_avg_{thresholdType.value}_{initialStateString}_st={switchType.value}_o={orderValue}_do={disorderValue}_s={startValue}_d={density}_n={n}_r={radius}_{neighbourSelectionMode.value}_noise={noisePercentage}_th={threshold}_psteps={numberOfPreviousSteps}_bs={blockSteps}_e-{eventsString}_{i}"
                             ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
 
                             """
