@@ -62,27 +62,8 @@ class VicsekWithNeighbourSelection(VicsekWithNeighbourSelectionSwitchingCellBase
                          numberPreviousStepsForThreshold=numberPreviousStepsForThreshold,
                          switchBlockedAfterEventTimesteps=switchBlockedAfterEventTimesteps)
         self.degreesOfVision = degreesOfVision
-
-
-    def findNeighbours(self, positions, orientations, cellToParticleDistribution, particleToCellDistribution):
-        """
-        Finds all the neighbours for every particle.
-
-        Params:
-            - positions (array of (x,y)-coordinates): the current positions of all particles
-            - cellToParticleDistribution (dictionary cellIdx: [particleIndices]): the distribution of particles for each cell
-            - particleToCellDistribution (dictionary particleIdx: cellidx): the cell in which any given particle is currently situated
-
-        Returns:
-            An array of arrays of the indices all neighbours for every particle.
-        """
-        neighbourCandidates = []
-        for part, cell in particleToCellDistribution.items():
-            cellsToCheck = self.neighbouringCells.get(cell)
-            minAngle, maxAngle = ServiceOrientations.determineMinMaxAngleOfVision(orientations[part], self.degreesOfVision)
-            candidates = [cand for candCell in cellsToCheck for cand in cellToParticleDistribution[int(candCell)]]
-            neighbourCandidates.append([candIdx for candIdx in candidates if ServiceMetric.isNeighbour(self.radius, positions, part, candIdx) and ServiceOrientations.isInFieldOfVision(positionParticle=positions[part], positionCandidate=positions[candIdx], minAngle=minAngle, maxAngle=maxAngle)])
-        return neighbourCandidates
     
-
+    def isVisibleToParticle(self, positionParticle, orientationParticle, positionCandidate):
+        minAngle, maxAngle = ServiceOrientations.determineMinMaxAngleOfVision(orientationParticle, self.degreesOfVision)
+        return ServiceOrientations.isInFieldOfVision(positionParticle=positionParticle, positionCandidate=positionCandidate, minAngle=minAngle, maxAngle=maxAngle)
 

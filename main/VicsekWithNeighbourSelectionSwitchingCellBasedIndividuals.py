@@ -392,8 +392,12 @@ class VicsekWithNeighbourSelection:
         for part, cell in particleToCellDistribution.items():
             cellsToCheck = self.neighbouringCells.get(cell)
             candidates = [cand for candCell in cellsToCheck for cand in cellToParticleDistribution[int(candCell)]]
-            neighbourCandidates.append([candIdx for candIdx in candidates if ServiceMetric.isNeighbour(self.radius, positions, part, candIdx)])
+            neighbourCandidates.append([candIdx for candIdx in candidates if ServiceMetric.isNeighbour(self.radius, positions, part, candIdx) and self.isVisibleToParticle(positionParticle=positions[part], orientationParticle=orientations[part], positionCandidate=positions[candIdx], orientationCandidate=orientations[candIdx])])
         return neighbourCandidates
+    
+    def isVisibleToParticle(self, positionParticle, orientationParticle, positionCandidate):
+        return True
+        
 
     def __selectNeighbours(self, neighbourCandidates, positions, orientations, switchTypeValues):
         """
