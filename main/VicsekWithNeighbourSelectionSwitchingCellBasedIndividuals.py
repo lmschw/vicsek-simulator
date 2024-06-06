@@ -10,6 +10,7 @@ from EnumSwitchType import SwitchType
 from EnumThresholdType import ThresholdType
 import ServiceMetric
 import ServiceVicsekHelper
+import ServiceOrientations
 
 class VicsekWithNeighbourSelection:
 
@@ -17,7 +18,7 @@ class VicsekWithNeighbourSelection:
                  radius=dv.DEFAULT_RADIUS, noise=dv.DEFAULT_NOISE, numberOfParticles=dv.DEFAULT_NUM_PARTICLES, 
                  k=dv.DEFAULT_K_NEIGHBOURS, showExample=dv.DEFAULT_SHOW_EXAMPLE_PARTICLE, numCells=None, 
                  switchType=None, switchValues=(None, None), thresholdType=None, orderThresholds=None, 
-                 numberPreviousStepsForThreshold=10, switchBlockedAfterEventTimesteps=-1):
+                 numberPreviousStepsForThreshold=10, switchBlockedAfterEventTimesteps=-1, occlusionActive=False):
         """
         Initialize the model with all its parameters
 
@@ -56,6 +57,7 @@ class VicsekWithNeighbourSelection:
         self.orderThresholds = orderThresholds
         self.numberPreviousStepsForThreshold = numberPreviousStepsForThreshold
         self.switchBlockedAfterEventTimesteps = switchBlockedAfterEventTimesteps
+        self.occlusionActive = occlusionActive
         self.selectedIndices = {}
 
         if numCells == None:
@@ -93,6 +95,7 @@ class VicsekWithNeighbourSelection:
                     "thresholds": self.orderThresholds,
                     "previousSteps": self.numberPreviousStepsForThreshold,
                     "blockedSteps": self.switchBlockedAfterEventTimesteps,
+                    "occlusionActive": self.occlusionActive,
                     }
         if asString:
             strPrep = [tup[0] + ": " + tup[1] for tup in summary.values()]
@@ -392,11 +395,14 @@ class VicsekWithNeighbourSelection:
         for part, cell in particleToCellDistribution.items():
             cellsToCheck = self.neighbouringCells.get(cell)
             candidates = [cand for candCell in cellsToCheck for cand in cellToParticleDistribution[int(candCell)]]
-            neighbourCandidates.append([candIdx for candIdx in candidates if ServiceMetric.isNeighbour(self.radius, positions, part, candIdx) and self.isVisibleToParticle(positionParticle=positions[part], orientationParticle=orientations[part], positionCandidate=positions[candIdx], orientationCandidate=orientations[candIdx])])
+            neighbourCandidates.append([candIdx for candIdx in candidates if ServiceMetric.isNeighbour(self.radius, positions, part, candIdx) and self.isVisibleToParticle(particleIdx=part, candidateIdx=candIdx, positions=positions, orientations=orientations, neighbourCandidates=neighbourCandidates)])
         return neighbourCandidates
     
-    def isVisibleToParticle(self, positionParticle, orientationParticle, positionCandidate):
-        return True
+    def isVisibleToParticle(self, particleIdx, candidateIdx, positions, orientations, neighbourCandidates):
+        isVisible = True
+        if self.occlusionActive:
+            isVisible = isVisible and not ServiceOrientations.isParticleOccluded(particleIdx=particleIdx, otherIdx=candidateIdx, positions=positions, orientations=orientations, candidates=neighbourCandidates)
+        return isVisible
         
 
     def __selectNeighbours(self, neighbourCandidates, positions, orientations, switchTypeValues):

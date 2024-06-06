@@ -21,7 +21,7 @@ class VicsekWithNeighbourSelection(VicsekWithNeighbourSelectionSwitchingCellBase
                  k=dv.DEFAULT_K_NEIGHBOURS, showExample=dv.DEFAULT_SHOW_EXAMPLE_PARTICLE, numCells=None, 
                  switchType=None, switchValues=(None, None), thresholdType=None, orderThresholds=None, 
                  numberPreviousStepsForThreshold=10, switchBlockedAfterEventTimesteps=-1,
-                 degreesOfVision=360):
+                 degreesOfVision=360, occlusionActive=False):
         """
         Initialize the model with all its parameters
 
@@ -60,10 +60,13 @@ class VicsekWithNeighbourSelection(VicsekWithNeighbourSelectionSwitchingCellBase
                          thresholdType=thresholdType,
                          orderThresholds=orderThresholds,
                          numberPreviousStepsForThreshold=numberPreviousStepsForThreshold,
-                         switchBlockedAfterEventTimesteps=switchBlockedAfterEventTimesteps)
+                         switchBlockedAfterEventTimesteps=switchBlockedAfterEventTimesteps,
+                         occlusionActive=occlusionActive)
         self.degreesOfVision = degreesOfVision
     
-    def isVisibleToParticle(self, positionParticle, orientationParticle, positionCandidate):
-        minAngle, maxAngle = ServiceOrientations.determineMinMaxAngleOfVision(orientationParticle, self.degreesOfVision)
-        return ServiceOrientations.isInFieldOfVision(positionParticle=positionParticle, positionCandidate=positionCandidate, minAngle=minAngle, maxAngle=maxAngle)
-
+    def isVisibleToParticle(self, particleIdx, candidateIdx, positions, orientations, neighbourCandidates):
+        minAngle, maxAngle = ServiceOrientations.determineMinMaxAngleOfVision(orientations[particleIdx], self.degreesOfVision)
+        isVisible = ServiceOrientations.isInFieldOfVision(positionParticle=positions[particleIdx], positionCandidate=positions[candidateIdx], minAngle=minAngle, maxAngle=maxAngle)
+        if self.occlusionActive:
+            isVisible = isVisible and not ServiceOrientations.isParticleOccluded(particleIdx=particleIdx, otherIdx=candidateIdx, positions=positions, candidates=neighbourCandidates)
+        return isVisible
