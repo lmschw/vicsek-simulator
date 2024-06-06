@@ -145,3 +145,13 @@ todo 05.06. (no meeting):
 - update docstrings
 - find critical event percentage to cause switching
 - implement occlusion
+
+Inputs from trial presentation:
+- try different angles for TURN 
+- overlay percentage of values over order -> maybe also look at time just around switch
+- affect exactly 30%, 40%... of particles ignoring the radius but starting from the point of origin
+- information spread metric?
+- switch values directly (like an event but not affecting orientation but value choice instead) when they can see the event
+    - maybe add a level of alarm to individual that will make them keep the value while it is > 0
+
+- maybe heatmap video of local order
