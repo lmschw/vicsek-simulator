@@ -160,3 +160,5 @@ todo:
 - create images for mode switching individual-level (no event, 1 event, 3 events)
 - overlay percentage of values over order -> maybe also look at time just around switch (for TURN)
 - run field of vision for longer and with more events to verify convergence
+
+maybe try new event type where they follow least density
