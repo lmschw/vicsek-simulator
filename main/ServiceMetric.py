@@ -298,3 +298,15 @@ def getNumbersPerSwitchTypeValue(switchTypeValues, switchTypeOptions):
         percentageDisordered = 0
 
     return percentageOrdered * 100, percentageDisordered * 100
+
+def getLocalOrderGrid(simulationData, domainSize):
+    timesteps, positions, orientations = simulationData 
+    length = domainSize[0]/10
+    localOrderGrid = np.ones((len(timesteps), 10, 10))
+    for t in timesteps:
+        for x in range(0, 10):
+            for y in range(0, 10):
+                candOrientations = [orientations[t][part] for part in range(len(positions[t])) if positions[t][part][0] <= ((x+1) * length) and positions[t][part][0] >= (x * length) and positions[t][part][1] <= ((y+1) * length) and positions[t][part][1] >= (y * length)]
+                if len(candOrientations) > 0:
+                    localOrderGrid[t][x][y] = computeOrder(candOrientations)
+    return timesteps, localOrderGrid
