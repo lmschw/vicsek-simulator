@@ -36,7 +36,6 @@ duration = 1000
 density = 0.01
 domainSize = ServicePreparation.getDomainSizeForConstantDensity(0.09, 100)
 n = ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize)
-
 noisePercentages = [0, 0.5, 1, 1.5, 2]
 neighbourSelectionModes = [NeighbourSelectionMode.ALL,
                            NeighbourSelectionMode.RANDOM,
@@ -84,7 +83,7 @@ for i in range(1,11):
                 startRun = time.time()
 
                 if initialStateString == "ordered":
-                    initialState = ServicePreparation.createOrderedInitialDistributionEquidistancedIndividual(startValue, domainSize, n)
+                    initialState = ServicePreparation.createOrderedInitialDistributionEquidistanced(domainSize, n)
 
                 simulator = VicsekWithNeighbourSelectionSwitchingCellBased.VicsekWithNeighbourSelection(
                                                                                 neighbourSelectionModel=startValue, 
@@ -95,13 +94,13 @@ for i in range(1,11):
                                                                                 radius=radius
                                                                                 )
                 if initialStateString == "ordered":
-                    simulationData, colours, switchValues = simulator.simulate(tmax=tmax, initialState=initialState)
+                    simulationData, colours = simulator.simulate(tmax=tmax, initialState=initialState)
                 else:
-                    simulationData, colours, switchValues = simulator.simulate(tmax=tmax)
+                    simulationData, colours = simulator.simulate(tmax=tmax)
 
                 # Save model values for future use
                 savePath = f"global_noev_{initialStateString}_switchType={switchType.value}_st={startValue}_d={density}_n={n}_noise={noisePercentage}_{i}"
-                ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
+                ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
 
                 endRun = time.time()
                 ServiceGeneral.logWithTime(f"Completed 'NO EVENT - GLOBAL - NEIGHBOUR SELECTION MODE' - i = {i}, noise = {noisePercentage}%, nsm={neighbourSelectionMode.name}, init = {initialStateString} in {ServiceGeneral.formatTime(endRun-startRun)}")
@@ -128,7 +127,7 @@ for i in range(1,11):
                     startRun = time.time()
 
                     if initialStateString == "ordered":
-                        initialState = ServicePreparation.createOrderedInitialDistributionEquidistancedIndividual(startValue, domainSize, n)
+                        initialState = ServicePreparation.createOrderedInitialDistributionEquidistanced(domainSize, n)
 
                     simulator = VicsekWithNeighbourSelectionSwitchingCellBased.VicsekWithNeighbourSelection(
                                                                                     neighbourSelectionModel=startValue, 
@@ -139,13 +138,13 @@ for i in range(1,11):
                                                                                     radius=radius,
                                                                                     )
                     if initialStateString == "ordered":
-                        simulationData, colours, switchValues = simulator.simulate(tmax=tmax, initialState=initialState, switchType=switchType,  switches=switches)
+                        simulationData, colours = simulator.simulate(tmax=tmax, initialState=initialState, switchType=switchType,  switches=switches)
                     else:
-                        simulationData, colours, switchValues = simulator.simulate(tmax=tmax, switchType=switchType,  switches=switches)
+                        simulationData, colours = simulator.simulate(tmax=tmax, switchType=switchType,  switches=switches)
 
                     # Save model values for future use
                     savePath = f"global_switch_{initialStateString}_switchType={switchType.value}_st={startValue.value}_o={orderValue.value}_do={disorderValue.value}_d={density}_n={n}_noise={noisePercentage}_{i}"
-                    ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
+                    ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
 
                     endRun = time.time()
                     ServiceGeneral.logWithTime(f"Completed 'SWITCHING - GLOBAL - NEIGHBOUR SELECTION MODE' - i = {i}, noise = {noisePercentage}%, order={orderValue.name}, disorder={disorderValue.name}, init = {initialStateString} in {ServiceGeneral.formatTime(endRun-startRun)}")
@@ -165,7 +164,7 @@ for i in range(1,11):
                 startRun = time.time()
 
                 if initialStateString == "ordered":
-                    initialState = ServicePreparation.createOrderedInitialDistributionEquidistancedIndividual(startValue, domainSize, n)
+                    initialState = ServicePreparation.createOrderedInitialDistributionEquidistanced(domainSize, n)
 
                 simulator = VicsekWithNeighbourSelectionSwitchingCellBased.VicsekWithNeighbourSelection(
                                                                                 neighbourSelectionModel=neighbourSelectionMode, 
@@ -176,13 +175,13 @@ for i in range(1,11):
                                                                                 radius=radius
                                                                                 )
                 if initialStateString == "ordered":
-                    simulationData, colours, switchValues = simulator.simulate(tmax=tmax, initialState=initialState)
+                    simulationData, colours = simulator.simulate(tmax=tmax, initialState=initialState)
                 else:
-                    simulationData, colours, switchValues = simulator.simulate(tmax=tmax)
+                    simulationData, colours = simulator.simulate(tmax=tmax)
 
                 # Save model values for future use
                 savePath = f"global_noev_{initialStateString}_switchType={switchType.value}_st={startValue}_LOD_d={density}_n={n}_noise={noisePercentage}_{i}"
-                ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
+                ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
 
                 endRun = time.time()
                 ServiceGeneral.logWithTime(f"Completed 'NO EVENT - GLOBAL - K' - i = {i}, noise = {noisePercentage}%, nsm={neighbourSelectionMode.name}, init = {initialStateString} in {ServiceGeneral.formatTime(endRun-startRun)}")
@@ -210,7 +209,7 @@ for i in range(1,11):
                     startRun = time.time()
 
                     if initialStateString == "ordered":
-                        initialState = ServicePreparation.createOrderedInitialDistributionEquidistancedIndividual(startValue, domainSize, n)
+                        initialState = ServicePreparation.createOrderedInitialDistributionEquidistanced(domainSize, n)
 
                     simulator = VicsekWithNeighbourSelectionSwitchingCellBased.VicsekWithNeighbourSelection(
                                                                                     neighbourSelectionModel=neighbourSelectionMode, 
@@ -221,13 +220,13 @@ for i in range(1,11):
                                                                                     radius=radius,
                                                                                     )
                     if initialStateString == "ordered":
-                        simulationData, colours, switchValues = simulator.simulate(tmax=tmax, initialState=initialState, switchType=switchType,  switches=switches)
+                        simulationData, colours = simulator.simulate(tmax=tmax, initialState=initialState, switchType=switchType,  switches=switches)
                     else:
-                        simulationData, colours, switchValues = simulator.simulate(tmax=tmax, switchType=switchType,  switches=switches)
+                        simulationData, colours = simulator.simulate(tmax=tmax, switchType=switchType,  switches=switches)
 
                     # Save model values for future use
                     savePath = f"global_switch_{initialStateString}_switchType={switchType.value}_st={startValue}_o={orderValue}_do={disorderValue}_d={density}_n={n}_noise={noisePercentage}_{i}"
-                    ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
+                    ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
 
                     endRun = time.time()
                     ServiceGeneral.logWithTime(f"Completed 'SWITCHING - GLOBAL - K' - i = {i}, noise = {noisePercentage}%, order={orderValue}, disorder={disorderValue}, init = {initialStateString} in {ServiceGeneral.formatTime(endRun-startRun)}")
