@@ -64,11 +64,17 @@ def loadModels(paths, loadSwitchValues=False):
     coloursArr = []
     switchValuesArr = []
     for path in paths:
-        modelParams, simulationData, colours, switchValues = loadModel(path, loadSwitchValues=True)
-        params.append(modelParams)
-        data.append(simulationData)
-        coloursArr.append(colours)
-        switchValuesArr.append(switchValues)
+        if loadSwitchValues == True:
+            modelParams, simulationData, colours, switchValues = loadModel(path, loadSwitchValues=loadSwitchValues)
+            params.append(modelParams)
+            data.append(simulationData)
+            coloursArr.append(colours)
+            switchValuesArr.append(switchValues)
+        else:
+            modelParams, simulationData, colours = loadModel(path, loadSwitchValues=loadSwitchValues)
+            params.append(modelParams)
+            data.append(simulationData)
+            coloursArr.append(colours)
     if loadSwitchValues == True:
         return params, data, coloursArr, switchValuesArr
     return params, data, coloursArr
