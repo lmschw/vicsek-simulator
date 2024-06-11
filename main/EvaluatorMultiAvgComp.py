@@ -44,7 +44,10 @@ class EvaluatorMultiAvgComp(object):
             results = []
             for individualRun in range(len(self.simulationData[model])):
                 #print(f"step {individualRun}/{len(self.simulationData[model])}")
-                evaluator = Evaluator.Evaluator(self.modelParams[model][individualRun], self.metric, self.simulationData[model][individualRun], self.evaluationTimestepInterval, self.threshold, self.switchTypeValues[model][individualRun], self.switchTypeOptions)
+                if self.switchTypeValues == None:
+                    evaluator = Evaluator.Evaluator(self.modelParams[model][individualRun], self.metric, self.simulationData[model][individualRun], self.evaluationTimestepInterval, self.threshold)
+                else:    
+                    evaluator = Evaluator.Evaluator(self.modelParams[model][individualRun], self.metric, self.simulationData[model][individualRun], self.evaluationTimestepInterval, self.threshold, self.switchTypeValues[model][individualRun], self.switchTypeOptions)
                 result = evaluator.evaluate()
                 results.append(result)
             
@@ -52,16 +55,22 @@ class EvaluatorMultiAvgComp(object):
             for d in results: 
                 for key, value in d.items():
                     ddi[key].append(value)
-            for m in range(len(ddi)):
-                idx = m * self.evaluationTimestepInterval
-                if self.metric == EnumMetrics.Metrics.CLUSTER_SIZE:
-                    for i in range(len(ddi[idx])):
-                        ddi[idx][i] = np.max(ddi[idx][i])
-                dd[idx].append(np.average(ddi[idx]))
+            if self.metric == EnumMetrics.Metrics.DUAL_OVERLAY_ORDER_AND_PERCENTAGE:
+                for m in range(len(ddi)):
+                    idx = m * self.evaluationTimestepInterval
+                    dd[idx].append(ddi[idx][0][0])
+                    dd[idx].append(ddi[idx][0][1])
+            else:
+                for m in range(len(ddi)):
+                    idx = m * self.evaluationTimestepInterval
+                    if self.metric == EnumMetrics.Metrics.CLUSTER_SIZE:
+                        for i in range(len(ddi[idx])):
+                            ddi[idx][i] = np.max(ddi[idx][i])
+                    dd[idx].append(np.average(ddi[idx]))
         return dd
 
     
-    def visualize(self, data, labels, xLabel=None, yLabel=None, subtitle=None, colourBackgroundForTimesteps=(None,None), savePath=None):
+    def visualize(self, data, labels, xLabel=None, yLabel=None, subtitle=None, colourBackgroundForTimesteps=None, savePath=None):
         """
         Visualizes and optionally saves the results of the evaluation as a graph.
 
@@ -85,6 +94,8 @@ class EvaluatorMultiAvgComp(object):
                 self.__createClusterNumberOverParticleLifetimePlot(data, labels)
             case EnumMetrics.Metrics.ORDER_VALUE_PERCENTAGE:
                 self.__createSwitchValuePlot(data, labels)
+            case EnumMetrics.Metrics.DUAL_OVERLAY_ORDER_AND_PERCENTAGE:
+                self.__createDualOrderPlot(data)
 
         if xLabel != None:
             plt.xlabel(xLabel)
@@ -188,3 +199,18 @@ class EvaluatorMultiAvgComp(object):
         sorted(data.items())
         df = pd.DataFrame(data, index=labels).T
         df.plot(ylim=(0,100.1))
+
+    def __createDualOrderPlot(self, data):
+        """
+        Creates a line plot for the number of clusters in the system for every model at every timestep
+
+        Parameters:
+            - data (dictionary): a dictionary with the time step as its key and a list of the number of clusters for every model as its value
+            - labels (list of strings): labels for the models
+            
+        Returns:
+            Nothing.
+        """
+        sorted(data.items())
+        df = pd.DataFrame(data, index=["order", "percentage of order value"]).T
+        df.plot(ylim=(0,1.1))

@@ -56,7 +56,8 @@ class Evaluator(object):
             #if i % 100 == 0:
                 #print(f"evaluating {i}/{len(self.time)}")
             if i % self.evaluationTimestepInterval == 0:
-                if None in self.switchTypeValues:
+                #if self.switchTypeValues != None:
+                if any(ele is None for ele in self.switchTypeValues):
                     valuesPerTimeStep[self.time[i]] = ServiceMetric.evaluateSingleTimestep(self.positions[i], self.orientations[i], self.metric, self.radius, threshold=self.threshold)
                 else:
                     valuesPerTimeStep[self.time[i]] = ServiceMetric.evaluateSingleTimestep(self.positions[i], self.orientations[i], self.metric, self.radius, threshold=self.threshold, switchTypeValues=self.switchTypeValues[i], switchTypeOptions=self.switchTypeOptions)

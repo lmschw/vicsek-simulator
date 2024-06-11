@@ -46,6 +46,11 @@ def evaluateSingleTimestep(positions, orientations, metric, radius=None, thresho
         case Metrics.ORDER_VALUE_PERCENTAGE:
             orderCount, disorderCount = getNumbersPerSwitchTypeValue(switchTypeValues, switchTypeOptions)
             return orderCount
+        case Metrics.DUAL_OVERLAY_ORDER_AND_PERCENTAGE:
+            order = computeOrder(orientations)
+            orderCount, _ = getNumbersPerSwitchTypeValue(switchTypeValues, switchTypeOptions)
+            return order, orderCount/100 # normalise to fit with order
+
      
 def computeOrder(orientations):
     """

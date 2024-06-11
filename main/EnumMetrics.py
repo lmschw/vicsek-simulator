@@ -10,4 +10,5 @@ class Metrics(str, Enum):
     CLUSTER_NUMBER_OVER_PARTICLE_LIFETIME = "clusternumber_lifetime",
     CLUSTER_CONSISTENCY_AVERAGE_STEPS = "clusterconst_steps",
     CLUSTER_CONSISTENCY_NUMBER_OF_CLUSTER_CHANGES = "clusterconst_changes",
-    ORDER_VALUE_PERCENTAGE = "numorder" # number of order particles
+    ORDER_VALUE_PERCENTAGE = "numorder", # number of order particles
+    DUAL_OVERLAY_ORDER_AND_PERCENTAGE = "dual-order-num"
