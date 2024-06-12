@@ -162,3 +162,13 @@ todo:
 - run field of vision for longer and with more events to verify convergence
 
 maybe try new event type where they follow least density
+
+writup todos (12.06.24):
+- add introduction to collective response
+- add more advantages of disordered state, e.g. foraging
+- discuss previous alignment/transition strategies
+- measure speeds and include here
+- check what would happen if we did not handle this case separately (no neighbour) -> slow convergence?
+- Without any external force, the system will not change state (we should probably show this in a graph)
+- add graphs for event effects
+- add graphs for order and information spread
