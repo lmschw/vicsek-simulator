@@ -79,7 +79,7 @@ class ExternalStimulusOrientationChangeEventDuration(ExternalStimulusOrientation
         selectedIndices = []
         if self.checkTimestep(currentTimestep):
             if self.movementPattern != MovementPattern.STATIC:
-                self.updateAreas(positions, cells, cellDims, cellToParticleDistribution)
+                self.updateAreas(positions, orientations, cells, cellDims, cellToParticleDistribution)
             #print(f"executing event at timestep {currentTimestep}")
             orientations, switchValues, selectedIndices = self.executeEvent(totalNumberOfParticles, positions, orientations, switchValues, cells, cellDims, cellToParticleDistribution)
         if self.distributionType == DistributionType.GLOBAL:
