@@ -9,10 +9,13 @@ def saveModel(simulationData, colours, path="sample.json", modelParams=None, sav
     Saves a model trained by the Viscek simulator implementation.
 
     Parameters:
+        - simulationData (times, positions, orientations): the data to be saved
+        - colours (array of arrays of strings): the colour assigned to each particle at every timestep
         - path (string) [optional]: the location and name of the target file
         - modelParams (dict) [optional]: a summary of the model's params such as n, k, neighbourSelectionMode etc.
         - saveInterval (int) [optional]: specifies the interval at which the saving should occur, i.e. if any time steps should be skipped
-    
+        - switchValues (array) [optional]: the switch type value assigned to each particle at every timestep
+        
     Returns:
         Nothing. Creates or overwrites a file.
     """
@@ -21,6 +24,7 @@ def saveModel(simulationData, colours, path="sample.json", modelParams=None, sav
             "positions": __getSpecifiedIntervals(saveInterval, positions.tolist()), 
             "orientations": __getSpecifiedIntervals(saveInterval, orientations.tolist()), 
             "colours": __getSpecifiedIntervals(saveInterval, colours)}
+    # TODO check if modes is ever used and what its intention was
     if modes != None:
         dict["modes"] = modes
     if switchValues != None:
@@ -33,6 +37,7 @@ def loadModel(path, loadSwitchValues=False):
 
     Parameters:
         - path (string): the location and file name of the file containing the model data
+        - loadSwitchValues (boolean) [optional]: loads the switch type values from the save file
 
     Returns:
         The model's params as well as the simulation data containing the time, positions, orientations and colours.
@@ -55,7 +60,8 @@ def loadModels(paths, loadSwitchValues=False):
 
     Parameters:
         - paths (array of strings): An array containing the locations and names of the files containing a single model each
-
+        - loadSwitchValues (boolean) [optional]: loads the switch type values from the save files
+        
     Returns:
         Returns an array containing the model params for each model and a second array containing the simulation data for each model. Co-indexed.
     """

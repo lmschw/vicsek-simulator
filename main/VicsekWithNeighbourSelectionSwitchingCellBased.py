@@ -9,14 +9,18 @@ import EnumNeighbourSelectionMode
 import EnumSwitchType
 import ServiceMetric
 
+"""
+Version of the modified Vicsek model used for global updates. Does not include switch type values.
+"""
 class VicsekWithNeighbourSelection:
-
-    def __init__(self, neighbourSelectionModel, domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, speed=dv.DEFAULT_SPEED, radius=dv.DEFAULT_RADIUS, noise=dv.DEFAULT_NOISE, numberOfParticles=dv.DEFAULT_NUM_PARTICLES, k=dv.DEFAULT_K_NEIGHBOURS, showExample=dv.DEFAULT_SHOW_EXAMPLE_PARTICLE, numCells=dv.DEFAULT_NUM_CELLS):
+    def __init__(self, neighbourSelectionModel, domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, speed=dv.DEFAULT_SPEED, 
+                 radius=dv.DEFAULT_RADIUS, noise=dv.DEFAULT_NOISE, numberOfParticles=dv.DEFAULT_NUM_PARTICLES, 
+                 k=dv.DEFAULT_K_NEIGHBOURS, showExample=dv.DEFAULT_SHOW_EXAMPLE_PARTICLE, numCells=dv.DEFAULT_NUM_CELLS):
         """
         Initialize the model with all its parameters
 
         Params:
-            - neighbourSelectionMode (EnumNeighbourSelectionMode.NeighbourSelectionMode): how the particles select which of the other particles within their perception radius influence their orientation at any given time step
+            - neighbourSelectionModel (EnumNeighbourSelectionMode.NeighbourSelectionMode): how the particles select which of the other particles within their perception radius influence their orientation at any given time step
             - domainSize (tuple x,y) [optional]: the size of the domain for the particle movement
             - speed (int) [optional]: how fast the particles move
             - radius (int) [optional]: defines the perception field of the individual particles, i.e. the area in which it can perceive other particles
@@ -24,6 +28,7 @@ class VicsekWithNeighbourSelection:
             - numberOfParticles (int) [optional]: the number of particles within the domain, n
             - k (int) [optional]: the number of neighbours a particle considers when updating its orientation at every time step
             - showExample (bool) [optional]: whether a random example particle should be coloured in red with its influencing neighbours in yellow
+            - numCells (int) [optional]: the number of cells that make up the grid for the cellbased evaluation
 
         Returns:
             No return.
@@ -70,17 +75,11 @@ class VicsekWithNeighbourSelection:
         Parameters:
             - positions (arr): the positions of all particles at the current timestep
             - orientations (arr): the orientations of all particles at the current timestep
+            - cellToParticleDistribution (dictionary cellIdx: [particleIndices]): the distribution of particles for each cell
+            - particleToCellDistribution (dictionary particleIdx: cellidx): the cell in which any given particle is currently situated
 
         Returns:
             An array of the adapted orientations.
-        """
-        """
-        rij=positions[:,np.newaxis,:]-positions
-    
-        rij = rij - self.domainSize*np.rint(rij/self.domainSize) #minimum image convention
-
-        rij2 = np.sum(rij**2,axis=2)
-        neighbourCandidates = (rij2 <= self.radius**2)
         """
         neighbourCandidates = self.findNeighbours(positions, orientations, cellToParticleDistribution, particleToCellDistribution)
         neighbours = self.__selectNeighbours(neighbourCandidates, positions, orientations)
@@ -353,6 +352,7 @@ class VicsekWithNeighbourSelection:
 
         Params:
             - positions (array of (x,y)-coordinates): the current positions of all particles
+            - orientations (array of (x,y)-coordinates): the current orientations of all particles
             - cellToParticleDistribution (dictionary cellIdx: [particleIndices]): the distribution of particles for each cell
             - particleToCellDistribution (dictionary particleIdx: cellidx): the cell in which any given particle is currently situated
 

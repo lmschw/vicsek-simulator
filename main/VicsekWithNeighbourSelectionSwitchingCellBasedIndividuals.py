@@ -12,6 +12,9 @@ import ServiceMetric
 import ServiceVicsekHelper
 import ServiceOrientations
 
+"""
+Version of the modified Vicsek model used for local updatese by individuals without events or with events with a duration of a single timestep.
+"""
 class VicsekWithNeighbourSelection:
 
     def __init__(self, neighbourSelectionModel, domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, speed=dv.DEFAULT_SPEED, 
@@ -39,7 +42,9 @@ class VicsekWithNeighbourSelection:
                     If only one number is supplied (as an array with one element), will be used to check if the difference between the previous and the current local order is greater than the threshold.
                     If two numbers are supplied, will be used as a lower and an upper threshold that triggers a switch: [lowerThreshold, upperThreshold]
             - numberPreviousStepsForThreshold (int) [optional]: the number of previous timesteps that are considered for the average to be compared to the threshold value(s)
-
+            - switchBlockedAfterEventTimesteps (int) [optional]: the number of timesteps that a selected particle will not be able to change its value
+            - occlusionActive (boolean) [optional]: whether particles can see particles that are hidden behind other particles
+            
         Returns:
             No return.
         """
@@ -110,19 +115,11 @@ class VicsekWithNeighbourSelection:
         Parameters:
             - positions (arr): the positions of all particles at the current timestep
             - orientations (arr): the orientations of all particles at the current timestep
-
+            - switchTypeValues (arr): the switch type values of all particles at the current timestep
+            - neighbourCandidates (arr): the indices of all neighbouring particles
         Returns:
             An array of the adapted orientations.
         """
-        """
-        rij=positions[:,np.newaxis,:]-positions
-    
-        rij = rij - self.domainSize*np.rint(rij/self.domainSize) #minimum image convention
-
-        rij2 = np.sum(rij**2,axis=2)
-        neighbourCandidates = (rij2 <= self.radius**2)
-        """
-
         neighbours = self.__selectNeighbours(neighbourCandidates, positions, orientations, switchTypeValues)
         summedOrientations = np.sum(neighbours[:,:,np.newaxis]*orientations[np.newaxis,:,:],axis=1)
         return ServiceVicsekHelper.normalizeOrientations(summedOrientations)
@@ -142,12 +139,12 @@ class VicsekWithNeighbourSelection:
         First the parameters are computed if they are not passed. Then the positions, orientations and colours are computed for each particle at each time step.
 
         Parameters:
-            - initialState (tuple of arrays) [optional]: A tuple containing the initial positions of all particles and their initial orientations
+            - initialState (tuple of arrays) [optional]: A tuple containing the initial positions of all particles, their initial orientations and their initial switch type values
             - dt (int) [optional]: time step
             - tmax (int) [optional]: the total number of time steps of the experiment
 
         Returns:
-            time points, positionsHistory, orientationsHistory, coloursHistory. All of them as ordered arrays so that they can be matched by index matching
+            times, positionsHistory, orientationsHistory, coloursHistory, switchTypeValueHistory. All of them as ordered arrays so that they can be matched by index matching
         """
 
         # Preparations and setting of parameters if they are not passed to the method
@@ -180,7 +177,7 @@ class VicsekWithNeighbourSelection:
         orientationsHistory[0,:,:]=orientations
         switchTypeValuesHistory[0]=switchTypeValues
 
-
+        # preparing the cells
         self.cells = self.initialiseCells()
         self.neighbouringCells = self.determineNeighbouringCells()
 
@@ -189,35 +186,43 @@ class VicsekWithNeighbourSelection:
         localOrders = self.__initialiseLocalOrders(positions, orientations, cellToParticleDistribution, particleToCellDistribution)
         self.localOrderHistory[0,:]=localOrders
 
-        # for every time step, the positions, orientations, switchTypeValue and colours for each particle are updated and added to the histories
+        # for every time step, the positions, orientations, switchTypeValues and colours for each particle are updated and added to the histories
         for it in range(numIntervals):
             self.t = it
 
             if t % 1000 == 0:
                 print(f"t={t}/{numIntervals-1}")
 
+            # update positions so that the neighbourhood is already updated for the remaining computations
             for i in range(len(positions)):
                 positions[i] += dt*(self.speed*orientations[i])
                 cellToParticleDistribution, particleToCellDistribution = self.updateCellForParticle(i, positions, cellToParticleDistribution, particleToCellDistribution)
                 positions[i] += -self.domainSize*np.floor(positions[i]/self.domainSize)
             
+            # find every particle within the perception radius
             neighbourCandidates = self.findNeighbours(positions, orientations, cellToParticleDistribution, particleToCellDistribution)
 
+            # remove expired selected indices
             self.cleanSelectedIndices(it)
+
             # check if any events take effect at this timestep before anything except the positions is updates
             if events != None:
                 for event in events:
                     orientations, switchTypeValues, self.selectedIndices[it] = event.check(self.numberOfParticles, it, positions, orientations, switchTypeValues, self.cells, self.cellDims, cellToParticleDistribution)
 
+            # update switch type values
             previousLocalOrders = localOrders
             localOrders = self.__getLocalOrders(orientations, neighbourCandidates)
             switchTypeValues = self.computeSwitchTypeValues(timestep=it, previousSwitchTypeValues=switchTypeValues, neighbours=neighbourCandidates, localOrders=localOrders, previousLocalOrders=previousLocalOrders)
 
+            # update colours
             colours = self.__colourGroups(switchTypeValues)
 
+            # update orientations
             orientations = self.calculateMeanOrientations(positions, orientations, switchTypeValues, neighbourCandidates)
             orientations = ServiceVicsekHelper.normalizeOrientations(orientations+self.generateNoise())
 
+            # update histories
             positionsHistory[it,:,:]=positions
             orientationsHistory[it,:,:]=orientations
             self.localOrderHistory[it,:]=localOrders
@@ -355,9 +360,6 @@ class VicsekWithNeighbourSelection:
 
         return cellToParticleDistribution, particleToCellDistribution
 
-
-
-
     def __initializeState(self, domainSize, numberOfParticles):
         """
         Initialises random positions and orientations for all particles within the domain.
@@ -378,13 +380,13 @@ class VicsekWithNeighbourSelection:
                 switchTypeValues = numberOfParticles * [self.k]
         return positions, orientations, switchTypeValues
     
-        
     def findNeighbours(self, positions, orientations, cellToParticleDistribution, particleToCellDistribution):
         """
         Finds all the neighbours for every particle.
 
         Params:
             - positions (array of (x,y)-coordinates): the current positions of all particles
+            - orientations (array of (x,y)-coordinates): the current orientations of all particles
             - cellToParticleDistribution (dictionary cellIdx: [particleIndices]): the distribution of particles for each cell
             - particleToCellDistribution (dictionary particleIdx: cellidx): the cell in which any given particle is currently situated
 
@@ -399,6 +401,19 @@ class VicsekWithNeighbourSelection:
         return neighbourCandidates
     
     def isVisibleToParticle(self, particleIdx, candidateIdx, positions, orientations, neighbourCandidates):
+        """
+        Checks if another particle is visible to the current particle. Checks if the other particle is within the field of vision.
+
+        Params:
+            - particleIdx (int): The index of the current particle
+            - candidateIdx (int): The index of the other particle that should be checked
+            - positions (array of arrays of floats): the position of every particle at the current timestep
+            - orientations (array of arrays of floats): the orientation of every particle at the current timestep
+            - neighbourCandidates (array of int): all particles within the radius
+
+        Returns:
+            A boolean describing whether the other particle can be seen by the current particle.
+        """
         isVisible = True
         if self.occlusionActive:
             isVisible = isVisible and not ServiceOrientations.isParticleOccluded(particleIdx=particleIdx, otherIdx=candidateIdx, positions=positions, orientations=orientations, candidates=neighbourCandidates)
@@ -413,6 +428,7 @@ class VicsekWithNeighbourSelection:
             - neighbourCandidates (array of arrays of bools): for every particle, contains a boolean specifying if the other particle is within the perception radius
             - positions (array of [int, int]): the current position of every particle
             - orientations (array of [int, int]): the current orientation of every particle
+            - switchTypeValues (array): the current switch type values of every particle
         
         Returns:
             An array of arrays of booleans specifying which other particles have been selected as the relevant neighbours for every particle.
@@ -456,20 +472,7 @@ class VicsekWithNeighbourSelection:
                 iNeighbours[neighbour] = True
             neighbours.append(iNeighbours)
         return np.array(neighbours)
-    
-    """
-    def computeSwitchTypeValues(self, previousSwitchTypeValues, orientations, neighbours, previousLocalOrders):
-        switchTypeValues = self.numberOfParticles * [None]
-        localOrders = self.numberOfParticles * [None]
-        for i in range(len(orientations)):
-            neighbourOrientations = [orientations[neighbourIdx] for neighbourIdx in neighbours[i]]
-            hasNeighbours = len(neighbourOrientations) > 1
-            localOrder = ServiceMetric.computeOrder(neighbourOrientations)
-            localOrders[i] = localOrder # preparation for next time step
-            switchTypeValues[i] = self.__getSingleSwitchTypeValue(previousSwitchTypeValues[i], hasNeighbours, previousLocalOrders[i], localOrder)
-            
-        return switchTypeValues, localOrders
-"""
+
     def computeSwitchTypeValues(self, timestep, previousSwitchTypeValues, neighbours, localOrders, previousLocalOrders):
         """
         Determines the selected switch type value for every particle at the current timestep.
@@ -492,6 +495,7 @@ class VicsekWithNeighbourSelection:
             else:
                 switchTypeValues[i] = self.__getSingleSwitchTypeValue(i, timestep, previousSwitchTypeValues[i], hasNeighbours, localOrders[i])
                 """
+                # TODO: can be used if you want to implement a delay. Needs to be added properly with a parameter and everything in the future
                 if switchTypeValues[i] != previousSwitchTypeValues[i]:
                     if timestep in self.selectedIndices.keys():
                         self.selectedIndices.get(timestep).append(i)
@@ -505,10 +509,11 @@ class VicsekWithNeighbourSelection:
         Determines the switch type value for a single particle for the current timestep.
 
         Params:
-            - previousValue (value of the switchType): the previous switch type value
+            - idx (int): the index of the current particle
+            - timestep (int): the current timestep
+            - previousValue (switchTypeValue): the switch type value of the last timestep for the current particle
             - hasNeighbours (boolean): does the particle have any neighbours at this timestep
             - localOrder (float): the current local order within the perception radius of the particle
-            - previousLocalOrder (float): the local order within the perception radius of the particle at the last timestep
 
         Returns:
             The updated switch type value for the current timestep.
@@ -517,6 +522,7 @@ class VicsekWithNeighbourSelection:
         endAvg = max(timestep, 1)
         previousLocalOrder = np.average(self.localOrderHistory[startAvg:endAvg][:,idx])
 
+        # TODO: make this optional
         if hasNeighbours == False:
             return previousValue
 
@@ -579,6 +585,12 @@ class VicsekWithNeighbourSelection:
         return previousValue
     
     def __getLowerAndUpperThreshold(self):
+        """
+        Determines the lower and upper threshold for updating the switch type values.
+
+        Returns:
+            Floats with values typically between 0 and 1 representing the lower and upper thresholds
+        """
         if len(self.orderThresholds) == 1:
             switchDifferenceThresholdLower = self.orderThresholds[0]
             switchDifferenceThresholdUpper = 1 - self.orderThresholds[0]
@@ -644,4 +656,13 @@ class VicsekWithNeighbourSelection:
         return colours
         
     def cleanSelectedIndices(self, timestep):
+        """
+        Removes selected indices that have been updated too long ago to still be blocked.
+
+        Params:
+            - timestep (int): the current timestep
+
+        Returns:
+            Nothing.
+        """
         self.selectedIndices = {k: v for k, v in self.selectedIndices.items() if (k + self.switchBlockedAfterEventTimesteps) > timestep}

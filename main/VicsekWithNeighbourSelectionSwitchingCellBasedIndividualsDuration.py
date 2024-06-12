@@ -13,6 +13,9 @@ import ServiceVicsekHelper
 
 import VicsekWithNeighbourSelectionSwitchingCellBasedIndividuals
 
+"""
+Version of the modified Vicsek model that is adapted for events with a duration > 1 timestep.
+"""
 class VicsekWithNeighbourSelection(VicsekWithNeighbourSelectionSwitchingCellBasedIndividuals.VicsekWithNeighbourSelection):
 
     def __init__(self, neighbourSelectionModel, domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, speed=dv.DEFAULT_SPEED, 
@@ -24,7 +27,7 @@ class VicsekWithNeighbourSelection(VicsekWithNeighbourSelectionSwitchingCellBase
         Initialize the model with all its parameters
 
         Params:
-            - neighbourSelectionMode (EnumNeighbourSelectionMode.NeighbourSelectionMode): how the particles select which of the other particles within their perception radius influence their orientation at any given time step
+            - neighbourSelectionModel (EnumNeighbourSelectionMode.NeighbourSelectionMode): how the particles select which of the other particles within their perception radius influence their orientation at any given time step
             - domainSize (tuple x,y) [optional]: the size of the domain for the particle movement
             - speed (int) [optional]: how fast the particles move
             - radius (int) [optional]: defines the perception field of the individual particles, i.e. the area in which it can perceive other particles
@@ -37,10 +40,12 @@ class VicsekWithNeighbourSelection(VicsekWithNeighbourSelectionSwitchingCellBase
             - switchValues (tuple (orderValue, disorderValue)) [optional]: the value that is supposed to create order and the value that is supposed to create disorder.
                     Must be the same type as the switchType
             - orderThresholds (array) [optional]: the difference in local order compared to the previous timesteps that will cause a switch.
-                    If only one number is supplied (as an array with one element), will be used to check if the difference between the previous and the current local order is greater than the threshold.
+                    If only one number is supplied (as an array with one element), will be used to check if the difference between the previous and the current local order is greater than the threshold or as the lower threshold with the upper threshold being (1-orderThreshold)
                     If two numbers are supplied, will be used as a lower and an upper threshold that triggers a switch: [lowerThreshold, upperThreshold]
             - numberPreviousStepsForThreshold (int) [optional]: the number of previous timesteps that are considered for the average to be compared to the threshold value(s)
-
+            - switchBlockedAfterEventTimesteps (int) [optional]: the number of timesteps that a selected particle will not be able to change its value
+            - occlusionActive (boolean) [optional]: whether particles can see particles that are hidden behind other particles
+            
         Returns:
             No return.
         """
@@ -68,12 +73,13 @@ class VicsekWithNeighbourSelection(VicsekWithNeighbourSelectionSwitchingCellBase
         First the parameters are computed if they are not passed. Then the positions, orientations and colours are computed for each particle at each time step.
 
         Parameters:
-            - initialState (tuple of arrays) [optional]: A tuple containing the initial positions of all particles and their initial orientations
+            - initialState (tuple of arrays) [optional]: A tuple containing the initial positions of all particles, their initial orientations and their initial switchTypeValues
             - dt (int) [optional]: time step
             - tmax (int) [optional]: the total number of time steps of the experiment
+            - events (array of ExternalStimulusOrientationChangeEvents): the events that occur within the simulation
 
         Returns:
-            time points, positionsHistory, orientationsHistory, coloursHistory. All of them as ordered arrays so that they can be matched by index matching
+            times, positionsHistory, orientationsHistory, coloursHistory, switchTypeValuesHistory. All of them as ordered arrays so that they can be matched by index matching
         """
 
         # Preparations and setting of parameters if they are not passed to the method
@@ -117,36 +123,43 @@ class VicsekWithNeighbourSelection(VicsekWithNeighbourSelectionSwitchingCellBase
         localOrders = self.__initialiseLocalOrders(positions, orientations, cellToParticleDistribution, particleToCellDistribution)
         self.localOrderHistory[0,:]=localOrders
 
-        # for every time step, the positions, orientations, switchTypeValue and colours for each particle are updated and added to the histories
+        # for every time step, the positions, orientations, switchTypeValues and colours for each particle are updated and added to the histories
         for it in range(numIntervals):
             self.t = it
 
             if t % 1000 == 0:
                 print(f"t={t}/{numIntervals-1}")
 
+            # update positions so that the neighbourhood is already updated for the remaining computations
             for i in range(len(positions)):
                 positions[i] += dt*(self.speed*orientations[i])
                 cellToParticleDistribution, particleToCellDistribution = self.updateCellForParticle(i, positions, cellToParticleDistribution, particleToCellDistribution)
                 positions[i] += -self.domainSize*np.floor(positions[i]/self.domainSize)
             
+            # find every particle within the perception radius
             neighbourCandidates = self.findNeighbours(positions, orientations, cellToParticleDistribution, particleToCellDistribution)
 
+            # remove expired selected indices
             self.cleanSelectedIndices(it)
+
             # check if any events take effect at this timestep before anything except the positions is updates
             if events != None:
                 for event in events:
                     orientations, switchTypeValues, self.selectedIndices[it], eventPositionHistory[it], eventOrientationHistory[it] = event.check(self.numberOfParticles, it, positions, orientations, switchTypeValues, self.cells, self.cellDims, cellToParticleDistribution)
-                    #orientations, switchTypeValues, self.selectedIndices[it] = event.check(self.numberOfParticles, it, positions, orientations, switchTypeValues, self.cells, self.cellDims, cellToParticleDistribution)
 
+            # update switch type values
             previousLocalOrders = localOrders
             localOrders = self.__getLocalOrders(orientations, neighbourCandidates)
             switchTypeValues = self.computeSwitchTypeValues(timestep=it, previousSwitchTypeValues=switchTypeValues, neighbours=neighbourCandidates, localOrders=localOrders, previousLocalOrders=previousLocalOrders)
 
+            # update colours
             colours = self.__colourGroups(switchTypeValues)
 
+            # update orientations
             orientations = self.calculateMeanOrientations(positions, orientations, switchTypeValues, neighbourCandidates)
             orientations = ServiceVicsekHelper.normalizeOrientations(orientations+self.generateNoise())
 
+            # update histories
             positionsHistory[it,:,:]=positions
             orientationsHistory[it,:,:]=orientations
             self.localOrderHistory[it,:]=localOrders
@@ -155,11 +168,29 @@ class VicsekWithNeighbourSelection(VicsekWithNeighbourSelectionSwitchingCellBase
 
             t+=dt
 
+        # in case there is a moving event, e.g. a moving predator, the point of origin's values are appended as the last element to the histories before returning to preserve their movement data
         positionsHistory, orientationsHistory, coloursHistory, switchTypeValuesHistory = self.addEventEntityToHistories(numIntervals, eventPositionHistory, eventOrientationHistory, positionsHistory, orientationsHistory, coloursHistory, switchTypeValuesHistory)
 
         return (dt*np.arange(numIntervals), positionsHistory, orientationsHistory), coloursHistory, switchTypeValuesHistory
     
     def addEventEntityToHistories(self, numIntervals, eventPositionHistory, eventOrientationHistory, positionsHistory, orientationsHistory, coloursHistory, switchTypeValuesHistory):
+        """
+        Adds the information (positions, orientations) of the point of origin of an event as the last element of the histories.
+        For the coloursHistory, the event's point of origin is always set to yellow. The switchTypeValue is always set to the disorder value.
+        
+        Parameters:
+            - numIntervals (int): the number of time steps within the experiment
+            - eventPositionHistory (array of arrays of float): the position of the event's point of origin at every timestep
+            - eventOrientationHistory (array of arrays of float): the orientation of the event's point of origin at every timestep
+            - positionsHistory (array of arrays of float): the position of every particle at every timestep
+            - orientationsHistory (array of arrays of float): the orientation of every particle at every timestep
+            - coloursHistory (array of arrays of string): the colour value of every particle at every timestep
+            - switchTypeValuesHistory (array of arrays): the switch type value of every particle at every timestep
+
+        Returns:
+            The updated positionsHistory, orientationsHistory, coloursHistory and switchTypeValuesHistory.
+        """
+        # TODO: adjust for multiple events
         newPositionsHistory = np.zeros((numIntervals,self.numberOfParticles+1,len(self.domainSize))) 
         newOrientationsHistory = np.zeros((numIntervals,self.numberOfParticles+1,len(self.domainSize))) 
 

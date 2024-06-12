@@ -1,6 +1,10 @@
 import numpy as np
 import random
 
+"""
+Service containing static methods to prepare simulations.
+"""
+
 def getDomainSizeForConstantDensity(density, numberOfParticles):
     """
     Computes the domain size to keep the density constant for the supplied number of particles.
