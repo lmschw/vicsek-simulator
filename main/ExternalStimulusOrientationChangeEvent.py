@@ -17,6 +17,7 @@ class ExternalStimulusOrientationChangeEvent:
     """
     def __init__(self, timestep, percentage, angle, eventEffect, distributionType=DistributionType.GLOBAL, areas=None, 
                  domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, targetSwitchValue=None):
+        # TODO: make angle optional
         """
         Creates an external stimulus event that affects part of the swarm at a given timestep.
 
