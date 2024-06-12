@@ -14,26 +14,40 @@ import ServiceMetric
 import ServiceVicsekHelper
 import ServiceOrientations
 
+"""
+Modified version of ExternalStimulusOrientationChangeEvent allowing events to last for more than 1 timestep.
+"""
+
 class ExternalStimulusOrientationChangeEventDuration(ExternalStimulusOrientationChangeEvent.ExternalStimulusOrientationChangeEvent):
     """
     Representation of an event occurring for a specified duration with a specified movement behaviour within the domain and 
     affecting a specified percentage of particles. After creation, the check()-method takes care of everything.
     """
-    def __init__(self, startTimestep, endTimestep, percentage, angle, eventEffect, movementPattern, movementSpeed, perceptionRadius=30, distributionType=DistributionType.GLOBAL, areas=None, orientation=[0,0], domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, targetSwitchValue=None):
+    def __init__(self, startTimestep, endTimestep, percentage, angle, eventEffect, movementPattern, movementSpeed, 
+                 perceptionRadius=30, distributionType=DistributionType.GLOBAL, areas=None, orientation=[0,0], 
+                 domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, targetSwitchValue=None):
         """
         Creates an external stimulus event that affects part of the swarm at a given timestep.
 
         Params:
-            - timestep (int): the timestep at which the stimulus is presented and affects the swarm
+            - startTimestep (int): the first timestep at which the stimulus is presented and affects the swarm
+            - endTimestep (int): the last timestep at which the stimulus is presented and affects the swarm
             - percentage (float, range: 0-100): how many percent of the swarm is directly affected by the event
             - angle (int, range: 1-359): how much the orientation of the affected particles is changed in a counterclockwise manner
             - eventEffect (EnumEventEffect): how the orientations should be affected
+            - movementPattern (EnumMovementPattern): how the point of origin of the event moves during the duration of the event
+            - movementSpeed (int): the speed at which the point of origin of the event moves if it moves
+            - perceptionRadius (float) [optional]: defines how far the event is able to perceive particles
             - distributionType (EnumDistributionType) [optional]: how the directly affected particles are distributed, i.e. if the event occurs globally or locally
             - areas ([(centerXCoordinate, centerYCoordinate, radius)]) [optional]: list of areas in which the event takes effect. Should be specified if the distributionType is not GLOBAL and match the DistributionType
-
+            - orientation ([u,v]-coordinates) [optional]: the initial orientation of the point of origin
+            - domainSize (tuple of floats) [optional]: the size of the domain
+            - targetSwitchValue (switchTypeValue) [optional]: the value that every affected particle should select
+            
         Returns:
             No return.
         """
+        # TODO sort out perceptionRadius
         super().__init__(startTimestep, percentage, angle, eventEffect, distributionType, areas, domainSize, targetSwitchValue)        
         self.startTimestep = startTimestep
         self.endTimestep = endTimestep
@@ -57,8 +71,9 @@ class ExternalStimulusOrientationChangeEventDuration(ExternalStimulusOrientation
             - currentTimestep (int): the timestep within the experiment run to see if the event should be triggered
             - positions (array of tuples (x,y)): the position of every particle in the domain at the current timestep
             - orientations (array of tuples (u,v)): the orientation of every particle in the domain at the current timestep
+            - switchValues (array of switchTypeValues): the switch type value of every particle in the domain at the current timestep
             - cells (array: [(minX, minY), (maxX, maxY)]): the cells within the cellbased domain
-            - neighbouringCells (dictionary {cellIdx: array of indices of neighbouring cells}): A dictionary of all neighbouring cells for every cell
+            - cellDims (tuple of floats): the dimensions of a cell (the same for all cells)
             - cellToParticleDistribution (dictionary {cellIdx: array of indices of all particles within the cell}): A dictionary containing the indices of all particles within each cell
 
         Returns:
@@ -89,6 +104,19 @@ class ExternalStimulusOrientationChangeEventDuration(ExternalStimulusOrientation
         return self.startTimestep <= currentTimestep and currentTimestep <= self.endTimestep
     
     def updateAreas(self, positions, orientations, cells, cellDims, cellToParticleDistribution):
+        """
+        Updates the area information based on the movementPattern.
+
+        Params:
+            - positions (array of tuples (x,y)): the position of every particle in the domain at the current timestep
+            - orientations (array of tuples (u,v)): the orientation of every particle in the domain at the current timestep
+            - cells (array: [(minX, minY), (maxX, maxY)]): the cells within the cellbased domain
+            - cellDims (tuple of floats): the dimensions of a cell (the same for all cells)
+            - cellToParticleDistribution (dictionary {cellIdx: array of indices of all particles within the cell}): A dictionary containing the indices of all particles within each cell
+        
+        Returns:
+            Nothing.
+        """
         initialPosition = [self.areas[0][0], self.areas[0][1]]
         match self.movementPattern:
             case MovementPattern.STATIC:
@@ -113,6 +141,16 @@ class ExternalStimulusOrientationChangeEventDuration(ExternalStimulusOrientation
         self.orientation = orientation
 
     def __computeNewPosition(self, initialPosition, orientation):
+        """
+        Computes the new position of the point of origin based on the initial position and the orientation.
+
+        Params:
+            - initialPosition (tuple (x,y)): the current position of the point of origin
+            - orientation (tuple (u,v)): the orientation of movement
+
+        Returns:
+            The new updated (x,y)-position.
+        """
         change = (self.movementSpeed*orientation)
         position = [initialPosition[0] + change[0], initialPosition[1] + change[1]]
         position += -self.domainSize*np.floor(position/self.domainSize)
