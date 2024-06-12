@@ -2,12 +2,8 @@ import EnumNeighbourSelectionMode
 import EnumMetrics
 import ServiceSavedModel
 import EvaluatorMultiAvgComp
-import VicsekWithNeighbourSelection
 import ServicePreparation
 
-import DefaultValues as dv
-import AnimatorMatplotlib
-import Animator2D
 
 """
 --------------------------------------------------------------------------------

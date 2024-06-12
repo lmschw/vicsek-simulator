@@ -1,14 +1,6 @@
 import numpy as np
-import random
-import math
-from heapq import nlargest
-from heapq import nsmallest
 
 import DefaultValues as dv
-import EnumNeighbourSelectionMode
-from EnumSwitchType import SwitchType
-from EnumThresholdType import ThresholdType
-import ServiceMetric
 import ServiceVicsekHelper
 
 import VicsekWithNeighbourSelectionSwitchingCellBasedIndividuals

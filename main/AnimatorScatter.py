@@ -1,8 +1,5 @@
 from matplotlib.animation import FuncAnimation
 import matplotlib.pyplot as plt
-import numpy as np
-
-import DefaultValues as dv
 
 class Animator(object):
 

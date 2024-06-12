@@ -6,12 +6,9 @@ from heapq import nsmallest
 import ExternalStimulusOrientationChangeEvent
 
 from EnumDistributionType import DistributionType
-from EnumEventEffect import EventEffect
 from EnumMovementPattern import MovementPattern
 
 import DefaultValues as dv
-import ServiceMetric
-import ServiceVicsekHelper
 import ServiceOrientations
 
 """

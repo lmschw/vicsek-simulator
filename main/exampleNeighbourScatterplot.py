@@ -1,11 +1,7 @@
 import ServiceImages
 import ServiceSavedModel
-import ServicePreparation
-import ServiceGeneral
 from EnumNeighbourSelectionMode import NeighbourSelectionMode
 from EnumMetrics import Metrics
-import EvaluatorMultiAvgComp
-import time
 
 """
 --------------------------------------------------------------------------------

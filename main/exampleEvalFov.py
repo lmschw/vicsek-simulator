@@ -11,10 +11,6 @@ import EvaluatorMultiAvgComp
 import ServicePreparation
 import ServiceGeneral
 
-import DefaultValues as dv
-import AnimatorMatplotlib
-import Animator2D
-
 """
 --------------------------------------------------------------------------------
 PURPOSE 

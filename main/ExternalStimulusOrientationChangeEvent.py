@@ -6,7 +6,6 @@ from EnumDistributionType import DistributionType
 from EnumEventEffect import EventEffect
 
 import DefaultValues as dv
-import ServiceMetric
 import ServiceVicsekHelper
 import ServiceOrientations
 
