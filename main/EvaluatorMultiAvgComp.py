@@ -10,15 +10,19 @@ class EvaluatorMultiAvgComp(object):
     """
     Implementation of the evaluation mechanism for the Vicsek model for comparison of multiple models.
     """
-    def __init__(self, modelParams, metric, simulationData=None, evaluationTimestepInterval=1, threshold=0.01, switchTypeValues=None, switchTypeOptions=None):
+    def __init__(self, modelParams, metric, simulationData=None, evaluationTimestepInterval=1, threshold=0.01, switchTypeValues=None, 
+                 switchTypeOptions=None):
         """
         Initialises the evaluator.
 
         Parameters:
-            - simulationData (array of (time array, positions array, orientation array, colours array)): contains all the simulation data for each model
             - modelParams (array of dictionaries): contains the model parameters for each model
             - metric (EnumMetrics.Metrics) [optional]: the metric according to which the models' performances should be evaluated
+            - simulationData (array of (time array, positions array, orientation array, colours array)) [optional]: contains all the simulation data for each model
             - evaluationTimestepInterval (int) [optional]: the interval of the timesteps to be evaluated. By default, every time step is evaluated
+            - threshold (float) [optional]: the threshold for the AgglomerativeClustering cutoff
+            - switchTypeValues (array of arrays of switchTypeValues) [optional]: the switch type value of every particle at every timestep
+            - switchTypeOptions (tuple) [optional]: the two possible values for the switch type value
         
         Returns:
             Nothing.
@@ -77,7 +81,10 @@ class EvaluatorMultiAvgComp(object):
         Parameters:
             - data (dictionary): a dictionary with the time step as key and an array of each model's result as values
             - labels (array of strings): the label for each model
+            - xLabel (string) [optional]: the label for the x-axis
+            - yLabel (string) [optional]: the label for the y-axis
             - subtitle (string) [optional]: subtitle to be included in the title of the visualisation
+            - colourBackgroundForTimesteps ([start, stop]) [optional]: the start and stop timestep for the background colouring for the event duration
             - savePath (string) [optional]: the location and name of the file where the model should be saved. Will not be saved unless a savePath is provided
 
         Returns:
@@ -187,7 +194,7 @@ class EvaluatorMultiAvgComp(object):
 
     def __createSwitchValuePlot(self, data, labels):
         """
-        Creates a line plot for the number of clusters in the system for every model at every timestep
+        Creates a line plot for the percentage of particles choosing the order switch type value at any given timestep.
 
         Parameters:
             - data (dictionary): a dictionary with the time step as its key and a list of the number of clusters for every model as its value
@@ -202,7 +209,7 @@ class EvaluatorMultiAvgComp(object):
 
     def __createDualOrderPlot(self, data):
         """
-        Creates a line plot for the number of clusters in the system for every model at every timestep
+        Creates a line plot overlaying the percentage of particles choosing the order switch type value and the order value. 
 
         Parameters:
             - data (dictionary): a dictionary with the time step as its key and a list of the number of clusters for every model as its value
