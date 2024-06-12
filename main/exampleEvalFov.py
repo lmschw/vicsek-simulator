@@ -8,13 +8,19 @@ from EnumMovementPattern import MovementPattern
 
 import ServiceSavedModel
 import EvaluatorMultiAvgComp
-import VicsekWithNeighbourSelection
 import ServicePreparation
 import ServiceGeneral
 
 import DefaultValues as dv
 import AnimatorMatplotlib
 import Animator2D
+
+"""
+--------------------------------------------------------------------------------
+PURPOSE 
+Evaluates the field of vision simulations
+--------------------------------------------------------------------------------
+"""
 
 
 radius=10
@@ -86,7 +92,7 @@ for metric in [Metrics.ORDER]:
         else:
             area = "[(16,67, 16.67, 10)]"
             dist = "Local"
-        for initialState in ["random"]:
+        for initialState in ["ordered"]:
             if initialState == "random":
                 startValue = disorderValue
                 targetSwitchValue=orderValue
@@ -94,7 +100,7 @@ for metric in [Metrics.ORDER]:
             else:
                 startValue = orderValue
                 targetSwitchValue=disorderValue
-            for degreesOfVision in [60, 120, 180, 240, 300, 360]:
+            for degreesOfVision in [360]:
                 labels = [degreesOfVision]
                 for eventEffect in [EventEffect.TURN_BY_FIXED_ANGLE,
                                     ]:
@@ -105,7 +111,7 @@ for metric in [Metrics.ORDER]:
                         switchTypeValues = []
                         for thresholdType in [ThresholdType.HYSTERESIS]:
                             modelParamsDensity, simulationDataDensity, coloursDensity, switchTypeValuesDensity = ServiceSavedModel.loadModels([
-f"fov-3ev-{degreesOfVision}-lssmid-drn=0_ind_avg_hst_random_st=K_o=5_do=1_s=1_d=0.09_n=100_r=10_LOD_noise=1_th=[0.1]_psteps=100_bs=-1_e-5000-turn_fixed_10000-origin_away_15000-turn_fixed_1.json"
+f"test_occ_3e-{degreesOfVision}-lssmid-drn=100_ind_avg_hst_{initialState}_st=K_o=5_do=1_s={startValue}_d=0.09_n=100_r=10_LOD_noise=1_th=[0.1]_psteps=100_bs=-1_e-500-turn_fixed_1000-origin_away_1500-turn_fixed_1.json"
                                                                                                                     ], loadSwitchValues=True)
                             modelParams.append(modelParamsDensity)
                             simulationData.append(simulationDataDensity)
@@ -114,7 +120,7 @@ f"fov-3ev-{degreesOfVision}-lssmid-drn=0_ind_avg_hst_random_st=K_o=5_do=1_s=1_d=
 
                         #savePath = f"order-ot_comp-K-ordered-d={density}-noise={noisePercentage}-{mode.name}-ot={orderThreshold}-events-t{eventTimestep}p{eventPercentage}a{angle}dt{distributionType.value}a{area}.svg"
                         #savePath = f"{metric.value}_ps-comp_avg_and_single_ind_{initialState}_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d=0.01_LOD_noise=1_ot=[{singleThreshold}]_events-t2000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.val}p30a180dt{distributionType.value}a{area}.svg"
-                        savePath = f"single_{metric.value}_fov_{degreesOfVision}_threshold-type-comp_eventEffect={eventEffect.val}_ind_avg_{initialState}_st=K_o=5_do=1_s={startValue}_d={density}_r={radius}_LOD_noise=1_th={threshold}_psteps={numberOfPreviousSteps}_dist={distributionType.value}.svg"
+                        savePath = f"single_{metric.value}_fov-occ-3e_{degreesOfVision}_drn=2000_threshold-type-comp_eventEffect={eventEffect.val}_ind_avg_{initialState}_st=K_o=5_do=1_s={startValue}_d={density}_r={radius}_LOD_noise=1_th={threshold}_psteps={numberOfPreviousSteps}_dist={distributionType.value}.svg"
                         evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=100, switchTypeValues=switchTypeValues, switchTypeOptions=switchTypeOptions)
                         evaluator.evaluateAndVisualize(labels=labels, xLabel=xLabel, yLabel=yLabel, subtitle=subtitle,savePath=savePath)
                         ServiceGeneral.logWithTime(f"created threshold type comp graph for distributionType={distributionType.name}, density={density}, eventEffect = {eventEffect} and metric {metric.name}")

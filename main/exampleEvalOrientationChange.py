@@ -8,13 +8,19 @@ from EnumMovementPattern import MovementPattern
 
 import ServiceSavedModel
 import EvaluatorMultiAvgComp
-import VicsekWithNeighbourSelection
 import ServicePreparation
 import ServiceGeneral
 
 import DefaultValues as dv
 import AnimatorMatplotlib
 import Animator2D
+
+"""
+--------------------------------------------------------------------------------
+PURPOSE 
+Evaluates local interaction simulations (with events)
+--------------------------------------------------------------------------------
+"""
 
 
 radius=10
@@ -73,19 +79,19 @@ percentage = 50
 radius = 10
 threshold = [0.1]
 movementPattern = MovementPattern.STATIC
-for metric in [Metrics.ORDER, Metrics.ORDER_VALUE_PERCENTAGE]:
+for metric in [Metrics.ORDER]:
     if metric == Metrics.ORDER:
         yLabel = "order"
     else:
         yLabel = "percentage of particles with order value"
-    for distributionType in [DistributionType.GLOBAL, DistributionType.LOCAL_SINGLE_SITE]:
+    for distributionType in [DistributionType.LOCAL_SINGLE_SITE]:
         if distributionType == DistributionType.GLOBAL:
             area = None
             dist = "Global"
         else:
             area = "[(20, 20, 10)]"
             dist = "Local"
-        for initialState in ["ordered"]:
+        for initialState in ["random"]:
             if initialState == "random":
                 startValue = disorderValue
                 targetSwitchValue=orderValue
@@ -93,26 +99,18 @@ for metric in [Metrics.ORDER, Metrics.ORDER_VALUE_PERCENTAGE]:
             else:
                 startValue = orderValue
                 targetSwitchValue=disorderValue
-            for density in [0.05, 0.07, 0.09]:
-                labels = [ThresholdType.TWO_THRESHOLDS.name,
-                                ThresholdType.TWO_THRESHOLDS_SIMPLE.name,
-                                ThresholdType.HYSTERESIS.name]
-                for eventEffect in [EventEffect.TURN_BY_FIXED_ANGLE,
-                                    EventEffect.ALIGN_TO_FIXED_ANGLE, 
-                                    EventEffect.ALIGN_TO_FIRST_PARTICLE, 
-                                    EventEffect.AWAY_FROM_ORIGIN, 
-                                    EventEffect.TOWARDS_ORIGIN, 
-                                    EventEffect.RANDOM]:
+            for density in [0.09]:
+                labels = [ThresholdType.HYSTERESIS.name]
+                for eventEffect in [EventEffect.ENFORCE_VALUE_ONLY,
+                                    ]:
                         subtitle = f"{dist} - threshold type comparison with \ndensity = {density}, event effect = {eventEffect.label} and radius = {radius} - event at 5000"
                         modelParams = []
                         simulationData = []
                         colours = []
                         switchTypeValues = []
-                        for thresholdType in [ThresholdType.TWO_THRESHOLDS,
-                                              ThresholdType.TWO_THRESHOLDS_SIMPLE,
-                                              ThresholdType.HYSTERESIS]:
+                        for thresholdType in [ThresholdType.HYSTERESIS]:
                             modelParamsDensity, simulationDataDensity, coloursDensity, switchTypeValuesDensity = ServiceSavedModel.loadModels([
-                                f"test_single-event-duration=1000_dom_ind_avg_{thresholdType.value}_{initialState}_st=K_o=5_do=1_s={startValue}_d={density}_n=100_r={radius}_LOD_noise=1_th={threshold}_psteps={numberOfPreviousSteps}_bs={blockSteps}_e-t5000-6000e{eventEffect.val}m{movementPattern.val}p{percentage}a{angle}dt{distributionType.value}a{area}_1.json"
+"enforce-1e-fov=180-lssmid-drn=500_ind_avg_hst_ordered_st=K_o=5_do=1_s=5_d=0.09_n=100_r=10_LOD_noise=1_th=[0.1]_psteps=100_bs=-1_e-5000-enforce_10000-origin_away_15000-turn_fixed_1.json"
                                                                                                                     ], loadSwitchValues=True)
                             modelParams.append(modelParamsDensity)
                             simulationData.append(simulationDataDensity)
@@ -121,10 +119,11 @@ for metric in [Metrics.ORDER, Metrics.ORDER_VALUE_PERCENTAGE]:
 
                         #savePath = f"order-ot_comp-K-ordered-d={density}-noise={noisePercentage}-{mode.name}-ot={orderThreshold}-events-t{eventTimestep}p{eventPercentage}a{angle}dt{distributionType.value}a{area}.svg"
                         #savePath = f"{metric.value}_ps-comp_avg_and_single_ind_{initialState}_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d=0.01_LOD_noise=1_ot=[{singleThreshold}]_events-t2000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.val}p30a180dt{distributionType.value}a{area}.svg"
-                        savePath = f"single_{metric.value}_threshold-type-comp_eventEffect={eventEffect.val}_ind_avg_{initialState}_st=K_o=5_do=1_s={startValue}_d={density}_r={radius}_LOD_noise=1_th={threshold}_psteps={numberOfPreviousSteps}_dist={distributionType.value}.svg"
+                        savePath = f"single_{metric.value}_enforce-fov=180_threshold-type-comp_eventEffect={eventEffect.val}_ind_avg_{initialState}_st=K_o=5_do=1_s={startValue}_d={density}_r={radius}_LOD_noise=1_th={threshold}_psteps={numberOfPreviousSteps}_dist={distributionType.value}.svg"
                         evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=100, switchTypeValues=switchTypeValues, switchTypeOptions=switchTypeOptions)
                         evaluator.evaluateAndVisualize(labels=labels, xLabel=xLabel, yLabel=yLabel, subtitle=subtitle, colourBackgroundForTimesteps=(5000,6000), savePath=savePath)
                         ServiceGeneral.logWithTime(f"created threshold type comp graph for distributionType={distributionType.name}, density={density}, eventEffect = {eventEffect} and metric {metric.name}")
+                """
                 labels = [EventEffect.TURN_BY_FIXED_ANGLE.label,
                                                     EventEffect.ALIGN_TO_FIXED_ANGLE.label, 
                                                     EventEffect.ALIGN_TO_FIRST_PARTICLE.label, 
@@ -161,7 +160,7 @@ for metric in [Metrics.ORDER, Metrics.ORDER_VALUE_PERCENTAGE]:
                         evaluator.evaluateAndVisualize(labels=labels, xLabel=xLabel, yLabel=yLabel, subtitle=subtitle, colourBackgroundForTimesteps=(5000,6000), savePath=savePath)
                         ServiceGeneral.logWithTime(f"created event effect comp graph for distributionType={distributionType.name}, density={density}, thresholdType = {thresholdType.name} and metric {metric.name}")
 
-                
+                """
 
 """
 eventPercentage = 30

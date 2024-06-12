@@ -1,6 +1,13 @@
 import ServiceImages
 import ServiceSavedModel
 
+"""
+--------------------------------------------------------------------------------
+PURPOSE 
+Creates a plot for the neighbour distances.
+--------------------------------------------------------------------------------
+"""
+
 radius = 10
 tmax = 5000
 noisePercentage = 0

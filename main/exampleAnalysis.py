@@ -5,6 +5,15 @@ import ServiceAnalysis
 
 from EnumEventEffect import EventEffect
 
+"""
+--------------------------------------------------------------------------------
+PURPOSE 
+Creates a plot analysing switch value selection, local order, previous local order,
+average local order of the neighbours and number of neighbours for a small timeframe
+and a single particle.
+--------------------------------------------------------------------------------
+"""
+
 initialState = "ordered"
 startValue = 5
 eventEffect = EventEffect.TURN_BY_FIXED_ANGLE

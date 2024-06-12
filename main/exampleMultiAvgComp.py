@@ -10,6 +10,13 @@ import AnimatorMatplotlib
 import Animator2D
 
 """
+--------------------------------------------------------------------------------
+PURPOSE 
+Evaluates and visualises the results of multiple simulation runs.
+--------------------------------------------------------------------------------
+"""
+
+"""
 mode = EnumNeighbourSelectionMode.NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE
 n = 500
 k = 5

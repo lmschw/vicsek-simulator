@@ -14,6 +14,13 @@ from EnumMetrics import Metrics
 
 import ServiceImages
 
+"""
+--------------------------------------------------------------------------------
+PURPOSE 
+Creates image compilations
+--------------------------------------------------------------------------------
+"""
+
 def formatTime(timeInSecs):
     mins = int(timeInSecs / 60)
     secs = timeInSecs % 60

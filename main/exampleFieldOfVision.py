@@ -18,6 +18,12 @@ from EnumEventEffect import EventEffect
 from EnumThresholdType import ThresholdType
 from EnumMovementPattern import MovementPattern
 
+"""
+--------------------------------------------------------------------------------
+PURPOSE 
+Creates data for field of vision experiments
+--------------------------------------------------------------------------------
+"""
 
 domainSize = (100, 100)
 density = 0.05

@@ -18,6 +18,14 @@ from EnumEventEffect import EventEffect
 from EnumThresholdType import ThresholdType
 from EnumMovementPattern import MovementPattern
 
+"""
+--------------------------------------------------------------------------------
+PURPOSE 
+Creates a complete set of data for a single density value
+for "Neighbour selection can cause collective response"
+--------------------------------------------------------------------------------
+"""
+
 def getOrderDisorderValue(switchType):
     match switchType:
         case SwitchType.K:

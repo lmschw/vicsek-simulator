@@ -19,6 +19,12 @@ from EnumThresholdType import ThresholdType
 from EnumMovementPattern import MovementPattern
 
 
+"""
+--------------------------------------------------------------------------------
+PURPOSE 
+Creates data with occlusion active.
+--------------------------------------------------------------------------------
+"""
 domainSize = (100, 100)
 density = 0.05
 radius = 10

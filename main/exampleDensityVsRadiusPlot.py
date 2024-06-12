@@ -5,6 +5,14 @@ import ServiceGeneral
 
 from EnumThresholdType import ThresholdType
 
+"""
+--------------------------------------------------------------------------------
+PURPOSE 
+Creates comparison matrix with minimum/maximum local order for radius vs. density,
+threshold vs. density and threshold vs. radius
+--------------------------------------------------------------------------------
+"""
+
 radiusVals = [5, 10, 20, 30, 50, 100]
 densityVals = [0.01, 0.03, 0.05, 0.07, 0.09]
 thresholdVals = [[0.1], [0.2], [0.3], [0.4], [0.5]]

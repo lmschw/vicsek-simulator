@@ -15,6 +15,13 @@ from EnumEventEffect import EventEffect
 from EnumThresholdType import ThresholdType
 from EnumMovementPattern import MovementPattern
 
+"""
+--------------------------------------------------------------------------------
+PURPOSE 
+Creates data with a moving predator.
+--------------------------------------------------------------------------------
+"""
+
 domainSize = (100, 100)
 density = 0.01
 radius = 10
