@@ -491,11 +491,13 @@ class VicsekWithNeighbourSelection:
                 switchTypeValues[i] = previousSwitchTypeValues[i]
             else:
                 switchTypeValues[i] = self.__getSingleSwitchTypeValue(i, timestep, previousSwitchTypeValues[i], hasNeighbours, localOrders[i])
+                """
                 if switchTypeValues[i] != previousSwitchTypeValues[i]:
                     if timestep in self.selectedIndices.keys():
                         self.selectedIndices.get(timestep).append(i)
                     else:
                         self.selectedIndices[timestep] = [i]
+                """
         return switchTypeValues
             
     def __getSingleSwitchTypeValue(self, idx, timestep, previousValue, hasNeighbours, localOrder):
