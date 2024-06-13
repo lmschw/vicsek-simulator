@@ -10,6 +10,7 @@ class EventEffect(Enum):
     AWAY_FROM_ORIGIN = "origin_away", "PREDATOR", # turn away from the point of origin of the event
     TOWARDS_ORIGIN = "origin_to", "FOOD", # turn towards the point of origin of the event
     RANDOM = "random", "RANDOM" # sets the orientations to a random value, intended for baseline
+    ENFORCE_VALUE_ONLY = "enforce", "ENFORCE VALUE ONLY" # does not affect the orientation but imposes value selection on the affected particles
 
     def __init__(self, val, label):
         self.val = val

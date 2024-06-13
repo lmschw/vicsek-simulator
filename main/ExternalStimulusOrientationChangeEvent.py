@@ -45,6 +45,8 @@ class ExternalStimulusOrientationChangeEvent:
 
         if self.distributionType != DistributionType.GLOBAL and self.areas == None:
             raise Exception("Local effects require the area to be specified")
+        if self.eventEffect == EventEffect.ENFORCE_VALUE_ONLY and self.targetSwitchValue == None:
+            raise Exception("Value cannot be enforced without supplying a value")
         
     def getShortPrintVersion(self):
         return f"t{self.timestep}e{self.eventEffect.val}p{self.percentage}a{self.angle}dt{self.distributionType.value}a{self.areas}"
@@ -116,6 +118,8 @@ class ExternalStimulusOrientationChangeEvent:
                     orientations[idx] = self.__computeTowardsOrigin(positions[idx])
                 case EventEffect.RANDOM:
                     orientations[idx] = self.__getRandomOrientation()
+                case EventEffect.ENFORCE_VALUE_ONLY:
+                    pass
             if self.targetSwitchValue != None:
                 switchValues[idx] = self.targetSwitchValue
                 alteredIndices.append(idx)
