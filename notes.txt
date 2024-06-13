@@ -172,3 +172,9 @@ writup todos (12.06.24):
 - Without any external force, the system will not change state (we should probably show this in a graph)
 - add graphs for event effects
 - add graphs for order and information spread
+
+todo: 
+- should we pass candidates instead of neihbourCandidates?
+          neighbourCandidates.append([candIdx for candIdx in candidates if ServiceMetric.isNeighbour(self.radius, positions, part, candIdx) and self.isVisibleToParticle(particleIdx=part, candidateIdx=candIdx, positions=positions, orientations=orientations, neighbourCandidates=neighbourCandidates)])
+            -> check FOV results
+- add events to parameterSummary
