@@ -221,3 +221,4 @@ class EvaluatorMultiAvgComp(object):
         sorted(data.items())
         df = pd.DataFrame(data, index=["order", "percentage of order value"]).T
         df.plot(ylim=(0,1.1))
+    

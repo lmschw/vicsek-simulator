@@ -255,11 +255,10 @@ class ExternalStimulusOrientationChangeEvent:
         Returns:
             The new uv-coordinates for the orientation of the particle.
         """
-        """
         previousAngle = ServiceOrientations.computeCurrentAngle(orientation)
 
         # add the event angle to the current angle
-        newAngle = (previousAngle + self.angle) % 360
+        newAngle = (previousAngle + self.angle) % (2 *np.pi)
 
         return ServiceOrientations.computeUvCoordinates(newAngle)
         """
@@ -268,6 +267,7 @@ class ExternalStimulusOrientationChangeEvent:
         newOrientation = r.apply(orientation3d)
         return newOrientation[:2]
     
+        """
     def computeAwayFromOrigin(self, position):
         """
         Computes the (u,v)-coordinates for the orientation after turning away from the point of origin.
@@ -280,7 +280,7 @@ class ExternalStimulusOrientationChangeEvent:
         """
         angle = self.__computeAngleWithRegardToOrigin(position)
         if (position[0] < self.getOriginPoint()[0]):
-            angle += 180
+            angle += np.pi
         return ServiceOrientations.computeUvCoordinates(angle)
 
     def __computeTowardsOrigin(self, position):
@@ -295,7 +295,7 @@ class ExternalStimulusOrientationChangeEvent:
         """
         angle = self.__computeAngleWithRegardToOrigin(position)
         if (position[0] > self.getOriginPoint()[0]):
-            angle += 180
+            angle += np.pi
         return ServiceOrientations.computeUvCoordinates(angle)
 
     def __computeAngleWithRegardToOrigin(self, position):
@@ -309,8 +309,8 @@ class ExternalStimulusOrientationChangeEvent:
             The angle in degrees between the two points.
         """
         orientationFromOrigin = position - self.getOriginPoint()
-        angleRadian = np.arctan(orientationFromOrigin[1]/orientationFromOrigin[0])
-        return math.degrees(angleRadian)
+        angleRadian = ServiceOrientations.computeCurrentAngle(orientationFromOrigin)
+        return angleRadian
 
     def getOriginPoint(self):
         """

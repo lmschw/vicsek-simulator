@@ -138,9 +138,7 @@ def computeCurrentAngle(orientation):
     Returns:
         A float representin the angle in degrees.
     """
-    # determine the current angle
-    previousU = orientation[0]
-    return np.arccos(previousU) * 180 / np.pi
+    return np.arctan2(orientation[1], orientation[0])
 
 def computeUvCoordinates(angle):
     """
@@ -153,8 +151,8 @@ def computeUvCoordinates(angle):
         An array containing the [u, v]-coordinates corresponding to the angle.
     """
     # compute the uv-coordinates
-    U = np.cos(angle*np.pi/180)
-    V = np.sin(angle*np.pi/180)
+    U = np.cos(angle)
+    V = np.sin(angle)
     
     return [U,V]
 
