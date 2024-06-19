@@ -122,12 +122,6 @@ class VicsekWithNeighbourSelection(VicsekWithNeighbourSelectionSwitchingCellBase
             if t % 1000 == 0:
                 print(f"t={t}/{numIntervals-1}")
 
-            # update positions so that the neighbourhood is already updated for the remaining computations
-            for i in range(len(positions)):
-                positions[i] += dt*(self.speed*orientations[i])
-                cellToParticleDistribution, particleToCellDistribution = self.updateCellForParticle(i, positions, cellToParticleDistribution, particleToCellDistribution)
-                positions[i] += -self.domainSize*np.floor(positions[i]/self.domainSize)
-            
             # find every particle within the perception radius
             neighbourCandidates = self.findNeighbours(positions, orientations, cellToParticleDistribution, particleToCellDistribution)
 
@@ -151,6 +145,12 @@ class VicsekWithNeighbourSelection(VicsekWithNeighbourSelectionSwitchingCellBase
             orientations = self.calculateMeanOrientations(positions, orientations, switchTypeValues, neighbourCandidates)
             orientations = ServiceVicsekHelper.normalizeOrientations(orientations+self.generateNoise())
 
+            # update positions so that the neighbourhood is already updated for the remaining computations
+            for i in range(len(positions)):
+                positions[i] += dt*(self.speed*orientations[i])
+                cellToParticleDistribution, particleToCellDistribution = self.updateCellForParticle(i, positions, cellToParticleDistribution, particleToCellDistribution)
+                positions[i] += -self.domainSize*np.floor(positions[i]/self.domainSize)
+            
             # update histories
             positionsHistory[it,:,:]=positions
             orientationsHistory[it,:,:]=orientations

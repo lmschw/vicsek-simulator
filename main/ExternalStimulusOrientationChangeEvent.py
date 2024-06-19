@@ -1,6 +1,8 @@
 import random
 import math
 import numpy as np
+from scipy.spatial.transform import Rotation as R
+
 
 from EnumDistributionType import DistributionType
 from EnumEventEffect import EventEffect
@@ -253,12 +255,18 @@ class ExternalStimulusOrientationChangeEvent:
         Returns:
             The new uv-coordinates for the orientation of the particle.
         """
+        """
         previousAngle = ServiceOrientations.computeCurrentAngle(orientation)
 
         # add the event angle to the current angle
         newAngle = (previousAngle + self.angle) % 360
 
         return ServiceOrientations.computeUvCoordinates(newAngle)
+        """
+        r = R.from_euler('z', self.angle, degrees=True)
+        orientation3d = np.append(orientation, [1])
+        newOrientation = r.apply(orientation3d)
+        return newOrientation[:2]
     
     def computeAwayFromOrigin(self, position):
         """

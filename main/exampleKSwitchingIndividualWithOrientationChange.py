@@ -524,13 +524,14 @@ i = 1
 
 blockSteps = -1
 numberOfPreviousSteps = 100
-angle = 90
+angle = 360
 radius = 10
 threshold = [0.1]
+speed = 1
 
-for duration in [500]:
+for duration in [1000]:
     for i in range(1,2):
-        for initialStateString in ["ordered"]:
+        for initialStateString in ["random"]:
             if initialStateString == "ordered":
                 targetSwitchValue=disorderValue
                 startValue = orderValue
@@ -542,7 +543,7 @@ for duration in [500]:
                 for eventEffectOrder in [EventEffect.TURN_BY_FIXED_ANGLE,
      ]:
 
-                    for eventEffectDisorder in []:
+                    for eventEffectDisorder in [EventEffect.TURN_BY_FIXED_ANGLE]:
                         distTypeString = "lssmid"
                         areas = [(16.67, 16.67, radius)]
 
@@ -562,7 +563,6 @@ for duration in [500]:
                                         perceptionRadius=radius,
                                         distributionType=DistributionType.LOCAL_SINGLE_SITE,
                                         areas=areas,
-                                        targetSwitchValue=targetSwitchValue
                                         )
                         event2 = ExternalStimulusOrientationChangeEventDuration(
                                         startTimestep=e2Start,
@@ -589,7 +589,7 @@ for duration in [500]:
                                         areas=areas
                                         )
 
-                        events = [event1]
+                        events = []
 
                         for density in [0.09]:
                             n = 100
@@ -614,7 +614,8 @@ for duration in [500]:
                                                                                             orderThresholds=threshold,
                                                                                             numberPreviousStepsForThreshold=numberOfPreviousSteps,
                                                                                             switchBlockedAfterEventTimesteps=blockSteps,
-                                                                                            degreesOfVision=180
+                                                                                            degreesOfVision=180,
+                                                                                            speed=speed
                                                                                             )
                             if initialStateString == "ordered":
                                 simulationData, colours, switchValues = simulator.simulate(tmax=tmax, initialState=initialState, events=events)
@@ -624,7 +625,7 @@ for duration in [500]:
                             # Save model values for future use
                             #eventsString = "_".join([event.getShortPrintVersion() for event in events])
                             eventsString = f"{event1.timestep}-{event1.eventEffect.val}_{event2.timestep}-{event2.eventEffect.val}_{event3.timestep}-{event3.eventEffect.val}"
-                            savePath = f"enforce-1e-fov=180-{distTypeString}-drn={duration}_ind_avg_{thresholdType.value}_{initialStateString}_st={switchType.value}_o={orderValue}_do={disorderValue}_s={startValue}_d={density}_n={n}_r={radius}_{neighbourSelectionMode.value}_noise={noisePercentage}_th={threshold}_psteps={numberOfPreviousSteps}_bs={blockSteps}_e-{eventsString}_{i}"
+                            savePath = f"test_debug-noev-{angle}-speed={speed}_{initialStateString}-{distTypeString}-drn={duration}_ind_avg_{thresholdType.value}_{initialStateString}_st={switchType.value}_o={orderValue}_do={disorderValue}_s={startValue}_d={density}_n={n}_r={radius}_{neighbourSelectionMode.value}_noise={noisePercentage}_th={threshold}_psteps={numberOfPreviousSteps}_bs={blockSteps}_e-{eventsString}_{i}"
                             ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
 
                             """
