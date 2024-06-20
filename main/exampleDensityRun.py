@@ -1,4 +1,5 @@
 import time
+import numpy as np
 
 import VicsekWithNeighbourSelectionSwitchingCellBased
 import VicsekWithNeighbourSelectionSwitchingCellBasedIndividualsDuration
@@ -30,7 +31,7 @@ def getOrderDisorderValue(switchType):
             return NeighbourSelectionMode.FARTHEST, NeighbourSelectionMode.NEAREST
 
 radius = 10
-angle = 180
+angle = np.pi
 blockSteps = -1
 numberOfPreviousSteps = 100
 thresholdType = ThresholdType.HYSTERESIS

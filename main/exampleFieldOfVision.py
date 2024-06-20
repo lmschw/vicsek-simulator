@@ -1,4 +1,5 @@
 import time
+import numpy as np
 
 import VicsekWithNeighbourSelectionSwitchingCellBasedIndividualsDurationFov
 import ServiceSavedModel
@@ -26,7 +27,7 @@ radius = 10
 neighbourSelectionMode = NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE
 
 percentage = 30
-angle = 180
+angle = np.pi
 
 areas = [(20, 20, 10)]
 tmax = 10000
@@ -77,7 +78,7 @@ for duration in [2000]:
                         e1Start = 5000
                         e2Start = 10000
                         e3Start = 15000
-                        for degreesOfVision in [60, 120, 180, 240, 300, 360]:
+                        for degreesOfVision in [np.pi/3, 2*np.pi/3, np.pi, 4*np.pi/3, 5*np.pi/3, 2*np.pi]:
 
                             event1 = ExternalStimulusOrientationChangeEventDurationFov(
                                             startTimestep=e1Start,

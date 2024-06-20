@@ -255,19 +255,13 @@ class ExternalStimulusOrientationChangeEvent:
         Returns:
             The new uv-coordinates for the orientation of the particle.
         """
-        previousAngle = ServiceOrientations.computeCurrentAngle(orientation)
+        previousAngle = ServiceOrientations.computeAngleForOrientation(orientation)
 
         # add the event angle to the current angle
         newAngle = (previousAngle + self.angle) % (2 *np.pi)
 
         return ServiceOrientations.computeUvCoordinates(newAngle)
-        """
-        r = R.from_euler('z', self.angle, degrees=True)
-        orientation3d = np.append(orientation, [1])
-        newOrientation = r.apply(orientation3d)
-        return newOrientation[:2]
-    
-        """
+
     def computeAwayFromOrigin(self, position):
         """
         Computes the (u,v)-coordinates for the orientation after turning away from the point of origin.
@@ -279,8 +273,7 @@ class ExternalStimulusOrientationChangeEvent:
             [U,V]-coordinates representing the new orientation of the current particle.
         """
         angle = self.__computeAngleWithRegardToOrigin(position)
-        if (position[0] < self.getOriginPoint()[0]):
-            angle += np.pi
+        angle = ServiceOrientations.normaliseAngle(angle)
         return ServiceOrientations.computeUvCoordinates(angle)
 
     def __computeTowardsOrigin(self, position):
@@ -294,8 +287,7 @@ class ExternalStimulusOrientationChangeEvent:
             [U,V]-coordinates representing the new orientation of the current particle.
         """
         angle = self.__computeAngleWithRegardToOrigin(position)
-        if (position[0] > self.getOriginPoint()[0]):
-            angle += np.pi
+        angle = ServiceOrientations.normaliseAngle(angle)
         return ServiceOrientations.computeUvCoordinates(angle)
 
     def __computeAngleWithRegardToOrigin(self, position):
@@ -306,10 +298,10 @@ class ExternalStimulusOrientationChangeEvent:
             - position ([X,Y]): the position of the current particle that should turn towards the point of origin
 
         Returns:
-            The angle in degrees between the two points.
+            The angle in radians between the two points.
         """
         orientationFromOrigin = position - self.getOriginPoint()
-        angleRadian = ServiceOrientations.computeCurrentAngle(orientationFromOrigin)
+        angleRadian = ServiceOrientations.computeAngleForOrientation(orientationFromOrigin)
         return angleRadian
 
     def getOriginPoint(self):
@@ -325,7 +317,6 @@ class ExternalStimulusOrientationChangeEvent:
             case DistributionType.LOCAL_SINGLE_SITE:
                 origin = self.areas[0][:2]
         return origin
-
 
     def __getRandomOrientation(self):
         """

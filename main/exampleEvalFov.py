@@ -1,3 +1,5 @@
+import numpy as np
+
 from EnumNeighbourSelectionMode import NeighbourSelectionMode
 from EnumMetrics import Metrics
 from EnumSwitchType import SwitchType
@@ -22,18 +24,6 @@ Evaluates the field of vision simulations
 radius=10
 domainSize=(100,100)
 
-#orderThresholds = [0.05, 0.1, 0.3, 0.5, 0.7, 0.9]
-#percentages = [1, 5, 10, 30, 50]
-#angles = [45, 90, 180, 270]
-
-orderThresholds = [0.1, 0.3, 0.5, 0.7]
-percentages = [1, 5, 10, 30, 50]
-angles = [45, 90, 180]
-
-orderThresholdLabels = ["0.1", "0.3", "0.5", "0.7"]
-percentagesLabels = ["1", "5", "10", "30", "50"]
-anglesLabels = ["45", "90", "180"]
-
 mode = NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE
 metric=Metrics.ORDER_VALUE_PERCENTAGE
 xLabel = "Timestep"
@@ -49,7 +39,7 @@ orderValue = 5
 disorderValue = 1
 startValue = orderValue
 
-angle = 180
+angle = np.pi
 eventPercentage = 10
 
 switchTypeOptions = (orderValue, disorderValue)
@@ -96,11 +86,11 @@ for metric in [Metrics.ORDER]:
             else:
                 startValue = orderValue
                 targetSwitchValue=disorderValue
-            for degreesOfVision in [360]:
+            for degreesOfVision in [2*np.pi]:
                 labels = [degreesOfVision]
                 for eventEffect in [EventEffect.TURN_BY_FIXED_ANGLE,
                                     ]:
-                        subtitle = f"Field of vision: {degreesOfVision}°"
+                        subtitle = f"Field of vision: {degreesOfVision}"
                         modelParams = []
                         simulationData = []
                         colours = []
@@ -115,7 +105,6 @@ f"test_occ_3e-{degreesOfVision}-lssmid-drn=100_ind_avg_hst_{initialState}_st=K_o
                             switchTypeValues.append(switchTypeValuesDensity)
 
                         #savePath = f"order-ot_comp-K-ordered-d={density}-noise={noisePercentage}-{mode.name}-ot={orderThreshold}-events-t{eventTimestep}p{eventPercentage}a{angle}dt{distributionType.value}a{area}.svg"
-                        #savePath = f"{metric.value}_ps-comp_avg_and_single_ind_{initialState}_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d=0.01_LOD_noise=1_ot=[{singleThreshold}]_events-t2000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.val}p30a180dt{distributionType.value}a{area}.svg"
                         savePath = f"single_{metric.value}_fov-occ-3e_{degreesOfVision}_drn=2000_threshold-type-comp_eventEffect={eventEffect.val}_ind_avg_{initialState}_st=K_o=5_do=1_s={startValue}_d={density}_r={radius}_LOD_noise=1_th={threshold}_psteps={numberOfPreviousSteps}_dist={distributionType.value}.svg"
                         evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=100, switchTypeValues=switchTypeValues, switchTypeOptions=switchTypeOptions)
                         evaluator.evaluateAndVisualize(labels=labels, xLabel=xLabel, yLabel=yLabel, subtitle=subtitle,savePath=savePath)

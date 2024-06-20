@@ -1,3 +1,5 @@
+import numpy as np
+
 import ExternalStimulusOrientationChangeEventDuration
 
 from EnumDistributionType import DistributionType
@@ -16,7 +18,7 @@ class ExternalStimulusOrientationChangeEventDurationFov(ExternalStimulusOrientat
     """
     def __init__(self, startTimestep, endTimestep, percentage, angle, eventEffect, movementPattern, movementSpeed, 
                  perceptionRadius=30, distributionType=DistributionType.GLOBAL, areas=None, orientation=[0,0], 
-                 domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, targetSwitchValue=None, degreesOfVision=360):
+                 domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, targetSwitchValue=None, degreesOfVision=2*np.pi):
         """
         Creates an external stimulus event that affects part of the swarm at a given timestep.
 
@@ -34,7 +36,7 @@ class ExternalStimulusOrientationChangeEventDurationFov(ExternalStimulusOrientat
             - orientation ([u,v]-coordinates) [optional]: the initial orientation of the point of origin
             - domainSize (tuple of floats) [optional]: the size of the domain
             - targetSwitchValue (switchTypeValue) [optional]: the value that every affected particle should select
-            - degreesOfVision (float, [0,360]) [optional]: the limitation of the field of vision
+            - degreesOfVision (float, [0,2*np.pi]) [optional]: the limitation of the field of vision
             
         Returns:
             No return.

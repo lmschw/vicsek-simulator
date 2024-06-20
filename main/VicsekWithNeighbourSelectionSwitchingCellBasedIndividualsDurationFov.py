@@ -1,3 +1,5 @@
+import numpy as np
+
 import DefaultValues as dv
 import ServiceOrientations
 
@@ -13,7 +15,7 @@ class VicsekWithNeighbourSelection(VicsekWithNeighbourSelectionSwitchingCellBase
                  k=dv.DEFAULT_K_NEIGHBOURS, showExample=dv.DEFAULT_SHOW_EXAMPLE_PARTICLE, numCells=None, 
                  switchType=None, switchValues=(None, None), thresholdType=None, orderThresholds=None, 
                  numberPreviousStepsForThreshold=10, switchBlockedAfterEventTimesteps=-1,
-                 degreesOfVision=360, occlusionActive=False):
+                 degreesOfVision=2*np.pi, occlusionActive=False):
         """
         Initialize the model with all its parameters
 

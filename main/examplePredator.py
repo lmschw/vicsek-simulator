@@ -1,4 +1,5 @@
 import time
+import numpy as np
 
 import VicsekWithNeighbourSelectionSwitchingCellBasedIndividualsDuration
 import ServiceSavedModel
@@ -55,7 +56,7 @@ eventEffect = EventEffect.AWAY_FROM_ORIGIN # this is the PREDATOR behaviour, so 
 distributionType = DistributionType.LOCAL_SINGLE_SITE # if the effect is global, particles are picked out randomly unless you set percentage = 100. then the whole swarm will be affected
 areas = [(20, 20, radius)] # the area that is affected by the event initially: [(xPointOfOriginAtStart, xPointOfOriginAtStart, radius)]
 percentage = 100 # how much of the swarm is potentially affected. You can play with this. However, it is the percentage compared to the whole swarm. So if the event area only contains 30% of all particles and you set it to 30%, all of them will be affected currently
-angle = 180 # not necessary for predator behaviour but currently not optional for the event specification
+angle = np.pi # not necessary for predator behaviour but currently not optional for the event specification
 movementPattern = MovementPattern.PURSUIT_NEAREST # how the predator moves
 startTimestep = 0 # first timestep at which the predator appears
 endTimestep = tmax # last timestep where the predator is active

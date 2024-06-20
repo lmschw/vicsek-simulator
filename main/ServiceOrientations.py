@@ -11,16 +11,16 @@ def determineMinMaxAngleOfVision(orientation, degreesOfVision):
 
     Params:
         - orientation (array of floats): the current orientation of the particle
-        - degreesOfVision (int [0,360]): how many degrees of its surroundings the particle can see.
+        - degreesOfVision (int [0,2*np.pi]): how many degrees of its surroundings the particle can see.
 
     Returns:
         Two integers representing the angular boundary of vision, i.e. the minimal and maximal angle that is still visible to the particle
     """
     angularDistance = degreesOfVision / 2
-    currentAngle = normaliseDegreesAngle(computeCurrentAngle(orientation))
+    currentAngle = normaliseAngle(computeAngleForOrientation(orientation))
     
-    minAngle = normaliseDegreesAngle(currentAngle - angularDistance)
-    maxAngle = normaliseDegreesAngle(currentAngle + angularDistance)
+    minAngle = normaliseAngle(currentAngle - angularDistance)
+    maxAngle = normaliseAngle(currentAngle + angularDistance)
 
     return minAngle, maxAngle
 
@@ -41,7 +41,7 @@ def isInFieldOfVision(positionParticle, positionCandidate, minAngle, maxAngle):
         return True
     orientationFromOrigin = positionCandidate - positionParticle
     angleRadian = np.arctan(orientationFromOrigin[1]/orientationFromOrigin[0])
-    angle = normaliseDegreesAngle(math.degrees(angleRadian))
+    angle = normaliseAngle(angleRadian)
     if minAngle < maxAngle:
         isIn = angle >= minAngle and angle <= maxAngle
     else:
@@ -128,15 +128,15 @@ def isCBetweenAB(a, b, c):
     isBetweenY = a[1] <= c[1] <= b[1] or a[1] >= c[1] >= b[1]
     return isBetweenX and isBetweenY
 
-def computeCurrentAngle(orientation):
+def computeAngleForOrientation(orientation):
     """
-    Computes the angle in degrees based on the (u,v)-coordinates of the current orientation.
+    Computes the angle in radians based on the (u,v)-coordinates of the current orientation.
 
     Params:
         - orientation (array of floats): the current orientation in (u,v)-coordinates
 
     Returns:
-        A float representin the angle in degrees.
+        A float representin the angle in radians.
     """
     return np.arctan2(orientation[1], orientation[0])
 
@@ -145,7 +145,7 @@ def computeUvCoordinates(angle):
     Computes the (u,v)-coordinates based on the angle.
 
     Params:
-        - angle (float): the angle in degrees
+        - angle (float): the angle in radians
 
     Returns:
         An array containing the [u, v]-coordinates corresponding to the angle.
@@ -156,18 +156,18 @@ def computeUvCoordinates(angle):
     
     return [U,V]
 
-def normaliseDegreesAngle(angle):
+def normaliseAngle(angle):
     """
-    Normalises the degrees of an angle to be between 0 and 360.
+    Normalises the degrees of an angle to be between 0 and 2pi.
 
     Params:
-        - angle (float): the angle in degrees
+        - angle (float): the angle in radians
 
     Returns:
         Float representing the normalised angle.
     """
     if angle < 0:
-        return 360 - abs(angle)
-    if angle > 360:
-        return angle % 360
+        return (2*np.pi) - abs(angle)
+    if angle > (2*np.pi):
+        return angle % (2*np.pi)
     return angle

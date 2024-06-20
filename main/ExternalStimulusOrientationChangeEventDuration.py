@@ -120,7 +120,7 @@ class ExternalStimulusOrientationChangeEventDuration(ExternalStimulusOrientation
                 position = initialPosition
                 orientation = self.orientation
             case MovementPattern.RANDOM:
-                chosenAngle = random.random() * 360
+                chosenAngle = random.random() * 2*np.pi
                 orientation = ServiceOrientations.computeUvCoordinates(chosenAngle)
                 position = self.__computeNewPosition(initialPosition, orientation)
             case MovementPattern.PURSUIT_NEAREST:
