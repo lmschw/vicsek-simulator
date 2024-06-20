@@ -53,9 +53,9 @@ e3Start = 15000
 
 noisePercentages = [0, 0.5, 1, 1.5, 2]
 densities = [0.01, 0.05, 0.09]
-numbersOfPreviousSteps = [1, 100]
+numbersOfPreviousSteps = [50]
 durations = [1, 100, 1000]
-ks = [1,3,5]
+ks = [1,5]
 
 neighbourSelectionModes = [NeighbourSelectionMode.ALL,
                            NeighbourSelectionMode.RANDOM,
