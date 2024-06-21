@@ -92,8 +92,8 @@ iStop = 11
 
 for density in densities:
     n = ServicePreparation.getNumberOfParticlesForConstantDensity(density=density, domainSize=domainSize)   
-    """
     # ---neighbourSelectionMode only (5000) for all 6 modes
+    """
     tmax = 5000
     switchType = SwitchType.NEIGHBOUR_SELECTION_MODE
     orderValue, disorderValue = getOrderDisorderValue(switchType)
@@ -130,7 +130,7 @@ for density in densities:
 
                     endRun = time.time()
                     ServiceGeneral.logWithTime(f"Completed 'NO EVENT - GLOBAL - NEIGHBOUR SELECTION MODE' - i = {i}, noise = {noisePercentage}%, nsm={neighbourSelectionMode.name}, init = {initialStateString} in {ServiceGeneral.formatTime(endRun-startRun)}")
-
+    """
     # ---- k only (5000) for all 6 modes and k = 1, 5
     tmax = 5000
     switchType = SwitchType.K
@@ -262,7 +262,6 @@ for density in densities:
 
                         endRun = time.time()
                         ServiceGeneral.logWithTime(f"Completed 'SWITCHING - GLOBAL - K' - i = {i}, noise = {noisePercentage}%, order={orderValue}, disorder={disorderValue}, init = {initialStateString} in {ServiceGeneral.formatTime(endRun-startRun)}")
-        """
         # LOCAL
     for numberOfPreviousSteps in numbersOfPreviousSteps:
         # --- neighbourSelectionMode/k only (5000) for all 6 modes and k = 1/5
