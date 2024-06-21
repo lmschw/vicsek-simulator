@@ -21,7 +21,8 @@ class VicsekWithNeighbourSelection:
                  radius=dv.DEFAULT_RADIUS, noise=dv.DEFAULT_NOISE, numberOfParticles=dv.DEFAULT_NUM_PARTICLES, 
                  k=dv.DEFAULT_K_NEIGHBOURS, showExample=dv.DEFAULT_SHOW_EXAMPLE_PARTICLE, numCells=None, 
                  switchType=None, switchValues=(None, None), thresholdType=None, orderThresholds=None, 
-                 numberPreviousStepsForThreshold=10, switchBlockedAfterEventTimesteps=-1, occlusionActive=False):
+                 numberPreviousStepsForThreshold=10, switchBlockedAfterEventTimesteps=-1, occlusionActive=False,
+                 switchingActive=True):
         """
         Initialize the model with all its parameters
 
@@ -44,7 +45,8 @@ class VicsekWithNeighbourSelection:
             - numberPreviousStepsForThreshold (int) [optional]: the number of previous timesteps that are considered for the average to be compared to the threshold value(s)
             - switchBlockedAfterEventTimesteps (int) [optional]: the number of timesteps that a selected particle will not be able to change its value
             - occlusionActive (boolean) [optional]: whether particles can see particles that are hidden behind other particles
-            
+            - switchingActive (boolean) [optional]: if False, the particles cannot update their values
+
         Returns:
             No return.
         """
@@ -63,6 +65,7 @@ class VicsekWithNeighbourSelection:
         self.numberPreviousStepsForThreshold = numberPreviousStepsForThreshold
         self.switchBlockedAfterEventTimesteps = switchBlockedAfterEventTimesteps
         self.occlusionActive = occlusionActive
+        self.switchingActive = switchingActive
         self.selectedIndices = {}
 
         if numCells == None:
@@ -93,15 +96,18 @@ class VicsekWithNeighbourSelection:
                     "dt": self.dt,
                     "numCells": self.numCells,
                     "cellDims": self.cellDims,
-                    "switchType": self.switchType.name,
-                    "orderValue": self.orderSwitchValue,
-                    "disorderValue": self.disorderSwitchValue,
                     "thresholdType": self.thresholdType.name,
                     "thresholds": self.orderThresholds,
                     "previousSteps": self.numberPreviousStepsForThreshold,
                     "blockedSteps": self.switchBlockedAfterEventTimesteps,
                     "occlusionActive": self.occlusionActive,
+                    "switchingActive": self.switchingActive,
                     }
+        if self.switchingActive:
+            summary["switchType"] = self.switchType.name
+            summary["orderValue"] = self.orderSwitchValue
+            summary["disorderValue"] = self.disorderSwitchValue
+
         if asString:
             strPrep = [tup[0] + ": " + tup[1] for tup in summary.values()]
             return ", ".join(strPrep)
@@ -207,7 +213,8 @@ class VicsekWithNeighbourSelection:
             # update switch type values
             previousLocalOrders = localOrders
             localOrders = self.__getLocalOrders(orientations, neighbourCandidates)
-            switchTypeValues = self.computeSwitchTypeValues(timestep=it, previousSwitchTypeValues=switchTypeValues, neighbours=neighbourCandidates, localOrders=localOrders, previousLocalOrders=previousLocalOrders)
+            if self.switchingActive == True:
+                switchTypeValues = self.computeSwitchTypeValues(timestep=it, previousSwitchTypeValues=switchTypeValues, neighbours=neighbourCandidates, localOrders=localOrders, previousLocalOrders=previousLocalOrders)
 
             # update colours
             colours = self.__colourGroups(switchTypeValues)
@@ -378,6 +385,8 @@ class VicsekWithNeighbourSelection:
                 switchTypeValues = numberOfParticles * [self.neighbourSelectionMode]
             case SwitchType.K:
                 switchTypeValues = numberOfParticles * [self.k]
+            case _:
+                switchTypeValues = numberOfParticles * [None]
         return positions, orientations, switchTypeValues
     
     def findNeighbours(self, positions, orientations, cellToParticleDistribution, particleToCellDistribution):
@@ -438,11 +447,12 @@ class VicsekWithNeighbourSelection:
             # individual selection for switch value
             neighbourSelectionMode = self.neighbourSelectionMode
             k = self.k
-            match self.switchType:
-                case SwitchType.NEIGHBOUR_SELECTION_MODE:
-                    neighbourSelectionMode = switchTypeValues[i]
-                case SwitchType.K:
-                    k = switchTypeValues[i]
+            if self.switchingActive == True:
+                match self.switchType:
+                    case SwitchType.NEIGHBOUR_SELECTION_MODE:
+                        neighbourSelectionMode = switchTypeValues[i]
+                    case SwitchType.K:
+                        k = switchTypeValues[i]
 
             # neighbour selection
             candidates = neighbourCandidates[i]

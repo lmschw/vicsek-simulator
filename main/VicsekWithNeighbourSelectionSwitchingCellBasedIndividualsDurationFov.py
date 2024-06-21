@@ -15,7 +15,7 @@ class VicsekWithNeighbourSelection(VicsekWithNeighbourSelectionSwitchingCellBase
                  k=dv.DEFAULT_K_NEIGHBOURS, showExample=dv.DEFAULT_SHOW_EXAMPLE_PARTICLE, numCells=None, 
                  switchType=None, switchValues=(None, None), thresholdType=None, orderThresholds=None, 
                  numberPreviousStepsForThreshold=10, switchBlockedAfterEventTimesteps=-1,
-                 degreesOfVision=2*np.pi, occlusionActive=False):
+                 degreesOfVision=2*np.pi, occlusionActive=False, switchingActive=True):
         """
         Initialize the model with all its parameters
 
@@ -39,7 +39,8 @@ class VicsekWithNeighbourSelection(VicsekWithNeighbourSelectionSwitchingCellBase
             - switchBlockedAfterEventTimesteps (int) [optional]: the number of timesteps that a selected particle will not be able to change its value
             - degreesOfVision (int) [optional]: the angle of the field of vision. The center of the field of vision is always the direction of the orientation
             - occlusionActive (boolean) [optional]: whether particles can see particles that are hidden behind other particles
-            
+            - switchingActive (boolean) [optional]: if False, the particles cannot update their values
+
         Returns:
             No return.
         """
@@ -58,7 +59,8 @@ class VicsekWithNeighbourSelection(VicsekWithNeighbourSelectionSwitchingCellBase
                          orderThresholds=orderThresholds,
                          numberPreviousStepsForThreshold=numberPreviousStepsForThreshold,
                          switchBlockedAfterEventTimesteps=switchBlockedAfterEventTimesteps,
-                         occlusionActive=occlusionActive)
+                         occlusionActive=occlusionActive,
+                         switchingActive=switchingActive)
         self.degreesOfVision = degreesOfVision
     
     def isVisibleToParticle(self, particleIdx, candidateIdx, positions, orientations, neighbourCandidates):
