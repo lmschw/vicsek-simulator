@@ -52,7 +52,7 @@ e2Start = 10000
 e3Start = 15000
 
 noisePercentages = [1] # to run again with other noise percentages, make sure to comment out anything that has fixed noise (esp. local)
-densities = [0.01, 0.05]
+densities = [0.09]
 numbersOfPreviousSteps = [50]
 durations = [1, 100, 1000]
 ks = [1,5]
@@ -92,19 +92,103 @@ iStop = 11
 
 for density in densities:
     n = ServicePreparation.getNumberOfParticlesForConstantDensity(density=density, domainSize=domainSize)   
-    for numberOfPreviousSteps in numbersOfPreviousSteps:
-        # ---neighbourSelectionMode only (5000) for all 6 modes
-        tmax = 5000
-        switchType = SwitchType.NEIGHBOUR_SELECTION_MODE
-        orderValue, disorderValue = getOrderDisorderValue(switchType)
-        k = 1
+    """
+    # ---neighbourSelectionMode only (5000) for all 6 modes
+    tmax = 5000
+    switchType = SwitchType.NEIGHBOUR_SELECTION_MODE
+    orderValue, disorderValue = getOrderDisorderValue(switchType)
+    k = 1
 
-        for i in range(iStart,iStop):
-            for noisePercentage in noisePercentages:
-                noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(noisePercentage)
-                for neighbourSelectionMode in neighbourSelectionModes:
+    for i in range(iStart,iStop):
+        for noisePercentage in noisePercentages:
+            noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(noisePercentage)
+            for neighbourSelectionMode in neighbourSelectionModes:
+                for initialStateString in ["ordered", "random"]:
+                    startValue = neighbourSelectionMode
+                    startRun = time.time()
+
+                    if initialStateString == "ordered":
+                        initialState = ServicePreparation.createOrderedInitialDistributionEquidistanced(domainSize, n)
+
+                    simulator = VicsekWithNeighbourSelectionSwitchingCellBased.VicsekWithNeighbourSelection(
+                                                                                    neighbourSelectionModel=startValue, 
+                                                                                    domainSize=domainSize, 
+                                                                                    numberOfParticles=n, 
+                                                                                    k=k, 
+                                                                                    noise=noise, 
+                                                                                    radius=radius,
+                                                                                    speed=speed,
+                                                                                    )
+                    if initialStateString == "ordered":
+                        simulationData, colours = simulator.simulate(tmax=tmax, initialState=initialState)
+                    else:
+                        simulationData, colours = simulator.simulate(tmax=tmax)
+
+                    # Save model values for future use
+                    savePath = f"global_noev_{initialStateString}_switchType={switchType.value}_st={startValue.value}_d={density}_n={n}_noise={noisePercentage}_{i}"
+                    ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
+
+                    endRun = time.time()
+                    ServiceGeneral.logWithTime(f"Completed 'NO EVENT - GLOBAL - NEIGHBOUR SELECTION MODE' - i = {i}, noise = {noisePercentage}%, nsm={neighbourSelectionMode.name}, init = {initialStateString} in {ServiceGeneral.formatTime(endRun-startRun)}")
+
+    # ---- k only (5000) for all 6 modes and k = 1, 5
+    tmax = 5000
+    switchType = SwitchType.K
+    orderValue, disorderValue = getOrderDisorderValue(switchType)
+
+    for i in range(iStart,iStop):
+        for noisePercentage in noisePercentages:
+            noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(noisePercentage)
+            for neighbourSelectionMode in neighbourSelectionModes:
+                for k in ks:
                     for initialStateString in ["ordered", "random"]:
-                        startValue = neighbourSelectionMode
+                        startValue = k
+                        startRun = time.time()
+
+                        if initialStateString == "ordered":
+                            initialState = ServicePreparation.createOrderedInitialDistributionEquidistanced(domainSize, n)
+
+                        simulator = VicsekWithNeighbourSelectionSwitchingCellBased.VicsekWithNeighbourSelection(
+                                                                                        neighbourSelectionModel=neighbourSelectionMode, 
+                                                                                        domainSize=domainSize, 
+                                                                                        numberOfParticles=n, 
+                                                                                        k=startValue, 
+                                                                                        noise=noise, 
+                                                                                        radius=radius,
+                                                                                        speed=speed,
+                                                                                        )
+                        if initialStateString == "ordered":
+                            simulationData, colours = simulator.simulate(tmax=tmax, initialState=initialState)
+                        else:
+                            simulationData, colours = simulator.simulate(tmax=tmax)
+
+                        # Save model values for future use
+                        savePath = f"global_noev_{initialStateString}_switchType={switchType.value}_st={startValue}_LOD_d={density}_n={n}_noise={noisePercentage}_{i}"
+                        ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
+
+                        endRun = time.time()
+                        ServiceGeneral.logWithTime(f"Completed 'NO EVENT - GLOBAL - K' - i = {i}, noise = {noisePercentage}%, nsm={neighbourSelectionMode.name}, init = {initialStateString} in {ServiceGeneral.formatTime(endRun-startRun)}")
+
+    # ---- mode switching (20'000) for all combos of order-inducing/disorder-inducing
+    tmax = 20000
+    switchType = SwitchType.NEIGHBOUR_SELECTION_MODE
+    orderValue, disorderValue = getOrderDisorderValue(switchType)
+    k = 1
+
+    for i in range(iStart,iStop):
+        for noisePercentage in noisePercentages:
+            noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(noisePercentage)
+            for orderValue in orderNeighbourSelectionModes:
+                for disorderValue in disorderNeighbourSelectionModes:
+                    switches = [[5000, orderValue],
+                                [10000, disorderValue], 
+                                [15000, orderValue]]
+                    for initialStateString in ["random"]:
+                        if initialStateString == "ordered":
+                            startValue = orderValue
+                        else:
+                            startValue = disorderValue
+
                         startRun = time.time()
 
                         if initialStateString == "ordered":
@@ -120,155 +204,71 @@ for density in densities:
                                                                                         speed=speed,
                                                                                         )
                         if initialStateString == "ordered":
-                            simulationData, colours = simulator.simulate(tmax=tmax, initialState=initialState)
+                            simulationData, colours = simulator.simulate(tmax=tmax, initialState=initialState, switchType=switchType,  switches=switches)
                         else:
-                            simulationData, colours = simulator.simulate(tmax=tmax)
+                            simulationData, colours = simulator.simulate(tmax=tmax, switchType=switchType,  switches=switches)
 
+                        eventsString = "_".join([f"{ev[0]}-{ev[1].value}" for ev in switches])
                         # Save model values for future use
-                        savePath = f"global_noev_{initialStateString}_switchType={switchType.value}_st={startValue.value}_d={density}_n={n}_noise={noisePercentage}_{i}"
+                        savePath = f"global_switch_{initialStateString}_switchType={switchType.value}_st={startValue.value}_o={orderValue.value}_do={disorderValue.value}_d={density}_n={n}_noise={noisePercentage}_{eventsString}_{i}"
                         ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
 
                         endRun = time.time()
-                        ServiceGeneral.logWithTime(f"Completed 'NO EVENT - GLOBAL - NEIGHBOUR SELECTION MODE' - i = {i}, noise = {noisePercentage}%, nsm={neighbourSelectionMode.name}, init = {initialStateString} in {ServiceGeneral.formatTime(endRun-startRun)}")
+                        ServiceGeneral.logWithTime(f"Completed 'SWITCHING - GLOBAL - NEIGHBOUR SELECTION MODE' - i = {i}, noise = {noisePercentage}%, order={orderValue.name}, disorder={disorderValue.name}, init = {initialStateString} in {ServiceGeneral.formatTime(endRun-startRun)}")
 
-        # ---- k only (5000) for all 6 modes and k = 1, 5
-        tmax = 5000
-        switchType = SwitchType.K
-        orderValue, disorderValue = getOrderDisorderValue(switchType)
+    # --- k-switching (20'000) for LOD and NEAREST
+    tmax = 20000
+    switchType = SwitchType.K
+    orderValue, disorderValue = getOrderDisorderValue(switchType)
 
-        for i in range(iStart,iStop):
-            for noisePercentage in noisePercentages:
-                noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(noisePercentage)
-                for neighbourSelectionMode in neighbourSelectionModes:
-                    for k in ks:
-                        for initialStateString in ["ordered", "random"]:
-                            startValue = k
-                            startRun = time.time()
+    for i in range(iStart,iStop):
+        for noisePercentage in noisePercentages:
+            noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(noisePercentage)
+            for neighbourSelectionMode in disorderNeighbourSelectionModes:
+                    orderValue = 5
+                    disorderValue = 1
+                    switches = [[5000, orderValue],
+                                [10000, disorderValue], 
+                                [15000, orderValue]]
+                    for initialStateString in ["random"]:
+                        if initialStateString == "ordered":
+                            startValue = orderValue
+                        else:
+                            startValue = disorderValue
 
-                            if initialStateString == "ordered":
-                                initialState = ServicePreparation.createOrderedInitialDistributionEquidistanced(domainSize, n)
+                        startRun = time.time()
 
-                            simulator = VicsekWithNeighbourSelectionSwitchingCellBased.VicsekWithNeighbourSelection(
-                                                                                            neighbourSelectionModel=neighbourSelectionMode, 
-                                                                                            domainSize=domainSize, 
-                                                                                            numberOfParticles=n, 
-                                                                                            k=startValue, 
-                                                                                            noise=noise, 
-                                                                                            radius=radius,
-                                                                                            speed=speed,
-                                                                                            )
-                            if initialStateString == "ordered":
-                                simulationData, colours = simulator.simulate(tmax=tmax, initialState=initialState)
-                            else:
-                                simulationData, colours = simulator.simulate(tmax=tmax)
+                        if initialStateString == "ordered":
+                            initialState = ServicePreparation.createOrderedInitialDistributionEquidistanced(domainSize, n)
 
-                            # Save model values for future use
-                            savePath = f"global_noev_{initialStateString}_switchType={switchType.value}_st={startValue}_LOD_d={density}_n={n}_noise={noisePercentage}_{i}"
-                            ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
+                        simulator = VicsekWithNeighbourSelectionSwitchingCellBased.VicsekWithNeighbourSelection(
+                                                                                        neighbourSelectionModel=neighbourSelectionMode, 
+                                                                                        domainSize=domainSize, 
+                                                                                        numberOfParticles=n, 
+                                                                                        k=startValue, 
+                                                                                        noise=noise, 
+                                                                                        radius=radius,
+                                                                                        speed=speed,
+                                                                                        )
+                        if initialStateString == "ordered":
+                            simulationData, colours = simulator.simulate(tmax=tmax, initialState=initialState, switchType=switchType,  switches=switches)
+                        else:
+                            simulationData, colours = simulator.simulate(tmax=tmax, switchType=switchType,  switches=switches)
 
-                            endRun = time.time()
-                            ServiceGeneral.logWithTime(f"Completed 'NO EVENT - GLOBAL - K' - i = {i}, noise = {noisePercentage}%, nsm={neighbourSelectionMode.name}, init = {initialStateString} in {ServiceGeneral.formatTime(endRun-startRun)}")
+                        eventsString = "_".join([f"{ev[0]}-{ev[1]}" for ev in switches])
+                        # Save model values for future use
+                        savePath = f"global_switch_{initialStateString}_switchType={switchType.value}_st={startValue}_o={orderValue}_do={disorderValue}_d={density}_n={n}_noise={noisePercentage}_{eventsString}_{i}"
+                        ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
 
-        # ---- mode switching (20'000) for all combos of order-inducing/disorder-inducing
-        tmax = 20000
-        switchType = SwitchType.NEIGHBOUR_SELECTION_MODE
-        orderValue, disorderValue = getOrderDisorderValue(switchType)
-        k = 1
-
-        for i in range(iStart,iStop):
-            for noisePercentage in noisePercentages:
-                noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(noisePercentage)
-                for orderValue in orderNeighbourSelectionModes:
-                    for disorderValue in disorderNeighbourSelectionModes:
-                        switches = [[5000, orderValue],
-                                    [10000, disorderValue], 
-                                    [15000, orderValue]]
-                        for initialStateString in ["random"]:
-                            if initialStateString == "ordered":
-                                startValue = orderValue
-                            else:
-                                startValue = disorderValue
-
-                            startRun = time.time()
-
-                            if initialStateString == "ordered":
-                                initialState = ServicePreparation.createOrderedInitialDistributionEquidistanced(domainSize, n)
-
-                            simulator = VicsekWithNeighbourSelectionSwitchingCellBased.VicsekWithNeighbourSelection(
-                                                                                            neighbourSelectionModel=startValue, 
-                                                                                            domainSize=domainSize, 
-                                                                                            numberOfParticles=n, 
-                                                                                            k=k, 
-                                                                                            noise=noise, 
-                                                                                            radius=radius,
-                                                                                            speed=speed,
-                                                                                            )
-                            if initialStateString == "ordered":
-                                simulationData, colours = simulator.simulate(tmax=tmax, initialState=initialState, switchType=switchType,  switches=switches)
-                            else:
-                                simulationData, colours = simulator.simulate(tmax=tmax, switchType=switchType,  switches=switches)
-
-                            eventsString = "_".join([f"{ev[0]}-{ev[1].value}" for ev in switches])
-                            # Save model values for future use
-                            savePath = f"global_switch_{initialStateString}_switchType={switchType.value}_st={startValue.value}_o={orderValue.value}_do={disorderValue.value}_d={density}_n={n}_noise={noisePercentage}_{eventsString}_{i}"
-                            ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
-
-                            endRun = time.time()
-                            ServiceGeneral.logWithTime(f"Completed 'SWITCHING - GLOBAL - NEIGHBOUR SELECTION MODE' - i = {i}, noise = {noisePercentage}%, order={orderValue.name}, disorder={disorderValue.name}, init = {initialStateString} in {ServiceGeneral.formatTime(endRun-startRun)}")
-
-        # --- k-switching (20'000) for LOD and NEAREST
-        tmax = 20000
-        switchType = SwitchType.K
-        orderValue, disorderValue = getOrderDisorderValue(switchType)
-
-        for i in range(iStart,iStop):
-            for noisePercentage in noisePercentages:
-                noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(noisePercentage)
-                for neighbourSelectionMode in disorderNeighbourSelectionModes:
-                        orderValue = 5
-                        disorderValue = 1
-                        switches = [[5000, orderValue],
-                                    [10000, disorderValue], 
-                                    [15000, orderValue]]
-                        for initialStateString in ["random"]:
-                            if initialStateString == "ordered":
-                                startValue = orderValue
-                            else:
-                                startValue = disorderValue
-
-                            startRun = time.time()
-
-                            if initialStateString == "ordered":
-                                initialState = ServicePreparation.createOrderedInitialDistributionEquidistanced(domainSize, n)
-
-                            simulator = VicsekWithNeighbourSelectionSwitchingCellBased.VicsekWithNeighbourSelection(
-                                                                                            neighbourSelectionModel=neighbourSelectionMode, 
-                                                                                            domainSize=domainSize, 
-                                                                                            numberOfParticles=n, 
-                                                                                            k=startValue, 
-                                                                                            noise=noise, 
-                                                                                            radius=radius,
-                                                                                            speed=speed,
-                                                                                            )
-                            if initialStateString == "ordered":
-                                simulationData, colours = simulator.simulate(tmax=tmax, initialState=initialState, switchType=switchType,  switches=switches)
-                            else:
-                                simulationData, colours = simulator.simulate(tmax=tmax, switchType=switchType,  switches=switches)
-
-                            eventsString = "_".join([f"{ev[0]}-{ev[1]}" for ev in switches])
-                            # Save model values for future use
-                            savePath = f"global_switch_{initialStateString}_switchType={switchType.value}_st={startValue}_o={orderValue}_do={disorderValue}_d={density}_n={n}_noise={noisePercentage}_{eventsString}_{i}"
-                            ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
-
-                            endRun = time.time()
-                            ServiceGeneral.logWithTime(f"Completed 'SWITCHING - GLOBAL - K' - i = {i}, noise = {noisePercentage}%, order={orderValue}, disorder={disorderValue}, init = {initialStateString} in {ServiceGeneral.formatTime(endRun-startRun)}")
+                        endRun = time.time()
+                        ServiceGeneral.logWithTime(f"Completed 'SWITCHING - GLOBAL - K' - i = {i}, noise = {noisePercentage}%, order={orderValue}, disorder={disorderValue}, init = {initialStateString} in {ServiceGeneral.formatTime(endRun-startRun)}")
         """
         # LOCAL
+    for numberOfPreviousSteps in numbersOfPreviousSteps:
         # --- neighbourSelectionMode/k only (5000) for all 6 modes and k = 1/5
         tmax = 5000
         noisePercentage = 1
         noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(1)
-        """
         for i in range(iStart,iStop):
             for initialStateString in ["ordered", "random"]:
                 for neighbourSelectionMode in neighbourSelectionModes:
