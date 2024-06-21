@@ -1,3 +1,5 @@
+import numpy as np
+
 from EnumNeighbourSelectionMode import NeighbourSelectionMode
 from EnumMetrics import Metrics
 from EnumSwitchType import SwitchType
@@ -8,29 +10,19 @@ from EnumMovementPattern import MovementPattern
 
 import ServiceSavedModel
 import EvaluatorMultiAvgComp
-import VicsekWithNeighbourSelection
 import ServicePreparation
 import ServiceGeneral
 
-import DefaultValues as dv
-import AnimatorMatplotlib
-import Animator2D
+"""
+--------------------------------------------------------------------------------
+PURPOSE 
+Evaluates local interaction simulations (with events)
+--------------------------------------------------------------------------------
+"""
 
 
 radius=10
 domainSize=(100,100)
-
-#orderThresholds = [0.05, 0.1, 0.3, 0.5, 0.7, 0.9]
-#percentages = [1, 5, 10, 30, 50]
-#angles = [45, 90, 180, 270]
-
-orderThresholds = [0.1, 0.3, 0.5, 0.7]
-percentages = [1, 5, 10, 30, 50]
-angles = [45, 90, 180]
-
-orderThresholdLabels = ["0.1", "0.3", "0.5", "0.7"]
-percentagesLabels = ["1", "5", "10", "30", "50"]
-anglesLabels = ["45", "90", "180"]
 
 mode = NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE
 metric=Metrics.ORDER_VALUE_PERCENTAGE
@@ -47,7 +39,7 @@ orderValue = 5
 disorderValue = 1
 startValue = orderValue
 
-angle = 180
+angle = np.pi
 eventPercentage = 10
 
 switchTypeOptions = (orderValue, disorderValue)
@@ -72,20 +64,24 @@ numberOfPreviousSteps = 100
 percentage = 50
 radius = 10
 threshold = [0.1]
+angle = "pi"
+speed = 1
+density = 0.09
 movementPattern = MovementPattern.STATIC
-for metric in [Metrics.ORDER, Metrics.ORDER_VALUE_PERCENTAGE]:
+tmax = 1500
+for metric in [Metrics.ORDER]:
     if metric == Metrics.ORDER:
         yLabel = "order"
     else:
         yLabel = "percentage of particles with order value"
-    for distributionType in [DistributionType.GLOBAL, DistributionType.LOCAL_SINGLE_SITE]:
+    for distributionType in [DistributionType.LOCAL_SINGLE_SITE]:
         if distributionType == DistributionType.GLOBAL:
             area = None
             dist = "Global"
         else:
             area = "[(20, 20, 10)]"
             dist = "Local"
-        for initialState in ["ordered"]:
+        for initialState in ["ordered", "random"]:
             if initialState == "random":
                 startValue = disorderValue
                 targetSwitchValue=orderValue
@@ -93,26 +89,35 @@ for metric in [Metrics.ORDER, Metrics.ORDER_VALUE_PERCENTAGE]:
             else:
                 startValue = orderValue
                 targetSwitchValue=disorderValue
-            for density in [0.05, 0.07, 0.09]:
-                labels = [ThresholdType.TWO_THRESHOLDS.name,
-                                ThresholdType.TWO_THRESHOLDS_SIMPLE.name,
-                                ThresholdType.HYSTERESIS.name]
-                for eventEffect in [EventEffect.TURN_BY_FIXED_ANGLE,
-                                    EventEffect.ALIGN_TO_FIXED_ANGLE, 
-                                    EventEffect.ALIGN_TO_FIRST_PARTICLE, 
-                                    EventEffect.AWAY_FROM_ORIGIN, 
-                                    EventEffect.TOWARDS_ORIGIN, 
-                                    EventEffect.RANDOM]:
-                        subtitle = f"{dist} - threshold type comparison with \ndensity = {density}, event effect = {eventEffect.label} and radius = {radius} - event at 5000"
+            for eventEffect in [EventEffect.TURN_BY_FIXED_ANGLE,
+                                EventEffect.ALIGN_TO_FIXED_ANGLE,
+                                EventEffect.ALIGN_TO_FIRST_PARTICLE,
+                                EventEffect.AWAY_FROM_ORIGIN,
+                                EventEffect.TOWARDS_ORIGIN,
+                                EventEffect.RANDOM]:
+                labels = [0.1, 0.5, 1]
+                for thresholdType in [ThresholdType.HYSTERESIS]:
+                
+                        subtitle = f"{dist} - speed comparison with \ndensity = {density}, event effect = {eventEffect.label} and radius = {radius} - event at 5000"
                         modelParams = []
                         simulationData = []
                         colours = []
                         switchTypeValues = []
-                        for thresholdType in [ThresholdType.TWO_THRESHOLDS,
-                                              ThresholdType.TWO_THRESHOLDS_SIMPLE,
-                                              ThresholdType.HYSTERESIS]:
+                        for speed in [0.1, 0.5, 1]:
                             modelParamsDensity, simulationDataDensity, coloursDensity, switchTypeValuesDensity = ServiceSavedModel.loadModels([
-                                f"test_single-event-duration=1000_dom_ind_avg_{thresholdType.value}_{initialState}_st=K_o=5_do=1_s={startValue}_d={density}_n=100_r={radius}_LOD_noise=1_th={threshold}_psteps={numberOfPreviousSteps}_bs={blockSteps}_e-t5000-6000e{eventEffect.val}m{movementPattern.val}p{percentage}a{angle}dt{distributionType.value}a{area}_1.json"
+f"test_debug-{initialState}_{eventEffect.val}_angle={angle}_tmax={tmax}_speed={speed}_1.json",
+f"test_debug-{initialState}_{eventEffect.val}_angle={angle}_tmax={tmax}_speed={speed}_2.json",
+f"test_debug-{initialState}_{eventEffect.val}_angle={angle}_tmax={tmax}_speed={speed}_3.json",
+f"test_debug-{initialState}_{eventEffect.val}_angle={angle}_tmax={tmax}_speed={speed}_4.json",
+f"test_debug-{initialState}_{eventEffect.val}_angle={angle}_tmax={tmax}_speed={speed}_5.json",
+f"test_debug-{initialState}_{eventEffect.val}_angle={angle}_tmax={tmax}_speed={speed}_6.json",
+f"test_debug-{initialState}_{eventEffect.val}_angle={angle}_tmax={tmax}_speed={speed}_7.json",
+f"test_debug-{initialState}_{eventEffect.val}_angle={angle}_tmax={tmax}_speed={speed}_8.json",
+f"test_debug-{initialState}_{eventEffect.val}_angle={angle}_tmax={tmax}_speed={speed}_9.json",
+f"test_debug-{initialState}_{eventEffect.val}_angle={angle}_tmax={tmax}_speed={speed}_10.json",
+
+
+
                                                                                                                     ], loadSwitchValues=True)
                             modelParams.append(modelParamsDensity)
                             simulationData.append(simulationDataDensity)
@@ -120,11 +125,11 @@ for metric in [Metrics.ORDER, Metrics.ORDER_VALUE_PERCENTAGE]:
                             switchTypeValues.append(switchTypeValuesDensity)
 
                         #savePath = f"order-ot_comp-K-ordered-d={density}-noise={noisePercentage}-{mode.name}-ot={orderThreshold}-events-t{eventTimestep}p{eventPercentage}a{angle}dt{distributionType.value}a{area}.svg"
-                        #savePath = f"{metric.value}_ps-comp_avg_and_single_ind_{initialState}_st={switchType.value}_order={orderValue}_disorder={disorderValue}_start={startValue}_d=0.01_LOD_noise=1_ot=[{singleThreshold}]_events-t2000e{eventEffect.val}p30a180dt{distributionType.value}a{area}_t6000e{eventEffect.val}p30a180dt{distributionType.value}a{area}.svg"
-                        savePath = f"single_{metric.value}_threshold-type-comp_eventEffect={eventEffect.val}_ind_avg_{initialState}_st=K_o=5_do=1_s={startValue}_d={density}_r={radius}_LOD_noise=1_th={threshold}_psteps={numberOfPreviousSteps}_dist={distributionType.value}.svg"
+                        savePath = f"test_debug_{initialState}_{eventEffect.val}_angle={angle}_tmax={tmax}.svg"
                         evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=100, switchTypeValues=switchTypeValues, switchTypeOptions=switchTypeOptions)
-                        evaluator.evaluateAndVisualize(labels=labels, xLabel=xLabel, yLabel=yLabel, subtitle=subtitle, colourBackgroundForTimesteps=(5000,6000), savePath=savePath)
+                        evaluator.evaluateAndVisualize(labels=labels, xLabel=xLabel, yLabel=yLabel, subtitle=subtitle, savePath=savePath)
                         ServiceGeneral.logWithTime(f"created threshold type comp graph for distributionType={distributionType.name}, density={density}, eventEffect = {eventEffect} and metric {metric.name}")
+                """
                 labels = [EventEffect.TURN_BY_FIXED_ANGLE.label,
                                                     EventEffect.ALIGN_TO_FIXED_ANGLE.label, 
                                                     EventEffect.ALIGN_TO_FIRST_PARTICLE.label, 
@@ -161,11 +166,11 @@ for metric in [Metrics.ORDER, Metrics.ORDER_VALUE_PERCENTAGE]:
                         evaluator.evaluateAndVisualize(labels=labels, xLabel=xLabel, yLabel=yLabel, subtitle=subtitle, colourBackgroundForTimesteps=(5000,6000), savePath=savePath)
                         ServiceGeneral.logWithTime(f"created event effect comp graph for distributionType={distributionType.name}, density={density}, thresholdType = {thresholdType.name} and metric {metric.name}")
 
-                
+                """
 
 """
 eventPercentage = 30
-angle = 180
+angle = np.pi
 
 
 differenceThresholds = [0.1,0.3,0.5,0.7,0.9]
@@ -468,7 +473,7 @@ disorderValue = 1
 startValue = orderValue
 
 eventPercentage = 30
-angle = 180
+angle = np.pi
 orderThreshold = 0.05
 distributionType = DistributionType.GLOBAL
 switchTypeOptions = (orderValue, disorderValue)

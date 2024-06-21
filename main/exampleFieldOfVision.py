@@ -1,16 +1,12 @@
 import time
+import numpy as np
 
-import VicsekWithNeighbourSelectionSwitchingCellBasedIndividuals
 import VicsekWithNeighbourSelectionSwitchingCellBasedIndividualsDurationFov
 import ServiceSavedModel
 from EnumNeighbourSelectionMode import NeighbourSelectionMode
 import ServicePreparation
 import ServiceGeneral
-from ExternalStimulusOrientationChangeEvent import ExternalStimulusOrientationChangeEvent
-from ExternalStimulusOrientationChangeEventDuration import ExternalStimulusOrientationChangeEventDuration
 from ExternalStimulusOrientationChangeEventDurationFov import ExternalStimulusOrientationChangeEventDurationFov
-import AnimatorMatplotlib
-import Animator2D
 
 from EnumSwitchType import SwitchType
 from EnumDistributionType import DistributionType
@@ -18,6 +14,12 @@ from EnumEventEffect import EventEffect
 from EnumThresholdType import ThresholdType
 from EnumMovementPattern import MovementPattern
 
+"""
+--------------------------------------------------------------------------------
+PURPOSE 
+Creates data for field of vision experiments
+--------------------------------------------------------------------------------
+"""
 
 domainSize = (100, 100)
 density = 0.05
@@ -25,7 +27,7 @@ radius = 10
 neighbourSelectionMode = NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE
 
 percentage = 30
-angle = 180
+angle = np.pi
 
 areas = [(20, 20, 10)]
 tmax = 10000
@@ -76,7 +78,7 @@ for duration in [2000]:
                         e1Start = 5000
                         e2Start = 10000
                         e3Start = 15000
-                        for degreesOfVision in [60, 120, 180, 240, 300, 360]:
+                        for degreesOfVision in [np.pi/3, 2*np.pi/3, np.pi, 4*np.pi/3, 5*np.pi/3, 2*np.pi]:
 
                             event1 = ExternalStimulusOrientationChangeEventDurationFov(
                                             startTimestep=e1Start,

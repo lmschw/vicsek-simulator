@@ -2,18 +2,22 @@ import AnimatorMatplotlib
 import ServiceSavedModel
 import Animator2D
 
-#modelParams, simulationData, colours = ServiceSavedModel.loadModel("examples/dislocationExamples/model_LEAST_ORIENTATION_DIFFERENCE_tmax=10000_n=500_k=5_noise=0_radius=10.json")
-#modelParams, simulationData, colours = ServiceSavedModel.loadModel("D:/vicsek-data/kswitching/switch_switchType=K_switches=0-5_1000-1_4000-5_tmax=5000_n=100_density=0.01_mode=NEAREST_noise=1.5%_2.json")
-#datafileLocation = "d:/vicsek-data/ind-single-with-previous-steps/"
+"""
+--------------------------------------------------------------------------------
+PURPOSE 
+Loads a saved model and creates a video.
+--------------------------------------------------------------------------------
+"""
+
 datafileLocation = ""
-filename = ""
+filename = "test-speed=1_1e_360°_TURN-lssmid-drn=500_ind_avg_hst_random_st=K_o=5_do=1_s=1_d=0.09_n=100_r=10_LOD_noise=1_th=[0.1]_psteps=100_bs=-1_e-500-turn_fixed_10000-turn_fixed_15000-turn_fixed_1"
 modelParams, simulationData, colours, switchValues = ServiceSavedModel.loadModel(f"{datafileLocation}{filename}.json", loadSwitchValues=True)
 
 # Initalise the animator
 animator = AnimatorMatplotlib.MatplotlibAnimator(simulationData, (100,100,100), colours)
 
 # prepare the animator
-preparedAnimator = animator.prepare(Animator2D.Animator2D(), frames=10000)
+preparedAnimator = animator.prepare(Animator2D.Animator2D(), frames=25)
 preparedAnimator.setParams(modelParams)
 
 preparedAnimator.saveAnimation(f"{filename}.mp4")

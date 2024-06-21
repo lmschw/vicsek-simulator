@@ -1,5 +1,11 @@
 import numpy as np
+
+"""
+Service that includes general methods used by the Vicsek model.
+"""
+
 def normalizeOrientations(orientations):
+    # TODO move to ServiceOrientations
     """
     Normalises the orientations of all particles for the current time step
 

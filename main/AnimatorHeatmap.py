@@ -1,18 +1,16 @@
 from matplotlib.animation import FuncAnimation
 import matplotlib.pyplot as plt
-import numpy as np
 
-import DefaultValues as dv
 
 class Animator(object):
 
     """
-    Animates the scatterplots for the neighbours of a particle.
+    Animates the local order heatmap for the domain.
     """
 
     def prepareAnimation(self, matplotlibFigure=None, ax=None, title=None, valrange=(0, 1), frames=100, frameInterval = 10):
         """
-        Prepares the animator object for the scatterplot animation.
+        Prepares the animator object for the heatmap animation.
 
         parameters:
             - matplotlibFigure (Matplotlib Figure): Matplotlib figure object.

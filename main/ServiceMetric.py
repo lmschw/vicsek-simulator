@@ -6,6 +6,10 @@ from sklearn.cluster import AgglomerativeClustering
 
 from EnumMetrics import Metrics
 
+"""
+Service containing static methods to handle metrics.
+"""
+
 def evaluateSingleTimestep(positions, orientations, metric, radius=None, threshold=0.99, switchTypeValues=None, switchTypeOptions=None):
      """
         Evaluates the simulation data for a single timestep according to the selected metric.
@@ -46,7 +50,7 @@ def evaluateSingleTimestep(positions, orientations, metric, radius=None, thresho
         case Metrics.ORDER_VALUE_PERCENTAGE:
             orderCount, disorderCount = getNumbersPerSwitchTypeValue(switchTypeValues, switchTypeOptions)
             return orderCount
-        case Metrics.DUAL_OVERLAY_ORDER_AND_PERCENTAGE:
+        case Metrics.DUAL_OVERLAY_ORDER_AND_PERCENTAGE: # not a single metric but rather overlaying two metrics in the same graph
             order = computeOrder(orientations)
             orderCount, _ = getNumbersPerSwitchTypeValue(switchTypeValues, switchTypeOptions)
             return order, orderCount/100 # normalise to fit with order
@@ -70,16 +74,16 @@ def computeOrder(orientations):
 
 def findClusters(positions, orientations, threshold):
     """
-    #orientationsXy = getOrientationsXy(positions, orientations)
-    clustering = linkage(orientations, method="single", metric="cosine")
-    #dend = dendrogram(complete_clustering, color_threshold=0.0005)
-    dend = dendrogram(clustering, color_threshold=threshold)
+    Find clusters in the data using AgglomerativeClustering.
 
-    colours = dend["color_list"]
-    print("nClusters: ", len(set(colours)))
-    return len(set(colours)), colours
+    Params:
+        - positions (array of arrays of float): the position of every particle at every timestep
+        - orientations (array of arrays of float): the orientation of every particle at every timestep
+        - threshold (float): the threshold used to cut the tree in AgglomerativeClustering
+
+    Returns:
+        The number of clusters, the labels of the clusters
     """
-    
     cluster = AgglomerativeClustering(n_clusters=None, metric='euclidean', linkage='single', compute_full_tree=True, distance_threshold=threshold)
 
     # Cluster the data
@@ -87,11 +91,22 @@ def findClusters(positions, orientations, threshold):
 
     # number of clusters
     nClusters = 1+np.amax(cluster.labels_)
-    #print(f"nClusters: {nClusters}")
+
     return nClusters, cluster.labels_
     
 
 def getOrientationsXy(positions, orientations):
+    # TODO move to ServiceOrientations
+    """
+    Computes the (x,y)-coordinate equivalents of the (u,v)-coordinate orientations with repect to the current positions
+
+    Params:
+        - positions (array of array of floats): the positions of every particle
+        - orientations (array of array of floats): the orientations of every particle
+
+    Returns:
+        An array containing the orientation of every particle in (x,y)-coordinates.
+    """
     return [[positions[i][0] + np.cos(np.arcsin(orientations[i][0])), positions[i][1] + np.sin(np.arcsin(orientations[i][0]))] for i in range(len(orientations))]
 
          
@@ -131,7 +146,7 @@ def findClustersWithRadius(positions, orientations, radius, threshold=0.99):
             
 def findNeighbours(i, positions, radius):
     """
-    Determines which particles are neighoburs of particle i.
+    Determines which particles are neighbours of particle i.
 
     Parameters:
         - i (int): the index of the target particle for which the neighbours should be found
@@ -160,9 +175,21 @@ def isNeighbour(radius, positions, targetIdx, candidateIdx):
     return ((positions[candidateIdx][0] - positions[targetIdx][0])**2 + (positions[candidateIdx][1] - positions[targetIdx][1])**2) <= radius **2 
 
 def angleBetweenTwoVectors(vec1, vec2):
+    # TODO: move to ServiceOrientations
+    """
+    Computes the angle between to vectors.
+
+    Params:
+        - vec1 (array of floats): the first vector
+        - vec2 (array of floats): the second vector.
+
+    Returns:
+        Float representing the angle between the two vectors.
+    """
     return np.arccos(cosAngle(vec1, vec2))
 
 def cosAngle(vec1, vec2):
+    # TODO: move to ServiceOrientations
     """
     Checks the relative orientations of two particles. If the cosAngle is close to 1, their directions are identical. 
     If it is close to -1, they look in opposite directions.
@@ -284,8 +311,8 @@ def getNumbersPerSwitchTypeValue(switchTypeValues, switchTypeOptions):
     Counts the occurrences for all switch type values.
 
     Params:
-        - switchTypeValues (array) [optional]: the switch type values for individual switching
-
+        - switchTypeValues (array): the switch type values for individual switching
+        - switchTypeOptions (array): all possible switch type values
     Returns:
         Two integer representing the counts of the orderValue and disorderValue respectively
     """
@@ -305,6 +332,14 @@ def getNumbersPerSwitchTypeValue(switchTypeValues, switchTypeOptions):
     return percentageOrdered * 100, percentageDisordered * 100
 
 def getLocalOrderGrid(simulationData, domainSize):
+    """
+    Computes the local order for the whole domain based on a grid of 10x10 cells for every timestep.
+
+    Params:
+        - simulationData (times, positions, orientations): the data
+        - domainSize (tuple of floats): the x and y widths of the domain
+    """
+    # TODO add radius dependency
     timesteps, positions, orientations = simulationData 
     length = domainSize[0]/10
     localOrderGrid = np.ones((len(timesteps), 10, 10))

@@ -162,3 +162,47 @@ todo:
 - run field of vision for longer and with more events to verify convergence
 
 maybe try new event type where they follow least density
+
+writup todos (12.06.24):
+- add introduction to collective response
+- add more advantages of disordered state, e.g. foraging
+- discuss previous alignment/transition strategies
+- measure speeds and include here
+- check what would happen if we did not handle this case separately (no neighbour) -> slow convergence?
+- Without any external force, the system will not change state (we should probably show this in a graph)
+- add graphs for event effects
+- add graphs for order and information spread
+
+todo: 
+- should we pass candidates instead of neihbourCandidates?
+          neighbourCandidates.append([candIdx for candIdx in candidates if ServiceMetric.isNeighbour(self.radius, positions, part, candIdx) and self.isVisibleToParticle(particleIdx=part, candidateIdx=candIdx, positions=positions, orientations=orientations, neighbourCandidates=neighbourCandidates)])
+            -> check FOV results
+- add events to parameterSummary
+
+todo (20.06):
+- events: only consider DISTANT, PREDATOR and RANDOM
+- run individuals with 
+    - switchvals, no events
+    - no switchvals, events
+    - switchvals, events
+- run also with:
+    - previousSteps = [1, 100]
+    - event duration = [1, 100, 1000]
+
+
+verify that the following simulations are included in densityRun:
+- global:
+    - neighbourSelectionMode only (5000) for all 6 modes
+    - k only (5000) for all 6 modes and k = 1, 5
+    - mode switching (20'000) for all combos of order-inducing/disorder-inducing
+    - k-switching (20'000) for LOD and NEAREST
+- local:
+    - neighbourSelectionMode only (5000) for all 6 modes
+    - k only (5000) for all 6 modes and k = 1, 5
+    - switchvals for LOD/HOD with k=1 without events (15000)
+    - switchvals for LOD with k=(1,5) without events (15000)
+    - single event, no switchvals for LOD and HOD with k = 1 and k = 5 (15000)
+    - single event, with switchvals for LOD/HOD with k = 1 (15000)
+    - single event, with switchvals for k=1/5 with LOD (15000)
+    - switching with 3 events for LOD/HOD (20000)
+    - switching with 3 events for k = 1/5 (20000)

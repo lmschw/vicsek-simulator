@@ -2,12 +2,15 @@ import EnumNeighbourSelectionMode
 import EnumMetrics
 import ServiceSavedModel
 import EvaluatorMultiAvgComp
-import VicsekWithNeighbourSelection
 import ServicePreparation
 
-import DefaultValues as dv
-import AnimatorMatplotlib
-import Animator2D
+
+"""
+--------------------------------------------------------------------------------
+PURPOSE 
+Evaluates and visualises the results of multiple simulation runs.
+--------------------------------------------------------------------------------
+"""
 
 """
 mode = EnumNeighbourSelectionMode.NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE

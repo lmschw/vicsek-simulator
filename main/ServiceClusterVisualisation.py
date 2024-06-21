@@ -6,6 +6,10 @@ import ServiceMetric
 import AnimatorMatplotlib
 import Animator2D
 
+"""
+Service containing methods to visualise clusters
+"""
+
 def visualiseClusters(path, numberIntervals=-1, numberOfColouredClusters=-1, threshold=0.01, savePathVisualisation=None):
     """
     Visualises the clusters in a model saved in a JSON file. Colours are chosen randomly. Therefore, it can be wise not to
@@ -17,6 +21,8 @@ def visualiseClusters(path, numberIntervals=-1, numberOfColouredClusters=-1, thr
         - numberOfColouredClusters (int) [optional]: how many clusters should be coloured. 
             By default, all clusters are coloured (-1). If the supplied value is larger than the total number of clusters,
             all clusters are coloured
+        - threshold (float): the threshold for AgglomerativeClustering
+        - savePathVisualisation (string): the path where the resulting image should be saved
 
     Returns:
         Nothing. Renders the results.    

@@ -5,20 +5,21 @@ import pandas as pd
 import math
 import random
 
-import ServicePreparation
 import EvaluatorMultiAvgComp
 import ServiceSavedModel
-from EnumNeighbourSelectionMode import NeighbourSelectionMode
 from EnumMetrics import Metrics
 import ServiceMetric
 import ServiceGeneral
 import AnimatorScatter
 import AnimatorScatterMulti
 import DefaultValues as dv
-from matplotlib.ticker import MultipleLocator  # <- HERE
+from matplotlib.ticker import MultipleLocator
+
+"""
+Service containing static methods to create images.
+"""
 
 xOffsetsByNCol = {1: 0, 2: -0.5, 3: -0.8, 4: -1.5, 5: -2.2, 6: -3}
-
 
 def createMultiPlotFromImages(title, nRows, nCols, rowLabels, colLabels, imgPaths):
     """
@@ -53,7 +54,8 @@ def createMultiPlotFromImages(title, nRows, nCols, rowLabels, colLabels, imgPath
     plt.tight_layout()
     plt.show()
 
-def createMultiPlotFromScratch(xLabels, yLabels, data, index, title=None, xAxisLabel=None, yAxisLabel=None, savePath=None, xlim =(0,1000), ylim=None, legendRows=1):
+def createMultiPlotFromScratch(xLabels, yLabels, data, index, title=None, xAxisLabel=None, yAxisLabel=None, savePath=None, 
+                               xlim =(0,1000), ylim=None, legendRows=1):
     """
     Creates a plot with multiple subplots from data.
 
@@ -90,8 +92,6 @@ def createMultiPlotFromScratch(xLabels, yLabels, data, index, title=None, xAxisL
                 df.plot(ax=axes[x][y], legend=False)
 
     if nRows == 1:
-        #axes[0].set_title(xLabels[0], fontsize=fontsize)
-        #axes[0].set_xlim(xlim)
         for ax, col in zip(axes, xLabels):
             ax.set_title(col, fontsize=fontsize)
             ax.set_xlim(xlim)
@@ -115,10 +115,8 @@ def createMultiPlotFromScratch(xLabels, yLabels, data, index, title=None, xAxisL
     plt.legend(loc='upper center', bbox_to_anchor=(xOffset, -0.3),fancybox=False, shadow=False, ncol=len(index)/legendRows)
     if xAxisLabel != None:
         fig.supxlabel(xAxisLabel, va="bottom")
-        #plt.xlabel(xLabel)
     if yAxisLabel != None:
         fig.supylabel(yAxisLabel)
-        #plt.ylabel(yLabel)
     plt.tight_layout()
     if savePath != None:
         plt.savefig(savePath)
@@ -328,7 +326,25 @@ def createNeighbourScatterplotVideoMulti(positions, orientations, startTime=0, e
     # Display Animation
     #preparedAnimator.showAnimation()
 
-def createNeighourDistributionPlotDistance(positions, orientations, startTime=0, endTime=None, numberOfExampleParticles=5, selectRandomly=True, title=None, radius=10, savePath=None):
+def createNeighourDistributionPlotDistance(positions, orientations, startTime=0, endTime=None, numberOfExampleParticles=5, 
+                                           selectRandomly=True, title=None, radius=10, savePath=None):
+    """
+    Creates a plot that shows the distribution of all neighbours in terms of distance over time.
+
+    Params:
+        - positions (array of arrays of float): the position of all particles at every timestep
+        - orientations (array of arrays of float): the orientation of all particles at every timestep
+        - startTime (int) [optional]: the first timestep that should be included
+        - endTime (int) [optional]: the last timestep that should be included
+        - numberOfExampleParticles (int) [optional]: how many particles should be included in the plot
+        - selectRandomly (boolean) [optional]: should the plot be based on the first x particles or should they be selected randomly
+        - title (string) [optional]: the title for the plot
+        - radius (int) [optional]: the perception radius of the particles
+        - savePath (string) [optional]: where the plot should be saved
+
+    Returns:
+        Nothing.
+    """
     if selectRandomly == True:
         i = random.choice(range(len(positions[0])))
     else:
@@ -362,10 +378,30 @@ def createNeighourDistributionPlotDistance(positions, orientations, startTime=0,
     axes.yaxis.set_major_locator(MultipleLocator(1))  # <- HERE
     axes.xaxis.set_major_locator(MultipleLocator(5))  # <- HERE
     plt.show()
-    print(pointsForTimestep[0])
 
 # ANALYSIS
-def createSwitchAnalysisPlot(positions, orientations, switchValues, startTime=0, endTime=None, previousSteps=1, idx=None, radius=10, orderValue=5,savePath=None):
+def createSwitchAnalysisPlot(positions, orientations, switchValues, startTime=0, endTime=None, previousSteps=1, idx=None, 
+                             radius=10, orderValue=5,savePath=None):
+    """
+    Creates a plot showing the switch type value, the local order, the average previous local order, 
+    the average local order of all neighbours and the number of neighbours (normalised between 0 and 1).
+    Should be used only on small intervals for precise analysis of a single particle's decision making.
+
+    Params:
+        - positions (array of arrays of float): the position of every particle at every timestep
+        - orientaitons (array of arrays of float): the orientation of every particle at every timestep
+        - switchValues (array of arrays): the switch value of every particle at every timestep
+        - startTime (int) [optional]: the first timestep to be included
+        - endTime (int) [optional]: the last timestep to be included
+        - previousSteps (int) [optional]: the number of previous steps to be used for the average when comparing the current local order
+        - idx (int) [optional]: the index of the selected particle
+        - radius (float) [optional]: the perception radius of the particle
+        - orderValue (switchTypeValue) [optional]: the switch type value that will lead to order
+        - savePath (string) [optional]: where the plot should be saved
+
+    Returns:
+        Nothing.
+    """
     n = len(positions[0])
     if idx == None:
         i = random.choice(range(n))
@@ -422,8 +458,26 @@ def createSwitchAnalysisPlot(positions, orientations, switchValues, startTime=0,
         plt.savefig(savePath)
     plt.show()
 
-def createDensityVsRadiusPlot(type, thresholdType, threshold, radiusVals, densityVals, initialState="random", startValue=1, switchTypeOptions=(5,1), i=1, savePath=None):
-    
+def createDensityVsRadiusPlot(type, thresholdType, threshold, radiusVals, densityVals, initialState="random", startValue=1, 
+                              switchTypeOptions=(5,1), i=1, savePath=None):
+    """
+    Creates a matrix plot showing the minimum or maximum of the local order for every combination of density and radius provided.
+
+    Params:
+        - type ("minorder" or "maxorder"): if the minimum or maximum of the local order should be displayed
+        - thresholdType (ThresholdType): the type of threshold that is used for updating mechanism
+        - threshold (array of float): the thresholds for the updating mechanism
+        - radiusVals (array of floats): all considered values for the radius
+        - densityVals (array of floats): all considered values for the density
+        - initialState (string) [optional]: the initial state of the system: ordered or random
+        - startValue (switchTypeValue) [optional]: the switch type value assigned to all particles at the start of the simulation
+        - switchTypeOptions (tuple of switchTypeValues) [optional]: the two possible switch type values
+        - i (int) [optional]: the number of the simulation run
+        - savePath (string) [optional]: where the plot should be saved
+
+    Returns:
+        Nothing.
+    """
     metric = Metrics.ORDER
     pointsForDensity = []
     for density in densityVals:
@@ -433,6 +487,7 @@ def createDensityVsRadiusPlot(type, thresholdType, threshold, radiusVals, densit
             simulationData = []
             colours = []
             switchTypeValues = []
+            # TODO replace filename with something more generic
             modelParamsDensity, simulationDataDensity, coloursDensity, switchTypeValuesDensity = ServiceSavedModel.loadModels([
                                                                                                     f"test_domsize-var_ind_avg_{thresholdType.value}_{initialState}_st=K_o=5_do=1_s={startValue}_d={density}_n=100_r={radius}_LOD_noise=1_th={threshold}_psteps=100_bs=-1_e-_{i}.json",
 
@@ -476,7 +531,26 @@ def createDensityVsRadiusPlot(type, thresholdType, threshold, radiusVals, densit
     else:
         plt.show()
 
-def createThresholdVsRadiusPlot(type, thresholdType, density, thresholdVals, radiusVals, initialState="random", startValue=1, switchTypeOptions=(5,1), i=1, savePath=None):
+def createThresholdVsRadiusPlot(type, thresholdType, density, thresholdVals, radiusVals, initialState="random", startValue=1, 
+                                switchTypeOptions=(5,1), i=1, savePath=None):
+    """
+    Creates a matrix plot showing the minimum or maximum of the local order for every combination of thresholds and radius provided.
+
+    Params:
+        - type ("minorder" or "maxorder"): if the minimum or maximum of the local order should be displayed
+        - thresholdType (ThresholdType): the type of threshold that is used for updating mechanism
+        - density (float): the density within the domain
+        - thresholdVals (array of array of floats): all considered values for the threshold
+        - radiusVals (array of floats): all considered values for the radius
+        - initialState (string) [optional]: the initial state of the system: ordered or random
+        - startValue (switchTypeValue) [optional]: the switch type value assigned to all particles at the start of the simulation
+        - switchTypeOptions (tuple of switchTypeValues) [optional]: the two possible switch type values
+        - i (int) [optional]: the number of the simulation run
+        - savePath (string) [optional]: where the plot should be saved
+
+    Returns:
+        Nothing.
+    """
     metric = Metrics.ORDER
     pointsForDensity = []
     for threshold in thresholdVals:
@@ -529,7 +603,26 @@ def createThresholdVsRadiusPlot(type, thresholdType, density, thresholdVals, rad
     else:
         plt.show()
 
-def createDensityVsThresholdPlot(type, thresholdType, radius, thresholdVals, densityVals, initialState="random", startValue=1, switchTypeOptions=(5,1), i=1, savePath=None):
+def createDensityVsThresholdPlot(type, thresholdType, radius, thresholdVals, densityVals, initialState="random", startValue=1, 
+                                 switchTypeOptions=(5,1), i=1, savePath=None):
+    """
+    Creates a matrix plot showing the minimum or maximum of the local order for every combination of density and thresholds provided.
+
+    Params:
+        - type ("minorder" or "maxorder"): if the minimum or maximum of the local order should be displayed
+        - thresholdType (ThresholdType): the type of threshold that is used for updating mechanism
+        - radius (float): the perception radius of the particles
+        - thresholdVals (array of arrays of floats): all considered values for the threshold
+        - densityVals (array of floats): all considered values for the density
+        - initialState (string) [optional]: the initial state of the system: ordered or random
+        - startValue (switchTypeValue) [optional]: the switch type value assigned to all particles at the start of the simulation
+        - switchTypeOptions (tuple of switchTypeValues) [optional]: the two possible switch type values
+        - i (int) [optional]: the number of the simulation run
+        - savePath (string) [optional]: where the plot should be saved
+
+    Returns:
+        Nothing.
+    """
     metric = Metrics.ORDER
     pointsForDensity = []
     for density in densityVals:

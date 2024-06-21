@@ -1,16 +1,13 @@
 import time
+import numpy as np
 
-import VicsekWithNeighbourSelectionSwitchingCellBasedIndividuals
 import VicsekWithNeighbourSelectionSwitchingCellBasedIndividualsDurationFov
 import ServiceSavedModel
 from EnumNeighbourSelectionMode import NeighbourSelectionMode
 import ServicePreparation
 import ServiceGeneral
-from ExternalStimulusOrientationChangeEvent import ExternalStimulusOrientationChangeEvent
-from ExternalStimulusOrientationChangeEventDuration import ExternalStimulusOrientationChangeEventDuration
 from ExternalStimulusOrientationChangeEventDurationFov import ExternalStimulusOrientationChangeEventDurationFov
-import AnimatorMatplotlib
-import Animator2D
+
 
 from EnumSwitchType import SwitchType
 from EnumDistributionType import DistributionType
@@ -19,13 +16,19 @@ from EnumThresholdType import ThresholdType
 from EnumMovementPattern import MovementPattern
 
 
+"""
+--------------------------------------------------------------------------------
+PURPOSE 
+Creates data with occlusion active.
+--------------------------------------------------------------------------------
+"""
 domainSize = (100, 100)
 density = 0.05
 radius = 10
 neighbourSelectionMode = NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE
 
 percentage = 30
-angle = 180
+angle = np.pi
 
 areas = [(20, 20, 10)]
 tmax = 10000
@@ -76,7 +79,7 @@ for duration in [100]:
                         e1Start = 500
                         e2Start = 1000
                         e3Start = 1500
-                        for degreesOfVision in [360]:
+                        for degreesOfVision in [2*np.pi]:
 
                             event1 = ExternalStimulusOrientationChangeEventDurationFov(
                                             startTimestep=e1Start,

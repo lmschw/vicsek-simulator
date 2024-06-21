@@ -1,9 +1,4 @@
 # density-vs-noise
-import matplotlib.pyplot as plt
-import numpy as np
-from PIL import Image
-import pandas as pd
-import math
 import time
 
 import ServicePreparation
@@ -13,6 +8,13 @@ from EnumNeighbourSelectionMode import NeighbourSelectionMode
 from EnumMetrics import Metrics
 
 import ServiceImages
+
+"""
+--------------------------------------------------------------------------------
+PURPOSE 
+Creates image compilations
+--------------------------------------------------------------------------------
+"""
 
 def formatTime(timeInSecs):
     mins = int(timeInSecs / 60)

@@ -1,4 +1,3 @@
-import ServiceGeneral
 import ServiceSavedModel
 import ServicePreparation
 
@@ -6,6 +5,14 @@ import EvaluatorMultiAvgComp
 
 from EnumMetrics import Metrics
 from EnumNeighbourSelectionMode import NeighbourSelectionMode
+
+
+"""
+--------------------------------------------------------------------------------
+PURPOSE 
+Compares different threshold values.
+--------------------------------------------------------------------------------
+"""
 
 """
 metric = Metrics.ORDER
