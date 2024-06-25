@@ -36,3 +36,8 @@ def formatTime(timeInSecs):
         return f"{hours}h {mins}min {secs:.1f}s"
     return f"{mins}min {secs:.1f}s"
 
+def createListOfFilenamesForI(baseFilename, maxI, minI=0):
+    filenames = []
+    for i in range(minI, maxI):
+        filenames.append(baseFilename + f"_{i}")
+    return filenames

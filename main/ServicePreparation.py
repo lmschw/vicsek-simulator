@@ -115,7 +115,8 @@ def createOrderedInitialDistributionEquidistanced(domainSize, numberOfParticles,
     # set the position of every particle
     for x in np.arange(length/2, xLength, length):
         for y in np.arange(length/2, yLength, length):
-            positions[counter] = [x,y]
+            if counter < numberOfParticles:
+                positions[counter] = [x,y]
             counter += 1
 
     return positions, orientations

@@ -14,7 +14,8 @@ class VicsekWithNeighbourSelection(VicsekWithNeighbourSelectionSwitchingCellBase
                  radius=dv.DEFAULT_RADIUS, noise=dv.DEFAULT_NOISE, numberOfParticles=dv.DEFAULT_NUM_PARTICLES, 
                  k=dv.DEFAULT_K_NEIGHBOURS, showExample=dv.DEFAULT_SHOW_EXAMPLE_PARTICLE, numCells=None, 
                  switchType=None, switchValues=(None, None), thresholdType=None, orderThresholds=None, 
-                 numberPreviousStepsForThreshold=10, switchBlockedAfterEventTimesteps=-1, occlusionActive=False):
+                 numberPreviousStepsForThreshold=10, switchBlockedAfterEventTimesteps=-1, occlusionActive=False,
+                 switchingActive=True):
         """
         Initialize the model with all its parameters
 
@@ -37,7 +38,8 @@ class VicsekWithNeighbourSelection(VicsekWithNeighbourSelectionSwitchingCellBase
             - numberPreviousStepsForThreshold (int) [optional]: the number of previous timesteps that are considered for the average to be compared to the threshold value(s)
             - switchBlockedAfterEventTimesteps (int) [optional]: the number of timesteps that a selected particle will not be able to change its value
             - occlusionActive (boolean) [optional]: whether particles can see particles that are hidden behind other particles
-            
+            - switchingActive (boolean) [optional]: if False, the particles cannot update their values
+   
         Returns:
             No return.
         """
@@ -56,7 +58,8 @@ class VicsekWithNeighbourSelection(VicsekWithNeighbourSelectionSwitchingCellBase
                          orderThresholds=orderThresholds,
                          numberPreviousStepsForThreshold=numberPreviousStepsForThreshold,
                          switchBlockedAfterEventTimesteps=switchBlockedAfterEventTimesteps,
-                         occlusionActive=occlusionActive)
+                         occlusionActive=occlusionActive,
+                         switchingActive=switchingActive)
 
 
     def simulate(self, initialState=(None, None, None), dt=None, tmax=None, events=None):
@@ -136,7 +139,8 @@ class VicsekWithNeighbourSelection(VicsekWithNeighbourSelectionSwitchingCellBase
             # update switch type values
             previousLocalOrders = localOrders
             localOrders = self.__getLocalOrders(orientations, neighbourCandidates)
-            switchTypeValues = self.computeSwitchTypeValues(timestep=it, previousSwitchTypeValues=switchTypeValues, neighbours=neighbourCandidates, localOrders=localOrders, previousLocalOrders=previousLocalOrders)
+            if self.switchingActive == True:
+                switchTypeValues = self.computeSwitchTypeValues(timestep=it, previousSwitchTypeValues=switchTypeValues, neighbours=neighbourCandidates, localOrders=localOrders, previousLocalOrders=previousLocalOrders)
 
             # update colours
             colours = self.__colourGroups(switchTypeValues)
