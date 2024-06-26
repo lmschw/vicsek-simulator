@@ -51,7 +51,8 @@ class ExternalStimulusOrientationChangeEventDuration(ExternalStimulusOrientation
         self.movementPattern = movementPattern
         self.movementSpeed = movementSpeed
         self.orientation = orientation
-        self.startArea = areas
+        self.startOrientation = orientation # for later reference
+        self.startArea = areas # for later reference
 
         if self.distributionType == DistributionType.GLOBAL and self.movementPattern != MovementPattern.STATIC:
             raise Exception("Movement is not possible for global effects")
@@ -59,6 +60,25 @@ class ExternalStimulusOrientationChangeEventDuration(ExternalStimulusOrientation
     def getShortPrintVersion(self):
         return f"t{self.startTimestep}-{self.endTimestep}e{self.eventEffect.val}m{self.movementPattern.val}p{self.percentage}a{self.angle}dt{self.distributionType.value}a{self.startArea}"
 
+    def getParameterSummary(self):
+        summary = {"timestep": self.timestep,
+            "startTimestep": self.startTimestep,
+            "endTimestep": self.endTimestep,
+            "percentage": self.percentage,
+            "angle": self.angle,
+            "eventEffect": self.eventEffect.name,
+            "distributionType": self.distributionType.name,
+            "areas": self.areas,
+            "startAreas": self.startArea,
+            "movementPattern": self.movementPattern.name,
+            "movementSpeed": self.movementSpeed,
+            "orientation": self.orientation,
+            "startOrientation": self.startOrientation,
+            "domainSize": self.domainSize.tolist(),
+            "targetSwitchValue": self.targetSwitchValue,
+            }
+        return summary
+    
     def check(self, totalNumberOfParticles, currentTimestep, positions, orientations, switchValues, cells, cellDims, cellToParticleDistribution):
         """
         Checks if the event is triggered at the current timestep and executes it if relevant.

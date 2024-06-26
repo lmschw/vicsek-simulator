@@ -53,6 +53,18 @@ class ExternalStimulusOrientationChangeEvent:
     def getShortPrintVersion(self):
         return f"t{self.timestep}e{self.eventEffect.val}p{self.percentage}a{self.angle}dt{self.distributionType.value}a{self.areas}"
 
+    def getParameterSummary(self):
+        summary = {"timestep": self.timestep,
+            "percentage": self.percentage,
+            "angle": self.angle,
+            "eventEffect": self.eventEffect.name,
+            "distributionType": self.distributionType.name,
+            "areas": self.areas,
+            "domainSize": self.domainSize.tolist(),
+            "targetSwitchValue": self.targetSwitchValue,
+            }
+        return summary
+
     def check(self, totalNumberOfParticles, currentTimestep, positions, orientations, switchValues, cells, cellDims, cellToParticleDistribution):
         """
         Checks if the event is triggered at the current timestep and executes it if relevant.

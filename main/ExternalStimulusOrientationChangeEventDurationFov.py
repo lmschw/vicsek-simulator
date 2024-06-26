@@ -44,6 +44,26 @@ class ExternalStimulusOrientationChangeEventDurationFov(ExternalStimulusOrientat
         super().__init__(startTimestep, endTimestep, percentage, angle, eventEffect, movementPattern, movementSpeed, perceptionRadius, distributionType, areas, orientation, domainSize, targetSwitchValue)      
         self.degreesOfVision = degreesOfVision  
 
+    def getParameterSummary(self):
+        summary = {"timestep": self.timestep,
+            "startTimestep": self.startTimestep,
+            "endTimestep": self.endTimestep,
+            "percentage": self.percentage,
+            "angle": self.angle,
+            "eventEffect": self.eventEffect.name,
+            "distributionType": self.distributionType.name,
+            "areas": self.areas,
+            "startAreas": self.startArea,
+            "movementPattern": self.movementPattern.name,
+            "movementSpeed": self.movementSpeed,
+            "orientation": self.orientation,
+            "startOrientation": self.startOrientation,
+            "domainSize": self.domainSize.tolist(),
+            "targetSwitchValue": self.targetSwitchValue,
+            "degreesOfVision": self.degreesOfVision
+            }
+        return summary
+    
     def determineCandidates(self, positions, orientations, cells, cellDims, cellToParticleDistribution):
         """
         Determines which particles could potentially be affected based on the distributionType and the areas if relevant.

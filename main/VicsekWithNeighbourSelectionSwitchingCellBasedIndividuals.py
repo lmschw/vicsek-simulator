@@ -108,6 +108,12 @@ class VicsekWithNeighbourSelection:
             summary["orderValue"] = self.orderSwitchValue
             summary["disorderValue"] = self.disorderSwitchValue
 
+        if self.events:
+            eventsSummary = []
+            for event in self.events:
+                eventsSummary.append(event.getParameterSummary())
+            summary["events"] = eventsSummary
+
         if asString:
             strPrep = [tup[0] + ": " + tup[1] for tup in summary.values()]
             return ", ".join(strPrep)
@@ -152,6 +158,9 @@ class VicsekWithNeighbourSelection:
         Returns:
             times, positionsHistory, orientationsHistory, coloursHistory, switchTypeValueHistory. All of them as ordered arrays so that they can be matched by index matching
         """
+
+        if any(events):
+            self.events = events
 
         # Preparations and setting of parameters if they are not passed to the method
         positions, orientations, switchTypeValues = initialState

@@ -77,6 +77,12 @@ class VicsekWithNeighbourSelection(VicsekWithNeighbourSelectionSwitchingCellBase
             times, positionsHistory, orientationsHistory, coloursHistory, switchTypeValuesHistory. All of them as ordered arrays so that they can be matched by index matching
         """
 
+        if events == None:
+            self.events = None
+        else:
+            self.events = events
+
+
         # Preparations and setting of parameters if they are not passed to the method
         positions, orientations, switchTypeValues = initialState
         
