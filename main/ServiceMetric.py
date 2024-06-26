@@ -350,3 +350,39 @@ def getLocalOrderGrid(simulationData, domainSize):
                 if len(candOrientations) > 0:
                     localOrderGrid[t][x][y] = computeOrder(candOrientations)
     return timesteps, localOrderGrid
+
+def checkTurnSuccess(orientations, fixedAngle, noise, eventStartTimestep, interval=100):
+    """
+    Checks if the event has managed to make the whole swarm align to the new angle or if the defecting group has been
+    reabsorbed.
+    Is only really useful for EventEffect.ALIGN_TO_FIXED_ANGLE (DISTANT).
+
+    Params:
+        - orientations (array of (u,v)-coordinates): the orientation of every particle at every timestep
+        - fixedAngle (angle in radians): the angle to which the affected particles have turned
+        - noise (float): the noise level in the domain impacting the actual orientations
+        - eventStartstep (int): the timestep at which the event first occurs
+        - eventDuration (int) [optional]: the number of timesteps that need to pass before comparing. By default 100.
+
+    Returns:
+        Boolean signifying whether the whole swarm has managed to align to the fixed angle.
+    """
+    if eventStartTimestep == 0:
+        raise Exception("Cannot be used if there is no previous timestep for comparison")
+    if eventStartTimestep + interval > len(orientations[0]):
+        interval -= 1
+
+    orientationsBefore = orientations[eventStartTimestep-1]
+    orientationsExpected = [ServiceOrientations.computeUvCoordinates(fixedAngle) for orient in orientationsBefore]
+    orientationsAfter = orientations[eventStartTimestep+interval]
+    if (1-computeOrder(orientationsAfter)) <= noise: # if the swarm is aligned
+        before = [ServiceOrientations.normaliseAngle(ServiceOrientations.computeAngleForOrientation(orientationsBefore[i])) for i in range(0, len(orientationsBefore))]
+        after = [ServiceOrientations.normaliseAngle(ServiceOrientations.computeAngleForOrientation(orientationsAfter[i])) for i in range(0, len(orientationsAfter))]
+        expected = [ServiceOrientations.normaliseAngle(ServiceOrientations.computeAngleForOrientation(orientationsExpected[i])) for i in range(0, len(orientationsExpected))]
+
+        # if the average new angle is closer to the expected angle and the difference between the expected and the new angles can be explained by noise, the turn was successful
+        if np.absolute(np.average(expected)-np.average(after)) < np.absolute(np.average(before)-np.average(after)) and np.absolute(np.average(expected)-np.average(after)) <= noise:
+            return True
+
+    return False
+
