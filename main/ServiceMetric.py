@@ -5,6 +5,7 @@ from collections import defaultdict
 from sklearn.cluster import AgglomerativeClustering
 
 from EnumMetrics import Metrics
+import ServiceOrientations
 
 """
 Service containing static methods to handle metrics.
