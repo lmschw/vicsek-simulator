@@ -52,7 +52,7 @@ e2Start = 10000
 e3Start = 15000
 
 noisePercentages = [1] # to run again with other noise percentages, make sure to comment out anything that has fixed noise (esp. local)
-densities = [0.09]
+densities = [0.01, 0.03, 0.05]
 numbersOfPreviousSteps = [50]
 durations = [1, 100, 1000]
 ks = [1,5]
@@ -93,48 +93,8 @@ iStop = 11
 for density in densities:
     n = ServicePreparation.getNumberOfParticlesForConstantDensity(density=density, domainSize=domainSize)   
     # ---neighbourSelectionMode only (5000) for all 6 modes
-    """
+    
     tmax = 5000
-    switchType = SwitchType.NEIGHBOUR_SELECTION_MODE
-    orderValue, disorderValue = getOrderDisorderValue(switchType)
-    k = 1
-
-    for i in range(iStart,iStop):
-        for noisePercentage in noisePercentages:
-            noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(noisePercentage)
-            for neighbourSelectionMode in neighbourSelectionModes:
-                for initialStateString in ["ordered", "random"]:
-                    startValue = neighbourSelectionMode
-                    startRun = time.time()
-
-                    if initialStateString == "ordered":
-                        initialState = ServicePreparation.createOrderedInitialDistributionEquidistanced(domainSize, n)
-
-                    simulator = VicsekWithNeighbourSelectionSwitchingCellBased.VicsekWithNeighbourSelection(
-                                                                                    neighbourSelectionModel=startValue, 
-                                                                                    domainSize=domainSize, 
-                                                                                    numberOfParticles=n, 
-                                                                                    k=k, 
-                                                                                    noise=noise, 
-                                                                                    radius=radius,
-                                                                                    speed=speed,
-                                                                                    )
-                    if initialStateString == "ordered":
-                        simulationData, colours = simulator.simulate(tmax=tmax, initialState=initialState)
-                    else:
-                        simulationData, colours = simulator.simulate(tmax=tmax)
-
-                    # Save model values for future use
-                    savePath = f"global_noev_{initialStateString}_switchType={switchType.value}_st={startValue.value}_d={density}_n={n}_noise={noisePercentage}_{i}"
-                    ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
-
-                    endRun = time.time()
-                    ServiceGeneral.logWithTime(f"Completed 'NO EVENT - GLOBAL - NEIGHBOUR SELECTION MODE' - i = {i}, noise = {noisePercentage}%, nsm={neighbourSelectionMode.name}, init = {initialStateString} in {ServiceGeneral.formatTime(endRun-startRun)}")
-    """
-    # ---- k only (5000) for all 6 modes and k = 1, 5
-    tmax = 5000
-    switchType = SwitchType.K
-    orderValue, disorderValue = getOrderDisorderValue(switchType)
 
     for i in range(iStart,iStop):
         for noisePercentage in noisePercentages:
@@ -409,14 +369,14 @@ for density in densities:
 
                 endRun = time.time()
                 ServiceGeneral.logWithTime(f"Completed noev ksw i={i}, init={initialStateString} in {ServiceGeneral.formatTime(endRun-startRun)}")
-        """
+        
         for duration in durations:
-            # --- single event, no switchvals for LOD and HOD with k = 1 and k = 5 (15000)        
+            # --- single event, no switchvals for all modes with k = 1 and k = 5 (15000)        
             tmax = 15000
             noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(1)
 
             for i in range(iStart,iStop):
-                for neighbourSelectionMode in localNeighbourSelectionmodes:
+                for neighbourSelectionMode in neighbourSelectionModes:
                     for k in ks:
                         for initialStateString in ["ordered", "random"]:
                             startValue = neighbourSelectionMode
@@ -432,7 +392,6 @@ for density in densities:
                                                     perceptionRadius=radius,
                                                     distributionType=distributionType,
                                                     areas=areas,
-                                                    limitVisibilityToRadius=True,
                                                     )
 
 
@@ -498,7 +457,6 @@ for density in densities:
                                             perceptionRadius=radius,
                                             distributionType=distributionType,
                                             areas=areas,
-                                            limitVisibilityToRadius=True,
                                             )
 
 
@@ -567,7 +525,6 @@ for density in densities:
                                             perceptionRadius=radius,
                                             distributionType=distributionType,
                                             areas=areas,
-                                            limitVisibilityToRadius=True,
                                             )
 
 
@@ -637,7 +594,6 @@ for density in densities:
                                             perceptionRadius=radius,
                                             distributionType=distributionType,
                                             areas=areas,
-                                            limitVisibilityToRadius=True,
                                             )
                             
                             event2 = ExternalStimulusOrientationChangeEventDuration(
@@ -651,7 +607,6 @@ for density in densities:
                                             perceptionRadius=radius,
                                             distributionType=distributionType,
                                             areas=areas,
-                                            limitVisibilityToRadius=True,
                                             )
                             event3 = ExternalStimulusOrientationChangeEventDuration(
                                             startTimestep=e3Start,
@@ -664,7 +619,6 @@ for density in densities:
                                             perceptionRadius=radius,
                                             distributionType=distributionType,
                                             areas=areas,
-                                            limitVisibilityToRadius=True,
                                             )
 
                             events = [event1, event2, event3]
@@ -703,7 +657,8 @@ for density in densities:
                             endRun = time.time()
                             ServiceGeneral.logWithTime(f"Completed 3e nsm i={i}, eventEffectOrder={eventEffectOrder.name}, eventEffectDisorder={eventEffectDisorder.name}, duration={duration}, init={initialStateString} in {ServiceGeneral.formatTime(endRun-startRun)}")
 
-            # --- switching with 3 events for k = 1/5 (20000)            tmax = 20000
+            # --- switching with 3 events for k = 1/5 (20000)            
+            tmax = 20000
             switchType = SwitchType.K
             orderValue, disorderValue = getOrderDisorderValue(switchType)
             neighbourSelectionMode = NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE
@@ -732,7 +687,6 @@ for density in densities:
                                             perceptionRadius=radius,
                                             distributionType=distributionType,
                                             areas=areas,
-                                            limitVisibilityToRadius=True,
                                             )
                             
                             event2 = ExternalStimulusOrientationChangeEventDuration(
@@ -746,7 +700,6 @@ for density in densities:
                                             perceptionRadius=radius,
                                             distributionType=distributionType,
                                             areas=areas,
-                                            limitVisibilityToRadius=True,
                                             )
                             event3 = ExternalStimulusOrientationChangeEventDuration(
                                             startTimestep=e3Start,
@@ -759,7 +712,6 @@ for density in densities:
                                             perceptionRadius=radius,
                                             distributionType=distributionType,
                                             areas=areas,
-                                            limitVisibilityToRadius=True,
                                             )
 
                             events = [event1, event2, event3]
@@ -797,4 +749,4 @@ for density in densities:
 
                             endRun = time.time()
                             ServiceGeneral.logWithTime(f"Completed 3e K i={i}, eventEffectOrder={eventEffectOrder.name}, eventEffectDisorder={eventEffectDisorder.name}, duration={duration}, init={initialStateString} in {ServiceGeneral.formatTime(endRun-startRun)}")
-            """
+            
