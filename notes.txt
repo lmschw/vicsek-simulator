@@ -210,3 +210,17 @@ verify that the following simulations are included in densityRun:
 
 Streams:
 https://stackoverflow.com/questions/54618040/process-a-sequence-in-a-java-util-stream-manner-in-python
+
+TODO:
+    - all mechanisms globally in isolation
+    - switching global with modes
+    - switching global with K
+    - all mechanisms locally without events or switchvals
+    - all mechanisms without events or switchvals
+    - all mechanism with events no switchvals
+    - all mechanims no event with switchvals
+    - all mechanisms with events and switchvals
+
+    - make sure turn doesn't happen for ALL and DISTANT
+
+    - check all papers for data (to potentially replicate)
