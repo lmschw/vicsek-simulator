@@ -206,3 +206,7 @@ verify that the following simulations are included in densityRun:
     - single event, with switchvals for k=1/5 with LOD (15000)
     - switching with 3 events for LOD/HOD (20000)
     - switching with 3 events for k = 1/5 (20000)
+
+
+Streams:
+https://stackoverflow.com/questions/54618040/process-a-sequence-in-a-java-util-stream-manner-in-python
