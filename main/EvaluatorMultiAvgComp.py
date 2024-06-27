@@ -233,10 +233,10 @@ class EvaluatorMultiAvgComp(object):
         df.plot(ylim=(0,1.1))
     def __createAverageNumberNeighboursPlot(self, data, labels):
         """
-        Creates a bar plot for the number of clusters in the system for every model at every timestep
+        Creates a line plot for the average number of neighbours in the system for every model at every timestep
 
         Parameters:
-            - data (dictionary): a dictionary with the time step as its key and a list of the number of clusters for every model as its value
+            - data (dictionary): a dictionary with the time step as its key and a list of the average number of neighbours for every model as its value
             - labels (list of strings): labels for the models
             
         Returns:
@@ -248,11 +248,10 @@ class EvaluatorMultiAvgComp(object):
 
     def __createMinAvgMaxNumberNeighboursPlot(self, data):
         """
-        Creates a line plot overlaying the percentage of particles choosing the order switch type value and the order value. 
+        Creates a line plot overlaying minimum, average and maximum number of neighbours.
 
         Parameters:
-            - data (dictionary): a dictionary with the time step as its key and a list of the number of clusters for every model as its value
-            - labels (list of strings): labels for the models
+            - data (dictionary): a dictionary with the time step as its key and a list of the min, avg and max number of neighbours for every model as its value
             
         Returns:
             Nothing.

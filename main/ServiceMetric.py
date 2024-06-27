@@ -392,6 +392,16 @@ def checkTurnSuccess(orientations, fixedAngle, noise, eventStartTimestep, interv
     return False
 
 def getMinAvgMaxNumberOfNeighbours(positions, radius):
+    """
+    Determines the minimum, average and maximum of neighbours perceived by the particles
+
+    Params:
+        - positions (array of (x,y)-coordinates): the current positions of all particles
+        - radius (float): the perception radius of the particles
+
+    Returns:
+        3 floats representing the minimum, average and maximum number of neighbours
+    """
     neighbourNumbersArray = np.zeros(len(positions))
     for i in range(len(positions)):
         neighbours = findNeighbours(i, positions, radius)
