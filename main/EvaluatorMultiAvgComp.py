@@ -64,6 +64,12 @@ class EvaluatorMultiAvgComp(object):
                     idx = m * self.evaluationTimestepInterval
                     dd[idx].append(ddi[idx][0][0])
                     dd[idx].append(ddi[idx][0][1])
+            elif self.metric == EnumMetrics.Metrics.MIN_AVG_MAX_NUMBER_NEIGHBOURS:
+                for m in range(len(ddi)):
+                    idx = m * self.evaluationTimestepInterval
+                    dd[idx].append(ddi[idx][0][0])
+                    dd[idx].append(ddi[idx][0][1])
+                    dd[idx].append(ddi[idx][0][2])
             else:
                 for m in range(len(ddi)):
                     idx = m * self.evaluationTimestepInterval
@@ -103,6 +109,10 @@ class EvaluatorMultiAvgComp(object):
                 self.__createSwitchValuePlot(data, labels)
             case EnumMetrics.Metrics.DUAL_OVERLAY_ORDER_AND_PERCENTAGE:
                 self.__createDualOrderPlot(data)
+            case EnumMetrics.Metrics.AVERAGE_NUMBER_NEIGHBOURS:
+                self.__createAverageNumberNeighboursPlot(data, labels)
+            case EnumMetrics.Metrics.MIN_AVG_MAX_NUMBER_NEIGHBOURS:
+                self.__createMinAvgMaxNumberNeighboursPlot(data)
 
         if xLabel != None:
             plt.xlabel(xLabel)
@@ -221,4 +231,32 @@ class EvaluatorMultiAvgComp(object):
         sorted(data.items())
         df = pd.DataFrame(data, index=["order", "percentage of order value"]).T
         df.plot(ylim=(0,1.1))
-    
+    def __createAverageNumberNeighboursPlot(self, data, labels):
+        """
+        Creates a bar plot for the number of clusters in the system for every model at every timestep
+
+        Parameters:
+            - data (dictionary): a dictionary with the time step as its key and a list of the number of clusters for every model as its value
+            - labels (list of strings): labels for the models
+            
+        Returns:
+            Nothing.
+        """
+        sorted(data.items())
+        df = pd.DataFrame(data, index=labels).T
+        df.plot()
+
+    def __createMinAvgMaxNumberNeighboursPlot(self, data):
+        """
+        Creates a line plot overlaying the percentage of particles choosing the order switch type value and the order value. 
+
+        Parameters:
+            - data (dictionary): a dictionary with the time step as its key and a list of the number of clusters for every model as its value
+            - labels (list of strings): labels for the models
+            
+        Returns:
+            Nothing.
+        """
+        sorted(data.items())
+        df = pd.DataFrame(data, index=["min", "avg", "max"]).T
+        df.plot()

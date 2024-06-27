@@ -55,7 +55,11 @@ def evaluateSingleTimestep(positions, orientations, metric, radius=None, thresho
             order = computeOrder(orientations)
             orderCount, _ = getNumbersPerSwitchTypeValue(switchTypeValues, switchTypeOptions)
             return order, orderCount/100 # normalise to fit with order
-
+        case Metrics.AVERAGE_NUMBER_NEIGHBOURS:
+            _, avg, _ =  getMinAvgMaxNumberOfNeighbours(positions, radius)
+            return avg
+        case Metrics.MIN_AVG_MAX_NUMBER_NEIGHBOURS:
+            return getMinAvgMaxNumberOfNeighbours(positions, radius)
      
 def computeOrder(orientations):
     """
@@ -387,3 +391,13 @@ def checkTurnSuccess(orientations, fixedAngle, noise, eventStartTimestep, interv
 
     return False
 
+def getMinAvgMaxNumberOfNeighbours(positions, radius):
+    neighbourNumbersArray = np.zeros(len(positions))
+    for i in range(len(positions)):
+        neighbours = findNeighbours(i, positions, radius)
+        neighbourNumbersArray[i] = len(neighbours)
+    neighbourNumbersArray.sort()
+    zeros = len([val for val in neighbourNumbersArray if val == 0])
+    if zeros > 0:
+        print(zeros)
+    return np.min(neighbourNumbersArray), np.average(neighbourNumbersArray), np.max(neighbourNumbersArray)

@@ -35,13 +35,15 @@ class Evaluator(object):
                       EnumMetrics.Metrics.CLUSTER_SIZE, 
                       EnumMetrics.Metrics.CLUSTER_NUMBER_OVER_PARTICLE_LIFETIME,
                       EnumMetrics.Metrics.CLUSTER_CONSISTENCY_AVERAGE_STEPS,
-                      EnumMetrics.Metrics.CLUSTER_CONSISTENCY_NUMBER_OF_CLUSTER_CHANGES]:
+                      EnumMetrics.Metrics.CLUSTER_CONSISTENCY_NUMBER_OF_CLUSTER_CHANGES,
+                      EnumMetrics.Metrics.AVERAGE_NUMBER_NEIGHBOURS,
+                      EnumMetrics.Metrics.MIN_AVG_MAX_NUMBER_NEIGHBOURS]:
             self.radius = modelParams["radius"]
         else:
             self.radius = None
             
 
-    def evaluate(self, saveTimestepsResultsPath=None):
+    def evaluate(self, startTimestep=0, endTimestep=None, saveTimestepsResultsPath=None):
         """
         Evaluates the model according to the metric specified for the evaluator.
 
@@ -51,11 +53,13 @@ class Evaluator(object):
         if len(self.time) < 1:
             print("ERROR: cannot evaluate without simulationData. Please supply simulationData, modelParams and metric at Evaluator instantiation.")
             return
+        if endTimestep == None:
+            endTimestep = len(self.time)
         valuesPerTimeStep = {}
         for i in range(len(self.time)):
             #if i % 100 == 0:
                 #print(f"evaluating {i}/{len(self.time)}")
-            if i % self.evaluationTimestepInterval == 0:
+            if i % self.evaluationTimestepInterval == 0 and i >= startTimestep and i <= endTimestep:
                 #if self.switchTypeValues != None:
                 if any(ele is None for ele in self.switchTypeValues):
                     valuesPerTimeStep[self.time[i]] = ServiceMetric.evaluateSingleTimestep(self.positions[i], self.orientations[i], self.metric, self.radius, threshold=self.threshold)

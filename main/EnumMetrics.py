@@ -11,4 +11,6 @@ class Metrics(str, Enum):
     CLUSTER_CONSISTENCY_AVERAGE_STEPS = "clusterconst_steps",
     CLUSTER_CONSISTENCY_NUMBER_OF_CLUSTER_CHANGES = "clusterconst_changes",
     ORDER_VALUE_PERCENTAGE = "numorder", # number of order particles
-    DUAL_OVERLAY_ORDER_AND_PERCENTAGE = "dual-order-num"
+    DUAL_OVERLAY_ORDER_AND_PERCENTAGE = "dual-order-num",
+    AVERAGE_NUMBER_NEIGHBOURS ="avg_num_neighbours",
+    MIN_AVG_MAX_NUMBER_NEIGHBOURS = "min_avg_max_num_neighbours"
