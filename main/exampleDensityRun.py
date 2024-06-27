@@ -30,7 +30,7 @@ def getOrderDisorderValue(switchType):
         case SwitchType.NEIGHBOUR_SELECTION_MODE:
             return NeighbourSelectionMode.FARTHEST, NeighbourSelectionMode.NEAREST
 
-radius = 10
+radius = 20
 speed = 1
 
 angle = np.pi
