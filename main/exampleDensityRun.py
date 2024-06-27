@@ -30,7 +30,6 @@ def getOrderDisorderValue(switchType):
         case SwitchType.NEIGHBOUR_SELECTION_MODE:
             return NeighbourSelectionMode.FARTHEST, NeighbourSelectionMode.NEAREST
 
-radius = 20
 speed = 1
 
 angle = np.pi
@@ -42,7 +41,6 @@ threshold = [0.1]
 #domainSize = ServicePreparation.getDomainSizeForConstantDensity(0.09, 100)
 domainSize = (100, 100)
 
-areas = [(domainSize[0]/2, domainSize[1]/2, radius)]
 distTypeString = "lssmid"
 distributionType = DistributionType.LOCAL_SINGLE_SITE
 percentage = 100
@@ -92,6 +90,9 @@ iStop = 11
 
 for density in densities:
     n = ServicePreparation.getNumberOfParticlesForConstantDensity(density=density, domainSize=domainSize)   
+    radius = ServicePreparation.getRadiusToSeeOnAverageNNeighbours(max(ks), density=density)
+    areas = [(domainSize[0]/2, domainSize[1]/2, radius)]
+
     # ---neighbourSelectionMode only (5000) for all 6 modes
     
     tmax = 5000
@@ -123,7 +124,7 @@ for density in densities:
                             simulationData, colours = simulator.simulate(tmax=tmax)
 
                         # Save model values for future use
-                        savePath = f"global_noev_{initialStateString}_switchType={switchType.value}_st={startValue}_LOD_d={density}_n={n}_noise={noisePercentage}_{i}"
+                        savePath = f"global_noev_nosw_{initialStateString}_nsm={neighbourSelectionMode.value}_k={k}_d={density}_n={n}_r={radius}_noise={noisePercentage}_{i}"
                         ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
 
                         endRun = time.time()
@@ -170,7 +171,7 @@ for density in densities:
 
                         eventsString = "_".join([f"{ev[0]}-{ev[1].value}" for ev in switches])
                         # Save model values for future use
-                        savePath = f"global_switch_{initialStateString}_switchType={switchType.value}_st={startValue.value}_o={orderValue.value}_do={disorderValue.value}_d={density}_n={n}_noise={noisePercentage}_{eventsString}_{i}"
+                        savePath = f"global_switch_{initialStateString}_switchType={switchType.value}_st={startValue.value}_o={orderValue.value}_do={disorderValue.value}_d={density}_n={n}_r={radius}_noise={noisePercentage}_{eventsString}_{i}"
                         ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
 
                         endRun = time.time()
@@ -217,7 +218,7 @@ for density in densities:
 
                         eventsString = "_".join([f"{ev[0]}-{ev[1]}" for ev in switches])
                         # Save model values for future use
-                        savePath = f"global_switch_{initialStateString}_switchType={switchType.value}_st={startValue}_o={orderValue}_do={disorderValue}_d={density}_n={n}_noise={noisePercentage}_{eventsString}_{i}"
+                        savePath = f"global_switch_{initialStateString}_switchType={switchType.value}_st={startValue}_o={orderValue}_do={disorderValue}_d={density}_n={n}_r={radius}_noise={noisePercentage}_{eventsString}_{i}"
                         ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
 
                         endRun = time.time()
@@ -261,7 +262,7 @@ for density in densities:
 
                         # Save model values for future use
                         eventsString = f""
-                        savePath = f"local_noev_nosw_{initialStateString}_st={startValue.value}_d={density}_n={n}_k={k}_noise={noisePercentage}_{eventsString}_{i}"
+                        savePath = f"local_noev_nosw_{initialStateString}_st={startValue.value}_d={density}_n={n}_r={radius}_k={k}_noise={noisePercentage}_{eventsString}_{i}"
                         ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
 
                         endRun = time.time()
@@ -312,7 +313,7 @@ for density in densities:
 
                 # Save model values for future use
                 eventsString = ""
-                savePath = f"local_noev_{initialStateString}_switchType={switchType.value}_st={startValue.value}_o={orderValue.value}_do={disorderValue.value}_d={density}_n={n}_k={k}_noise={noisePercentage}_{eventsString}_{i}"
+                savePath = f"local_noev_{initialStateString}_switchType={switchType.value}_st={startValue.value}_o={orderValue.value}_do={disorderValue.value}_d={density}_n={n}_r={radius}_k={k}_noise={noisePercentage}_{eventsString}_{i}"
                 ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
 
                 endRun = time.time()
@@ -363,7 +364,7 @@ for density in densities:
 
                 # Save model values for future use
                 eventsString = ""
-                savePath = f"local_noev_{initialStateString}_switchType={switchType.value}_st={startValue}_o={orderValue}_do={disorderValue}_d={density}_n={n}_nsm={neighbourSelectionMode.value}_noise={noisePercentage}_{eventsString}_{i}"
+                savePath = f"local_noev_{initialStateString}_switchType={switchType.value}_st={startValue}_o={orderValue}_do={disorderValue}_d={density}_n={n}_r={radius}_nsm={neighbourSelectionMode.value}_noise={noisePercentage}_{eventsString}_{i}"
                 print(savePath)
                 ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
 
@@ -423,7 +424,7 @@ for density in densities:
 
                                     # Save model values for future use
                                     eventsString = f"{event1.timestep}-{event1.eventEffect.val}"
-                                    savePath = f"local_1e_nosw_{initialStateString}_st={startValue.value}__d={density}_n={n}_k={k}_noise={noisePercentage}_{eventsString}_{i}"
+                                    savePath = f"local_1e_nosw_{initialStateString}_st={startValue.value}__d={density}_n={n}_r={radius}_k={k}_noise={noisePercentage}_{eventsString}_{i}"
                                     ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
 
                                     endRun = time.time()
@@ -489,7 +490,7 @@ for density in densities:
 
                             # Save model values for future use
                             eventsString = f"{event1.timestep}-{event1.eventEffect.val}"
-                            savePath = f"local_1e_{initialStateString}_switchType={switchType.value}_st={startValue.value}_o={orderValue.value}_do={disorderValue.value}_d={density}_n={n}_k={k}_noise={noisePercentage}_{eventsString}_{i}"
+                            savePath = f"local_1e_{initialStateString}_switchType={switchType.value}_st={startValue.value}_o={orderValue.value}_do={disorderValue.value}_d={density}_n={n}_r={radius}_k={k}_noise={noisePercentage}_{eventsString}_{i}"
                             ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
 
                             endRun = time.time()
@@ -558,7 +559,7 @@ for density in densities:
                             # Save model values for future use
                             #eventsString = "_".join([event.getShortPrintVersion() for event in events])
                             eventsString = f"{event1.timestep}-{event1.eventEffect.val}"
-                            savePath = f"local_1e_{initialStateString}_switchType={switchType.value}_st={startValue}_o={orderValue}_do={disorderValue}_LOD_d={density}_n={n}_noise={noisePercentage}_{eventsString}_{i}"
+                            savePath = f"local_1e_{initialStateString}_switchType={switchType.value}_st={startValue}_o={orderValue}_do={disorderValue}_nsm={neighbourSelectionMode.value}_d={density}_n={n}_r={radius}_noise={noisePercentage}_{eventsString}_{i}"
                             ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
 
                             endRun = time.time()
@@ -651,7 +652,7 @@ for density in densities:
                             # Save model values for future use
                             #eventsString = "_".join([event.getShortPrintVersion() for event in events])
                             eventsString = f"{event1.timestep}-{event1.eventEffect.val}_{event2.timestep}-{event2.eventEffect.val}_{event3.timestep}-{event3.eventEffect.val}"
-                            savePath = f"local_3e_{initialStateString}_switchType={switchType.value}_st={startValue.value}_o={orderValue.value}_do={disorderValue.value}_d={density}_n={n}_k={k}_noise={noisePercentage}_{eventsString}_{i}"
+                            savePath = f"local_3e_{initialStateString}_switchType={switchType.value}_st={startValue.value}_o={orderValue.value}_do={disorderValue.value}_d={density}_n={n}_r={radius}_k={k}_noise={noisePercentage}_{eventsString}_{i}"
                             ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
 
                             endRun = time.time()
@@ -744,7 +745,7 @@ for density in densities:
                             # Save model values for future use
                             #eventsString = "_".join([event.getShortPrintVersion() for event in events])
                             eventsString = f"{event1.timestep}-{event1.eventEffect.val}_{event2.timestep}-{event2.eventEffect.val}_{event3.timestep}-{event3.eventEffect.val}"
-                            savePath = f"local_3e_{initialStateString}_switchType={switchType.value}_st={startValue}_o={orderValue}_do={disorderValue}_LOD_d={density}_n={n}_k={k}_noise={noisePercentage}_{eventsString}_{i}"
+                            savePath = f"local_3e_{initialStateString}_switchType={switchType.value}_st={startValue}_o={orderValue}_do={disorderValue}_nsm={neighbourSelectionMode.value}_d={density}_n={n}_r={radius}_k={k}_noise={noisePercentage}_{eventsString}_{i}"
                             ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
 
                             endRun = time.time()

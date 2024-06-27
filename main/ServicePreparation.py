@@ -55,6 +55,21 @@ def getNoiseAmplitudeValueForPercentage(percentage):
     """
     return 2 * np.pi * (percentage/100)
 
+def getRadiusToSeeOnAverageNNeighbours(n, density):
+    """
+    Computes the radius that will ensure that every particle sees at least n other particles
+    if the density is equally distributed in the whole domain.
+
+    Params:
+        - n (int): the number of neighbours that the particle should be able to see
+        - density (float): the domain density (assumed to be equally distributed)
+
+    Returns:
+        An integer representing the perception radius of each particle
+    """
+    area = n/density
+    return np.ceil(np.sqrt(area))
+
 def createOrderedInitialDistributionEquidistancedIndividual(startSwitchTypeValue, domainSize, numberOfParticles, angleX=None, angleY=None):
     """
     Creates an ordered, equidistanced initial distribution of particles in a domain ready for use in individual decision scenarios. 
