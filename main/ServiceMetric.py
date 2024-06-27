@@ -397,7 +397,4 @@ def getMinAvgMaxNumberOfNeighbours(positions, radius):
         neighbours = findNeighbours(i, positions, radius)
         neighbourNumbersArray[i] = len(neighbours)
     neighbourNumbersArray.sort()
-    zeros = len([val for val in neighbourNumbersArray if val == 0])
-    if zeros > 0:
-        print(zeros)
     return np.min(neighbourNumbersArray), np.average(neighbourNumbersArray), np.max(neighbourNumbersArray)
