@@ -122,6 +122,75 @@ def createMultiPlotFromScratch(xLabels, yLabels, data, index, title=None, xAxisL
         plt.savefig(savePath)
     plt.show()
 
+    
+def createMatrixOfPlotsFromScratch(numberLevels, xLabels, yLabels, data, index, title=None, xAxisLabel=None, yAxisLabel=None, savePath=None, 
+                               xlim =(0,1000), ylim=None, legendRows=1):
+    """
+    Creates a plot with multiple subplots from data.
+
+    Params:
+        - xLabels (array of strings): the labels for the x-axis
+        - yLabels (array of strings): the labels for the y-axis
+        - data (dictionary with keys "x-y"): the data to be visualised as line plots
+        - index (array of strings): the index of the data
+        - title (string) [optional]: the title of the overall plot
+        - xAxisLabel (string) [optional]: the label of the x-axis of the overall plot
+        - yAxisLabel (string) [optional]: the label of the y-axis of the overall plot
+        - savePath (string) [optional]: the path of the file where the resulting plot should be saved
+        - xlim (tuple: (min, max)) [optional]: the min and max of values on the x-axis for every subplot
+        - ylim (tuple: (min, max)) [optional]: the min and max of values on the y-axis for every subplot
+        - legendRows (int) [optional]: the number of rows for the legend
+
+    Returns:
+        Nothing.
+    """
+    
+    fontsize = 14
+    nRows = len(yLabels)
+    nCols = len(xLabels)
+    fig, axes = plt.subplots(nrows=nRows, ncols=nCols, sharex=True, sharey=True)
+
+    if title != None:
+        fig.suptitle(title)
+    for x in range(nRows):
+        for y in range(nCols):
+            df = pd.DataFrame(data.get(f"{x}-{y}"), index=index).T  
+            if nRows == 1:
+                df.plot(ax=axes[y], legend=False)
+            else:
+                df.plot(ax=axes[x][y], legend=False)
+
+    if nRows == 1:
+        for ax, col in zip(axes, xLabels):
+            ax.set_title(col, fontsize=fontsize)
+            ax.set_xlim(xlim)
+
+        for ax, row in zip(axes, yLabels):
+            ax.set_ylabel(row, fontsize=fontsize)
+            if ylim != None:
+                ax.set_ylim(ylim)
+
+    else:
+        for ax, col in zip(axes[0, :], xLabels):
+            ax.set_title(col, fontsize=fontsize)
+            ax.set_xlim(xlim)
+        for ax, row in zip(axes[:, 0], yLabels):
+            ax.set_ylabel(row, fontsize=fontsize)
+            if ylim != None:
+                ax.set_ylim(ylim)
+        
+    fig.subplots_adjust(bottom=0.3, wspace=0.33)
+    xOffset = xOffsetsByNCol.get(nCols)
+    plt.legend(loc='upper center', bbox_to_anchor=(xOffset, -0.3),fancybox=False, shadow=False, ncol=len(index)/legendRows)
+    if xAxisLabel != None:
+        fig.supxlabel(xAxisLabel, va="bottom")
+    if yAxisLabel != None:
+        fig.supylabel(yAxisLabel)
+    plt.tight_layout()
+    if savePath != None:
+        plt.savefig(savePath)
+    plt.show()
+
 # SCATTERPLOT OF NEIGHBOURS
 def createNeighbourScatterplot(positions, orientations, numberOfExampleParticles, index, title=None, selectRandomly=True, numberOfSteps=10, steps=None, radius=10, ylim=(-1.1,1.1), savePath=None):
     """
