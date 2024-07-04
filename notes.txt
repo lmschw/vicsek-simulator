@@ -224,3 +224,7 @@ TODO:
     - make sure turn doesn't happen for ALL and DISTANT
 
     - check all papers for data (to potentially replicate)
+
+TODO 4.7.24:
+    - abstract image (containing an introduction to the whole paper (with different parts))
+    - add summary table to global plot (A and B)
