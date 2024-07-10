@@ -229,3 +229,5 @@ TODO 4.7.24:
     - abstract image (containing an introduction to the whole paper (with different parts))
     - add summary table to global plot (A and B)
     - replace dashes with different symbols (diamonds, stars etc.) in the plots
+
+check access: https://link.springer.com/article/10.1007/s00114-023-01847-8
