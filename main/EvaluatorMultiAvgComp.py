@@ -119,11 +119,11 @@ class EvaluatorMultiAvgComp(object):
         if yLabel != None:
             plt.ylabel(yLabel)
         if subtitle != None:
-            plt.title(f"""Model comparison: {subtitle}""")
+            plt.title(f"""{subtitle}""")
         if not any(ele is None for ele in colourBackgroundForTimesteps):
             ax = plt.gca()
             y = np.arange(0, 1, 0.01)
-            ax.fill_betweenx(y, colourBackgroundForTimesteps[0], colourBackgroundForTimesteps[1], facecolor='green', alpha=0.5)
+            ax.fill_betweenx(y, colourBackgroundForTimesteps[0], colourBackgroundForTimesteps[1], facecolor='light green', alpha=0.5)
         if savePath != None:
             plt.savefig(savePath)
         #plt.show()
