@@ -18,7 +18,7 @@ class ExternalStimulusOrientationChangeEventDurationFov(ExternalStimulusOrientat
     """
     def __init__(self, startTimestep, endTimestep, percentage, angle, eventEffect, movementPattern, movementSpeed, 
                  perceptionRadius=30, distributionType=DistributionType.GLOBAL, areas=None, orientation=[0,0], 
-                 domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, targetSwitchValue=None, degreesOfVision=2*np.pi):
+                 domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, targetSwitchValue=None, noisePercentage=0, degreesOfVision=2*np.pi):
         """
         Creates an external stimulus event that affects part of the swarm at a given timestep.
 
@@ -41,7 +41,7 @@ class ExternalStimulusOrientationChangeEventDurationFov(ExternalStimulusOrientat
         Returns:
             No return.
         """
-        super().__init__(startTimestep, endTimestep, percentage, angle, eventEffect, movementPattern, movementSpeed, perceptionRadius, distributionType, areas, orientation, domainSize, targetSwitchValue)      
+        super().__init__(startTimestep, endTimestep, percentage, angle, eventEffect, movementPattern, movementSpeed, perceptionRadius, distributionType, areas, orientation, domainSize, targetSwitchValue, noisePercentage)      
         self.degreesOfVision = degreesOfVision  
 
     def getParameterSummary(self):
