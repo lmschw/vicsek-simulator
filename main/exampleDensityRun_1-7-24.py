@@ -54,7 +54,7 @@ noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(noisePercentage)
 tmaxWithoutEvent = 3000
 tmaxWithEvent = 15000
 
-densities = [0.01, 0.05, 0.09]
+densities = [0.09, 0.05]
 psteps = 100
 numbersOfPreviousSteps = [psteps]
 durations = [1000]
@@ -90,16 +90,16 @@ eventEffectsOrder = [
 eventEffectsDisorder = [EventEffect.AWAY_FROM_ORIGIN,
                         EventEffect.RANDOM]
 
-baseLocation = f"D:/vicsek-data2/adaptive_radius"
-#saveLocation = ""
-iStart = 1
-iStop = 11
+#baseLocation = f"D:/vicsek-data2/adaptive_radius"
+saveLocation = ""
+iStart = 11
+iStop = 21
 
 startTotal = time.time()
 for density in densities:
     n = ServicePreparation.getNumberOfParticlesForConstantDensity(density=density, domainSize=domainSize)   
     # ----------------------------------------------- GLOBAL STARTS HERE ----------------------------------------------
-    saveLocation = f"{baseLocation}/global"
+    #saveLocation = f"{baseLocation}/global"
     for radius in radii:
         print(f"d={density}, n={n}, r={radius}, size={domainSize}")
 
@@ -142,10 +142,10 @@ for density in densities:
             ServiceGeneral.logWithTime(f"Completed GLOBAL in {ServiceGeneral.formatTime(endTotal-startTotal)}")
         """
 # ----------------------------------------------- LOCAL STARTS HERE ----------------------------------------------
-        saveLocation = f"{baseLocation}/local"
+        #saveLocation = f"{baseLocation}/local"
         areas = [(domainSize[0]/2, domainSize[1]/2, radius)]
         tmax = tmaxWithEvent
-        """
+        
         for duration in durations:
             # --- single event, no switchvals for all modes with k = 1 and k = 5 (15000)        
             for k in ks:
@@ -196,7 +196,7 @@ for density in densities:
 
                                 # Save model values for future use
                                 eventsString = f"{event1.timestep}-{event1.eventEffect.val}"
-                                savePath = f"{saveLocation}local_1e_sw_{initialStateString}_st={startValue.value}__d={density}_n={n}_r={radius}_k={k}_noise={noisePercentage}_drn={duration}_{eventsString}_{i}"
+                                savePath = f"{saveLocation}local_1e_nosw_{initialStateString}_st={startValue.value}__d={density}_n={n}_r={radius}_k={k}_noise={noisePercentage}_drn={duration}_{eventsString}_{i}"
                                 ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
 
                                 endRun = time.time()
@@ -269,6 +269,7 @@ for density in densities:
         endNsm = time.time()
         ServiceGeneral.logWithTime(f"Completed nsm-switch in {ServiceGeneral.formatTime(endNsm-startNsm)}")
         """
+        """
         startK = time.time()
         for duration in durations:
             switchType = SwitchType.K
@@ -333,6 +334,3 @@ for density in densities:
                             endK = time.time()
 ServiceGeneral.logWithTime(f"Completed k-switch in {ServiceGeneral.formatTime(endK-startK)}")
 """
-endK = time.time()
-ServiceGeneral.logWithTime(f"Completed nsm-switch in {ServiceGeneral.formatTime(endNsm-startNsm)}")
-ServiceGeneral.logWithTime(f"Completed nsm-switch + k-switch in {ServiceGeneral.formatTime(endK-startNsm)}")
