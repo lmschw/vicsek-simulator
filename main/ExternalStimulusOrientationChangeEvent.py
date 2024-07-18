@@ -10,6 +10,7 @@ from EnumEventEffect import EventEffect
 import DefaultValues as dv
 import ServiceVicsekHelper
 import ServiceOrientations
+import ServicePreparation
 
 class ExternalStimulusOrientationChangeEvent:
     # TODO refactor to allow areas with a radius bigger than the radius of a particle, i.e. remove neighbourCells and determine all affected cells here
@@ -18,7 +19,7 @@ class ExternalStimulusOrientationChangeEvent:
     a specified percentage of particles. After creation, the check()-method takes care of everything.
     """
     def __init__(self, timestep, percentage, angle, eventEffect, distributionType=DistributionType.GLOBAL, areas=None, 
-                 domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, targetSwitchValue=None):
+                 domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, targetSwitchValue=None, noisePercentage=0):
         # TODO: make angle optional
         """
         Creates an external stimulus event that affects part of the swarm at a given timestep.
@@ -44,6 +45,8 @@ class ExternalStimulusOrientationChangeEvent:
         self.areas = areas
         self.domainSize = np.asarray(domainSize)
         self.targetSwitchValue = targetSwitchValue
+        self.noisePercentage = noisePercentage
+        self.noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(self.noisePercentage)
 
         if self.distributionType != DistributionType.GLOBAL and self.areas == None:
             raise Exception("Local effects require the area to be specified")
@@ -124,6 +127,8 @@ class ExternalStimulusOrientationChangeEvent:
                     orientations[idx] = self.__computeFixedAngleTurn(orientations[idx])
                 case EventEffect.ALIGN_TO_FIXED_ANGLE:
                     orientations[idx] = ServiceOrientations.computeUvCoordinates(self.angle)
+                case EventEffect.ALIGN_TO_FIXED_ANGLE_NOISE:
+                    orientations[idx] = self.__applyNoiseDistribution(ServiceOrientations.computeUvCoordinates(self.angle))
                 case EventEffect.ALIGN_TO_FIRST_PARTICLE:
                     orientations[idx] = orientations[selectedIndices[0]]
                 case EventEffect.AWAY_FROM_ORIGIN:
@@ -273,6 +278,10 @@ class ExternalStimulusOrientationChangeEvent:
         newAngle = (previousAngle + self.angle) % (2 *np.pi)
 
         return ServiceOrientations.computeUvCoordinates(newAngle)
+    
+    def __applyNoiseDistribution(self, orientation):
+        return orientation + np.random.normal(scale=self.noise, size=(1, len(self.domainSize)))
+
 
     def computeAwayFromOrigin(self, position):
         """

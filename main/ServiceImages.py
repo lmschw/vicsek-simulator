@@ -21,7 +21,7 @@ Service containing static methods to create images.
 
 xOffsetsByNCol = {1: 0, 2: -0.5, 3: -0.8, 4: -1.5, 5: -2.2, 6: -3}
 dashes = [(1,0), (2,2), (5,2), (2,3,5,2), (2, 5), (2,2, 4,2)]
-markers = ["x", ".", "o", "^", "*", "+"]
+markers = ["x", ".", "o", "^", "*", "+", "v", '<','>','1','2','3','4','8',"p"]
 #possibleMarkers = ['.',',','o','v','^','<','>','1','2','3','4','8','s','p','P','*','h','H','+','x','X','D','d','|','_']
 
 def createMultiPlotFromImages(title, nRows, nCols, rowLabels, colLabels, imgPaths):
@@ -58,7 +58,7 @@ def createMultiPlotFromImages(title, nRows, nCols, rowLabels, colLabels, imgPath
     plt.show()
 
 def createMultiPlotFromScratch(xLabels, yLabels, data, index, title=None, xAxisLabel=None, yAxisLabel=None, savePath=None, 
-                               xlim =(0,1000), ylim=None, legendRows=1, fontsize=11):
+                               xlim =(0,1000), ylim=None, legendRows=1, fontsize=11, colourBackgroundForTimesteps=[None, None]):
     """
     Creates a plot with multiple subplots from data.
 
@@ -97,8 +97,13 @@ def createMultiPlotFromScratch(xLabels, yLabels, data, index, title=None, xAxisL
             dashesCounter = 0
             for col in df.columns:
                 #df[col].plot(ax=ax, legend=False, linestyle="dashed", dashes=dashes[dashesCounter])
-                df[col].plot(ax=ax, legend=False, marker=markers[dashesCounter])
+                df[col].plot(ax=ax, legend=False, marker=markers[dashesCounter], markevery=300)
                 dashesCounter += 1
+
+            if not any(ele is None for ele in colourBackgroundForTimesteps):
+                #ax = plt.gca()
+                y = np.arange(0, 1, 0.01)
+                ax.fill_betweenx(y, colourBackgroundForTimesteps[0], colourBackgroundForTimesteps[1], facecolor='green', alpha=0.5)
 
     if nRows == 1:
         for ax, col in zip(axes, xLabels):
@@ -191,7 +196,9 @@ def createMatrixOfPlotsFromScratch(xLabelPlot, yLabelPlot, xLabelOuter, yLabelOu
             for x in range(nRowsInner):
                 for y in range(nColsInner):
                     df = pd.DataFrame(subfigData.get(f"{x}-{y}"), index=index).T  
-                    if nRowsInner == 1:
+                    if nRowsInner == 1 and nColsInner == 1:
+                        ax = axes
+                    elif nRowsInner == 1:
                         ax = axes[y]
                     elif nColsInner == 1:
                         ax = axes[x]
@@ -251,7 +258,9 @@ def setAxLabelsAndLims(ax, xLabel, yLabel, xlim, ylim, fontsize):
         ax.set_ylim(ylim)
 
 def setAxTitlesAndLimsOverarching(nRows, nCols, axes, xLabel, yLabel, xlim, ylim, fontsize):
-    if nRows == 1 or nCols == 1:
+    if nRows == 1 and nCols == 1:
+        return
+    elif nRows == 1 or nCols == 1:
         for ax, col in zip(axes, xLabel):
             ax.set_title(col, fontsize=fontsize)
             ax.set_xlim(xlim)

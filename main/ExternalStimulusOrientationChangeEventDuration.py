@@ -22,7 +22,7 @@ class ExternalStimulusOrientationChangeEventDuration(ExternalStimulusOrientation
     """
     def __init__(self, startTimestep, endTimestep, percentage, angle, eventEffect, movementPattern, movementSpeed, 
                  perceptionRadius=30, distributionType=DistributionType.GLOBAL, areas=None, orientation=[0,0], 
-                 domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, targetSwitchValue=None):
+                 domainSize=dv.DEFAULT_DOMAIN_SIZE_2D, targetSwitchValue=None, noisePercentage=0):
         """
         Creates an external stimulus event that affects part of the swarm at a given timestep.
 
@@ -45,7 +45,7 @@ class ExternalStimulusOrientationChangeEventDuration(ExternalStimulusOrientation
             No return.
         """
         # TODO sort out perceptionRadius
-        super().__init__(startTimestep, percentage, angle, eventEffect, distributionType, areas, domainSize, targetSwitchValue)        
+        super().__init__(startTimestep, percentage, angle, eventEffect, distributionType, areas, domainSize, targetSwitchValue, noisePercentage)        
         self.startTimestep = startTimestep
         self.endTimestep = endTimestep
         self.movementPattern = movementPattern
