@@ -118,6 +118,65 @@ def loadTimestepsResults(path):
     results = np.array(loadedJson["results"])
     data = {time[i]: results[i] for i in range(len(time))}
     return modelParams, data
+
+def saveConnectionTrackingInformation(data, path="sample.json"):
+    """
+    Saves a model trained by the Viscek simulator implementation.
+
+    Parameters:
+        - data (dict): the data to be saved
+        - path (string) [optional]: the location and name of the target file
+        - saveInterval (int) [optional]: specifies the interval at which the saving should occur, i.e. if any time steps should be skipped
+        
+    Returns:
+        Nothing. Creates or overwrites a file.
+    """
+    __saveDict(path, data)
+
+def loadConnectionTrackingInformation(path):
+    """
+    Loads a single model from a single file.
+
+    Parameters:
+        - path (string): the location and file name of the file containing the model data
+        - loadSwitchValues (boolean) [optional]: loads the switch type values from the save file
+
+    Returns:
+        The model's params as well as the simulation data containing the time, positions, orientations and colours.
+    """
+    loadedJson = __loadJson(path)
+
+    neighbours = loadedJson["neighbours"]
+    distances = loadedJson["distances"]
+    localOrders = loadedJson["localOrders"]
+    orientationDifferences = loadedJson["orientationDifferences"]
+    selected = loadedJson["selected"]
+    return neighbours, distances, localOrders, orientationDifferences, selected
+
+def loadConnectionTrackingInformations(paths):
+    """
+    Loads multiple instances of connection tracking information from multiple files.
+
+    Parameters:
+        - paths (array of strings): An array containing the locations and names of the files containing a single model each
+        
+    Returns:
+        Returns an array containing the model params for each model and a second array containing the simulation data for each model. Co-indexed.
+    """
+    neighbours = []
+    distances = []
+    localOrders = []
+    orientationDifferences = []
+    selected = []
+    for path in paths:
+        neighs, dists, los, ods, sels = loadConnectionTrackingInformation(path)
+        neighbours.append(neighs)
+        distances.append(dists)
+        localOrders.append(los)
+        orientationDifferences.append(ods)
+        selected.append(sels)
+    return neighbours, distances, localOrders, orientationDifferences, selected
+    
     
 def __getSpecifiedIntervals(interval, lst):
     """

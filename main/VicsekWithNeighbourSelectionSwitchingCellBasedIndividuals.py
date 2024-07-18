@@ -1,11 +1,7 @@
 import numpy as np
-import random
 import math
-from heapq import nlargest
-from heapq import nsmallest
 
 import DefaultValues as dv
-import EnumNeighbourSelectionMode
 from EnumSwitchType import SwitchType
 from EnumThresholdType import ThresholdType
 import ServiceMetric
@@ -468,24 +464,7 @@ class VicsekWithNeighbourSelection:
             iNeighbours = self.numberOfParticles * [False]
             currentParticlePosition = positions[i]
             currentParticleOrientation = orientations[i]
-            match neighbourSelectionMode:
-                case EnumNeighbourSelectionMode.NeighbourSelectionMode.RANDOM:
-                    random.shuffle(candidates)
-                    pickedNeighbours = candidates[:k]
-                case EnumNeighbourSelectionMode.NeighbourSelectionMode.NEAREST:
-                    candidateDistances = {candidateIdx: math.dist(currentParticlePosition, positions[candidateIdx]) for candidateIdx in candidates}
-                    pickedNeighbours = nsmallest(k, candidateDistances, candidateDistances.get)
-                case EnumNeighbourSelectionMode.NeighbourSelectionMode.FARTHEST:
-                    candidateDistances = {candidateIdx: math.dist(currentParticlePosition, positions[candidateIdx]) for candidateIdx in candidates}
-                    pickedNeighbours = nlargest(k, candidateDistances, candidateDistances.get)
-                case EnumNeighbourSelectionMode.NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE:
-                    candidateDistances = {candidateIdx: math.dist(currentParticleOrientation, orientations[candidateIdx]) for candidateIdx in candidates}
-                    pickedNeighbours = nsmallest(k, candidateDistances, candidateDistances.get)
-                case EnumNeighbourSelectionMode.NeighbourSelectionMode.HIGHEST_ORIENTATION_DIFFERENCE:
-                    candidateDistances = {candidateIdx: math.dist(currentParticleOrientation, orientations[candidateIdx]) for candidateIdx in candidates}
-                    pickedNeighbours = nlargest(k, candidateDistances, candidateDistances.get)
-                case _:  # select all neighbours
-                    pickedNeighbours = candidates
+            pickedNeighbours = ServiceVicsekHelper.pickNeighbours(neighbourSelectionMode, k, candidates, currentParticlePosition, currentParticleOrientation, positions, orientations)
             iNeighbours[i] = True # should always consider the current orientation regardless of k or the neighbour selection method
             for neighbour in pickedNeighbours:
                 iNeighbours[neighbour] = True
