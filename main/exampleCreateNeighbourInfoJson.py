@@ -19,39 +19,36 @@ noisePercentage = 1
 psteps = 100
 interval = 1
 
-neighbourSelectionModes = [NeighbourSelectionMode.NEAREST,
+neighbourSelectionModes = [NeighbourSelectionMode.ALL,
+                           NeighbourSelectionMode.RANDOM,
+                           NeighbourSelectionMode.NEAREST,
+                           NeighbourSelectionMode.FARTHEST,
+                           NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE,
+                           NeighbourSelectionMode.HIGHEST_ORIENTATION_DIFFERENCE
                            ]
-densities = [0.01]
-radii = [20]
-ks = [1]
+densities = [0.01, 0.05, 0.09]
+radii = [5, 10, 20]
+ks = [1, 5]
 
-metric = Metrics.MIN_AVG_MAX_NUMBER_NEIGHBOURS
 
-iStart = 1
-iStop = 2
+iStart = 10
+iStop = 11
 
 
 for neighbourSelectionMode in neighbourSelectionModes:
     for a, density in enumerate(densities):
         n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
         for b, radius in enumerate(radii):
-            subdata = {}
-            for i, s in enumerate([""]):
-                for j, k in enumerate(ks): 
-                    startEval = time.time()
-
-                    for start in ["ordered"]:
+            for j, k in enumerate(ks): 
+                startEval = time.time()
+                for start in ["ordered", "random"]:
+                    for i in range(iStart, iStop):
                         baseFilename = f"D:/vicsek-data2/adaptive_radius/global/global_noev_nosw_d={density}_r={radius}_{start}_nsm={neighbourSelectionMode.value}_k={k}_n={n}_noise={noisePercentage}_psteps={psteps}"
                         #filenames = ServiceGeneral.createListOfFilenamesForI(baseFilename=baseFilename, minI=iStart, maxI=iStop, fileTypeString="json")
-                        modelParamsDensity, simulationDataDensity, coloursDensity = ServiceSavedModel.loadModel(f"{baseFilename}_1.json", loadSwitchValues=False)
+                        modelParamsDensity, simulationDataDensity, coloursDensity = ServiceSavedModel.loadModel(f"{baseFilename}_{i}.json", loadSwitchValues=False)
                         steps, positions, orientations = simulationDataDensity
-                        savePath = "test_tracking_info.json"
+                        savePath = f"D:/vicsek-data2/adaptive_radius/trackinginfo/global/trackinginfo_global_noev_nosw_d={density}_r={radius}_{start}_nsm={neighbourSelectionMode.value}_k={k}_n={n}_noise={noisePercentage}_psteps={psteps}_{i}.json"
                         ServiceSavedModel.saveConnectionTrackingInformation(ServiceNetwork.getConnectionTrackingInformation(positions=positions, orientations=orientations, radius=radius, neighbourSelectionMode=neighbourSelectionMode, k=k), path=savePath)
-                        ServiceGeneral.logWithTime(f"Saved tracking info for nsm={neighbourSelectionMode.name}, d={density}, r={radius}, k={k}, start={start}")
+                        ServiceGeneral.logWithTime(f"Saved tracking info for nsm={neighbourSelectionMode.name}, d={density}, r={radius}, k={k}, start={start}, i={i}")
 
-neighbours, distances, localOrders, orientationDifferences, selected = ServiceSavedModel.loadConnectionTrackingInformation(savePath)
-print(f"n[0][0]={neighbours['0']['0']}")
-print(f"d[0][0]={distances['0']['0']}")
-print(f"lo[0][0]={localOrders['0']['0']}")
-print(f"ods[0][0]={orientationDifferences['0']['0']}")
-print(f"selected[0][0]={selected['0']['0']}")
+#neighbours, distances, localOrders, orientationDifferences, selected = ServiceSavedModel.loadConnectionTrackingInformation(savePath)

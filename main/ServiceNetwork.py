@@ -62,14 +62,7 @@ def getConnectionTrackingInformation(positions, orientations, radius, switchType
         localOrders[t] = localOrdersT
         orientationDifferences[t] = orientationDifferencesT
         selected[t] = selectedT
-
-    print(f"n[0][0]={neighbours[0][0]}")
-    print(f"d[0][0]={distances[0][0]}")
-    print(f"lo[0][0]={localOrders[0][0]}")
-    print(f"ods[0][0]={orientationDifferences[0][0]}")
-    print(f"selected[0][0]={selected[0][0]}")
-
-
+        
     return {
         "neighbours": neighbours,
         "distances": distances,
