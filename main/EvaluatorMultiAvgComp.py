@@ -113,6 +113,8 @@ class EvaluatorMultiAvgComp(object):
                 self.__createAverageNumberNeighboursPlot(data, labels)
             case EnumMetrics.Metrics.MIN_AVG_MAX_NUMBER_NEIGHBOURS:
                 self.__createMinAvgMaxNumberNeighboursPlot(data)
+            case EnumMetrics.Metrics.AVG_DISTANCE_NEIGHBOURS:
+                self.__createAverageDistanceNeighboursPlot(data)
 
         if xLabel != None:
             plt.xlabel(xLabel)
@@ -231,6 +233,7 @@ class EvaluatorMultiAvgComp(object):
         sorted(data.items())
         df = pd.DataFrame(data, index=["order", "percentage of order value"]).T
         df.plot(ylim=(0,1.1))
+
     def __createAverageNumberNeighboursPlot(self, data, labels):
         """
         Creates a line plot for the average number of neighbours in the system for every model at every timestep
@@ -259,3 +262,45 @@ class EvaluatorMultiAvgComp(object):
         sorted(data.items())
         df = pd.DataFrame(data, index=["min", "avg", "max"]).T
         df.plot()
+
+            
+    def __createAverageDistanceNeighboursPlot(self, data, labels):
+        """
+        Creates a line plot for the average number of neighbours in the system for every model at every timestep
+
+        Parameters:
+            - data (dictionary): a dictionary with the time step as its key and a list of the average number of neighbours for every model as its value
+            - labels (list of strings): labels for the models
+            
+        Returns:
+            Nothing.
+        """
+        sorted(data.items())
+        df = pd.DataFrame(data, index=labels).T
+        df.plot()
+
+    def __createMinAvgMaxNumberNeighboursPlot(self, data):
+        """
+        Creates a line plot overlaying minimum, average and maximum number of neighbours.
+
+        Parameters:
+            - data (dictionary): a dictionary with the time step as its key and a list of the min, avg and max number of neighbours for every model as its value
+            
+        Returns:
+            Nothing.
+        """
+        sorted(data.items())
+        df = pd.DataFrame(data, index=["min", "avg", "max"]).T
+        df.plot()
+
+    def getMinAvgMaxNumberOfNeighboursOverWholeRun(self):
+        self.metric = EnumMetrics.Metrics.MIN_AVG_MAX_NUMBER_NEIGHBOURS
+        dataDict = self.evaluate()
+        mins = []
+        avgs = []
+        maxs = []
+        for val in dataDict.values():
+            mins.append(val[0])
+            avgs.append(val[1])
+            maxs.append(val[2])
+        return np.min(mins), np.average(avgs), np.max(maxs)

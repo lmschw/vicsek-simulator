@@ -60,6 +60,9 @@ def evaluateSingleTimestep(positions, orientations, metric, radius=None, thresho
             return avg
         case Metrics.MIN_AVG_MAX_NUMBER_NEIGHBOURS:
             return getMinAvgMaxNumberOfNeighbours(positions, radius)
+        case Metrics.AVG_DISTANCE_NEIGHBOURS:
+            _, avg, _ = getMinAvgMaxDistanceOfNeighbours(positions, radius)
+            return avg
      
 def computeOrder(orientations):
     """
@@ -391,6 +394,17 @@ def checkTurnSuccess(orientations, fixedAngle, noise, eventStartTimestep, interv
 
     return False
 
+def getOverallMinAvgMaxNumberOfNeighbours(positions, radius):
+    mins = []
+    avgs = []
+    maxs = []
+    for stepPositions in positions:
+        stepMin, stepAvg, stepMax = getMinAvgMaxNumberOfNeighbours(stepPositions, radius)
+        mins.append(stepMin)
+        avgs.append(stepAvg)
+        maxs.append(stepMax)
+    return np.min(mins), np.average(avgs), np.max(maxs)
+
 def getMinAvgMaxNumberOfNeighbours(positions, radius):
     """
     Determines the minimum, average and maximum of neighbours perceived by the particles
@@ -408,3 +422,36 @@ def getMinAvgMaxNumberOfNeighbours(positions, radius):
         neighbourNumbersArray[i] = len(neighbours)
     neighbourNumbersArray.sort()
     return np.min(neighbourNumbersArray), np.average(neighbourNumbersArray), np.max(neighbourNumbersArray)
+
+def getMinAvgMaxDistanceOfNeighbours(positions, radius):
+    neighbourDistances = []
+    for i in range(len(positions)):
+        neighbours = findNeighbours(i, positions, radius)
+        candidateDistances = np.array([math.dist(positions[i], positions[candidateIdx]) for candidateIdx in neighbours])
+        if len(neighbours) > 0:
+            for dist in candidateDistances:
+                neighbourDistances.append(dist)
+    distancesFlattened = np.array(neighbourDistances).flatten()
+    if len(distancesFlattened) == 0:
+        return 0, 0, 0
+    return np.min(distancesFlattened), np.average(distancesFlattened), np.max(distancesFlattened)
+
+
+"""
+json:
+    {
+     neighbours: {0: [1, 2, 3], 1: [...]},
+     distances: {0: [1.1, 2.3, 3.4, 4.2, 5.3, 6.2]},
+     localOrders: {0: 0.42, 1: 0.32}
+     orientationDifferences: {0: [0.03, 0.05, 0.24, 0.54, 0.12, 0.99]}
+     selected: {0: [1], 1: [3]}
+     }
+"""
+
+            
+
+
+
+
+
+

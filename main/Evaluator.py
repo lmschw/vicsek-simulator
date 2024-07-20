@@ -37,7 +37,8 @@ class Evaluator(object):
                       EnumMetrics.Metrics.CLUSTER_CONSISTENCY_AVERAGE_STEPS,
                       EnumMetrics.Metrics.CLUSTER_CONSISTENCY_NUMBER_OF_CLUSTER_CHANGES,
                       EnumMetrics.Metrics.AVERAGE_NUMBER_NEIGHBOURS,
-                      EnumMetrics.Metrics.MIN_AVG_MAX_NUMBER_NEIGHBOURS]:
+                      EnumMetrics.Metrics.MIN_AVG_MAX_NUMBER_NEIGHBOURS,
+                      EnumMetrics.Metrics.AVG_DISTANCE_NEIGHBOURS]:
             self.radius = modelParams["radius"]
         else:
             self.radius = None
