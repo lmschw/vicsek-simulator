@@ -62,7 +62,7 @@ def getConnectionTrackingInformation(positions, orientations, radius, switchType
         localOrders[t] = localOrdersT
         orientationDifferences[t] = orientationDifferencesT
         selected[t] = selectedT
-        
+
     return {
         "neighbours": neighbours,
         "distances": distances,
@@ -70,3 +70,28 @@ def getConnectionTrackingInformation(positions, orientations, radius, switchType
         "orientationDifferences": orientationDifferences,
         "selected": selected
     }
+
+def getMinAvgMaxNumberOfNeighboursFromTrackingInfoSingleRun(neighbours):
+    timestepInfoMin = []
+    timestepInfoAvg = []
+    timestepInfoMax = []
+    for val in neighbours.values():
+        numNeighbours = [len(value) for value in val.values()] # this is a dict and needs values()
+        timestepInfoMin.append(np.min(numNeighbours))
+        timestepInfoAvg.append(np.average(numNeighbours))
+        timestepInfoMax.append(np.max(numNeighbours))
+    
+    return np.min(timestepInfoMin), np.average(timestepInfoAvg), np.max(timestepInfoMax)
+
+def getMinAvgMaxNumberOfNeighboursFromTrackingInfoMultipleRuns(neighbours):
+    runInfoMin = []
+    runInfoAvg = []
+    runInfoMax = []
+    for i in range(len(neighbours)):
+        minR, avgR, maxR = getMinAvgMaxNumberOfNeighboursFromTrackingInfoSingleRun(neighbours[i])
+        runInfoMin.append(minR)
+        runInfoAvg.append(avgR)
+        runInfoMax.append(maxR)
+    
+    return np.min(runInfoMin), np.average(runInfoAvg), np.max(runInfoMax)
+    
