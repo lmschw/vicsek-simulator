@@ -5,6 +5,7 @@ import ServiceMetric
 import ServiceVicsekHelper
 
 from EnumSwitchType import SwitchType
+from EnumMetricsTrackingInfo import Metrics
 
 def getConnectionTrackingInformation(positions, orientations, radius, switchTypeValues=None, switchType=None, k=None, neighbourSelectionMode=None):
     
@@ -71,16 +72,48 @@ def getConnectionTrackingInformation(positions, orientations, radius, switchType
         "selected": selected
     }
 
+def evaluateSingleTimestep(metric, neighbours=None, distances=None, 
+                 localOrders=None, orientationDifferences=None, selected=None, 
+                 threshold=0.01):
+     """
+        Evaluates the simulation data for a single timestep according to the selected metric.
+
+        Parameters:
+            - positions (array): the position of every particle at this timestep
+            - orientations (array): the orientation of every particle at this timestep
+            - metric (EnumMetrics): the metric for evaluating the data
+            - radius (int) [optional]: the perception radius of every particle. Radius is only relevant for certain metrics such as Clustering, therefore it can be None for the others.
+            - threshold (float) [optional]: the threshold for the agglomerative clustering
+            - switchTypeValues (array) [optional]: the switch type values for individual switching
+            - switchTypeOptions (tuple) [optional]: contains the orderValue and the disorderValue respectively
+        Returns:
+            An array of the results according to the metric.
+     """
+     match metric:
+        case Metrics.AVERAGE_NUMBER_NEIGHBOURS:
+            _, avg, _ = getMinAvgMaxNumberOfNeighboursFromTrackingInfoSingleTimestep(neighbours)
+            return avg
+        case Metrics.MIN_AVG_MAX_NUMBER_NEIGHBOURS:
+            return getMinAvgMaxNumberOfNeighboursFromTrackingInfoSingleTimestep(neighbours)
+        case Metrics.AVG_DISTANCE_NEIGHBOURS:
+            _, avg, _ = getMinAvgMaxNeighbourDistanceFromTrackingInfoSingleTimestep(neighbours, distances)
+            return avg
+        case Metrics.MIN_AVG_MAX_DISTANCE_NEIGHBOURS:
+            return getMinAvgMaxNeighbourDistanceFromTrackingInfoSingleTimestep(neighbours, distances)
+         
+def getMinAvgMaxNumberOfNeighboursFromTrackingInfoSingleTimestep(neighbours):
+    numNeighbours = [len(value) for value in neighbours.values()]
+    return np.min(numNeighbours), np.average(numNeighbours), np.max(numNeighbours)
+
 def getMinAvgMaxNumberOfNeighboursFromTrackingInfoSingleRun(neighbours):
     timestepInfoMin = []
     timestepInfoAvg = []
     timestepInfoMax = []
-    for val in neighbours.values():
-        numNeighbours = [len(value) for value in val.values()] # this is a dict and needs values()
-        timestepInfoMin.append(np.min(numNeighbours))
-        timestepInfoAvg.append(np.average(numNeighbours))
-        timestepInfoMax.append(np.max(numNeighbours))
-    
+    for timestepData in neighbours.values():
+        minT, avgT, maxT = getMinAvgMaxNumberOfNeighboursFromTrackingInfoSingleTimestep(timestepData)
+        timestepInfoMin.append(minT)
+        timestepInfoAvg.append(avgT)
+        timestepInfoMax.append(maxT)
     return np.min(timestepInfoMin), np.average(timestepInfoAvg), np.max(timestepInfoMax)
 
 def getMinAvgMaxNumberOfNeighboursFromTrackingInfoMultipleRuns(neighbours):
@@ -89,6 +122,36 @@ def getMinAvgMaxNumberOfNeighboursFromTrackingInfoMultipleRuns(neighbours):
     runInfoMax = []
     for i in range(len(neighbours)):
         minR, avgR, maxR = getMinAvgMaxNumberOfNeighboursFromTrackingInfoSingleRun(neighbours[i])
+        runInfoMin.append(minR)
+        runInfoAvg.append(avgR)
+        runInfoMax.append(maxR)
+    return np.min(runInfoMin), np.average(runInfoAvg), np.max(runInfoMax)
+
+def getMinAvgMaxNeighbourDistanceFromTrackingInfoSingleTimestep(neighbours, distances):
+    distNeighbours = []
+    for key in neighbours.keys():
+        for value in neighbours[key]:
+            distNeighbours.append(distances[key][value])
+    return np.min(distNeighbours), np.average(distNeighbours), np.max(distNeighbours)
+    
+def getMinAvgMaxNeighbourDistanceFromTrackingInfoSingleRun(neighbours, distances):
+    timestepInfoMin = []
+    timestepInfoAvg = []
+    timestepInfoMax = []
+    for timestep, timestepData in neighbours.items():
+        minT, avgT, maxT = getMinAvgMaxNeighbourDistanceFromTrackingInfoSingleTimestep(neighbours=timestepData, distances=distances[timestep])
+        timestepInfoMin.append(minT)
+        timestepInfoAvg.append(avgT)
+        timestepInfoMax.append(maxT)
+    
+    return np.min(timestepInfoMin), np.average(timestepInfoAvg), np.max(timestepInfoMax)
+
+def getMinAvgMaxNeighbourDistanceFromTrackingInfoMultipleRuns(neighbours, distances):
+    runInfoMin = []
+    runInfoAvg = []
+    runInfoMax = []
+    for i in range(len(neighbours)):
+        minR, avgR, maxR = getMinAvgMaxNeighbourDistanceFromTrackingInfoSingleRun(neighbours[i], distances[i])
         runInfoMin.append(minR)
         runInfoAvg.append(avgR)
         runInfoMax.append(maxR)
