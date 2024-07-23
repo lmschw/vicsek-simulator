@@ -19,7 +19,7 @@ noisePercentage = 1
 psteps = 100
 interval = 1
 
-neighbourSelectionModes = [NeighbourSelectionMode.ALL,
+neighbourSelectionModes = [
                            NeighbourSelectionMode.RANDOM,
                            NeighbourSelectionMode.NEAREST,
                            NeighbourSelectionMode.FARTHEST,
@@ -31,18 +31,19 @@ radii = [5, 10, 20]
 ks = [1, 5]
 
 
-iStart = 10
+iStart = 1
 iStop = 11
 
 
-for neighbourSelectionMode in neighbourSelectionModes:
-    for a, density in enumerate(densities):
-        n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
-        for b, radius in enumerate(radii):
-            for j, k in enumerate(ks): 
-                startEval = time.time()
-                for start in ["ordered", "random"]:
-                    for i in range(iStart, iStop):
+for i in range(iStart, iStop):
+    for neighbourSelectionMode in neighbourSelectionModes:
+        for a, density in enumerate(densities):
+            n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
+            for b, radius in enumerate(radii):
+                for j, k in enumerate(ks): 
+                    startEval = time.time()
+                    for start in ["ordered", "random"]:
+                        
                         baseFilename = f"D:/vicsek-data2/adaptive_radius/global/global_noev_nosw_d={density}_r={radius}_{start}_nsm={neighbourSelectionMode.value}_k={k}_n={n}_noise={noisePercentage}_psteps={psteps}"
                         #filenames = ServiceGeneral.createListOfFilenamesForI(baseFilename=baseFilename, minI=iStart, maxI=iStop, fileTypeString="json")
                         modelParamsDensity, simulationDataDensity, coloursDensity = ServiceSavedModel.loadModel(f"{baseFilename}_{i}.json", loadSwitchValues=False)
