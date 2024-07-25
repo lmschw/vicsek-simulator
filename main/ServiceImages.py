@@ -81,6 +81,7 @@ def createMultiPlotFromScratch(xLabels, yLabels, data, index, title=None, xAxisL
     
     nRows = len(yLabels)
     nCols = len(xLabels)
+    #fig, axes = plt.subplots(nrows=nRows, ncols=nCols, sharex=True, sharey=True, figsize=(500, 5))
     fig, axes = plt.subplots(nrows=nRows, ncols=nCols, sharex=True, sharey=True)
 
     if title != None:
@@ -100,6 +101,8 @@ def createMultiPlotFromScratch(xLabels, yLabels, data, index, title=None, xAxisL
                 df[col].plot(ax=ax, legend=False, marker=markers[dashesCounter], markevery=300)
                 dashesCounter += 1
 
+            ax.set_box_aspect(0.7)
+            ax.autoscale()
             if not any(ele is None for ele in colourBackgroundForTimesteps):
                 #ax = plt.gca()
                 y = np.arange(0, 1, 0.01)
