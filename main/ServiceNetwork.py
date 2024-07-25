@@ -3,11 +3,12 @@ import numpy as np
 
 import ServiceMetric
 import ServiceVicsekHelper
+import ServiceGeneral
 
 from EnumSwitchType import SwitchType
 from EnumMetricsTrackingInfo import Metrics
 
-def getConnectionTrackingInformation(positions, orientations, radius, switchTypeValues=None, switchType=None, k=None, neighbourSelectionMode=None):
+def getConnectionTrackingInformation(positions, orientations, radius, switchTypeValues=None, switchType=None, k=None, neighbourSelectionMode=None, useFindNeighboursMethod=False):
     
     n = len(positions[0])
 
@@ -22,7 +23,11 @@ def getConnectionTrackingInformation(positions, orientations, radius, switchType
     orientationDifferences = {}
     selected = {}
 
-    for t in range(len(positions)):
+    for t in range(2000):
+
+        if t % 1000 == 0:
+            ServiceGeneral.logWithTime(f"{t}/{len(positions)}")
+
         neighboursT = {}
         distancesT = {}
         localOrdersT = {}
@@ -32,13 +37,24 @@ def getConnectionTrackingInformation(positions, orientations, radius, switchType
         positionsT = positions[t]
         orientationsT = orientations[t]
         for i in range(n):
-            # neighbours
-            neighboursI = ServiceMetric.findNeighbours(i, positionsT, radius)
-            neighboursT[i] = neighboursI
+            if useFindNeighboursMethod:
+                # neighbours
+                neighboursI = ServiceMetric.findNeighbours(i, positionsT, radius)
+                neighboursT[i] = neighboursI
 
-            # distances
-            distancesI = [math.dist(positionsT[i], positionsT[candidateIdx]) for candidateIdx in range(n)]
-            distancesT[i] = distancesI
+                distancesI = [math.dist(positionsT[i], positionsT[candidateIdx]) for candidateIdx in range(n)]
+                distancesT[i] = distancesI
+            else:
+                neighboursI = []
+                distancesI = []
+                # distances
+                for candidateIdx in range(n):
+                    distanceC = math.dist(positionsT[i], positionsT[candidateIdx])
+                    distancesI.append(distanceC)
+                    if distanceC <= radius and i != candidateIdx:
+                        neighboursI.append(candidateIdx)
+                distancesT[i] = distancesI
+                neighboursT[i] = neighboursI
 
             # localOrder
             neighbourOrientations = [orientationsT[neighbourIdx] for neighbourIdx in neighboursI]
