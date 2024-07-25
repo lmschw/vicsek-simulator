@@ -142,7 +142,7 @@ class ExternalStimulusOrientationChangeEvent:
             if self.targetSwitchValue != None:
                 switchValues[idx] = self.targetSwitchValue
                 alteredIndices.append(idx)
-
+        orientations = ServiceVicsekHelper.normalizeOrientations(orientations)
         return orientations, switchValues, alteredIndices
 
     def __determineAffectedParticles(self, totalNumberOfParticles, positions, orientations, cells, cellDims, cellToParticleDistribution):
