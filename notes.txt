@@ -231,3 +231,6 @@ TODO 4.7.24:
     - replace dashes with different symbols (diamonds, stars etc.) in the plots
 
 check access: https://link.springer.com/article/10.1007/s00114-023-01847-8
+
+TODO 26.07.:
+check if we could measure cohesion as size of largest cluster (cf. Kong et al. (2024))
