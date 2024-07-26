@@ -58,8 +58,7 @@ densities = [0.05]
 psteps = 100
 numbersOfPreviousSteps = [psteps]
 durations = [1000]
-ks = [1, 5]
-additionalKs = [0, 2, 3, 4]
+additionalKs = [0, 2, 3, 4, 10]
 radii = [10] # area is always 4x bigger than the last
 
 neighbourSelectionModes = [NeighbourSelectionMode.ALL,
@@ -94,7 +93,7 @@ eventEffectsDisorder = [EventEffect.AWAY_FROM_ORIGIN,
 #baseLocation = f"D:/vicsek-data2/adaptive_radius"
 saveLocation = ""
 iStart = 1
-iStop = 4
+iStop = 101
 
 startTotal = time.time()
 for density in densities:
