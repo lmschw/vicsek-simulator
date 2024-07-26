@@ -23,7 +23,7 @@ def getConnectionTrackingInformation(positions, orientations, radius, switchType
     orientationDifferences = {}
     selected = {}
 
-    for t in range(2000):
+    for t in range(len(positions)):
 
         if t % 1000 == 0:
             ServiceGeneral.logWithTime(f"{t}/{len(positions)}")
