@@ -115,6 +115,8 @@ levelDataLocation = "global"
 
 data = {}
 
+ks = [0, 1, 2, 3, 4, 5, 10]
+
 # K VS. START
 
 xLabelPlot = "time steps"
