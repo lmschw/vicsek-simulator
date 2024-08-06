@@ -102,7 +102,7 @@ saveLocation = f""
 iStart = 1
 iStop = 2
 
-baseDataLocation = "D:/vicsek-data2/adaptive_radius"
+baseDataLocation = "D:/vicsek-data2/adaptive_radius/"
 
 densities = [0.05]
 radii = [10]
@@ -110,158 +110,59 @@ interval = 1
 kMax = 5
 noisePercentage = 1
 
-# ------------------------------------------------ GLOBAL ---------------------------------------------------------------
-levelDataLocation = "global"
+# ------------------------------------------------ LOCAL ---------------------------------------------------------------
+levelDataLocation = "local/switchingActive/"
 
 data = {}
 
-ks = [0, 1, 2, 3, 4, 5, 10]
+ks = [1, 5]
 
 # K VS. START
+xAxisLabel = "timesteps"
+yAxisLabel = "average neighbour distance"
 
-xLabelPlot = "time steps"
-yLabelPlot = "order"
-
-xLabelsOuter = radii
-xAxisLabelOuter = "radius" 
-
-xLabelsInner = ["ordered", "disordered"]
-xAxisLabelInner = "starting condition"
-
-yLabelsOuter = densities
-yAxisLabelOuter = "density"
-
-yLabelsInner = getLabelsFromKValues(ks)
-yAxisLabelInner = "neighbourhood size"
-
-index = getLabelsFromNeighbourSelectionModes(neighbourSelectionModes)
-
-
-tmax = 3000
-metric = Metrics.ORDER
+tmax = 1500
+metric = Metrics.AVG_DISTANCE_NEIGHBOURS
 startTime = time.time()
 
-for a, density in enumerate(densities):
-    n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
-    for b, radius in enumerate(radii):
-        subdata = {}
-        for i, k in enumerate(ks):
-            for j, initialStateString in enumerate(["ordered", "random"]): 
-                    startEval = time.time()
-                    print(f"d={density}, r={radius}, k={k}, init={initialStateString}")
-                    modelParams = []
-                    simulationData = []
-                    colours = []
+density = 0.05
+radius = 10
+n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
+duration = 1000
 
-                    for neighbourSelectionMode in neighbourSelectionModes:
-                        baseFilename = f"{baseDataLocation}/{levelDataLocation}/global_noev_nosw_d={density}_r={radius}_{initialStateString}_nsm={neighbourSelectionMode.value}_k={k}_n={n}_noise={noisePercentage}_psteps={psteps}"
-                        filenames = ServiceGeneral.createListOfFilenamesForI(baseFilename=baseFilename, minI=iStart, maxI=iStop, fileTypeString="json")
-                        modelParamsDensity, simulationDataDensity, coloursDensity = ServiceSavedModel.loadModels(filenames, loadSwitchValues=False)
-                        modelParams.append(modelParamsDensity)
-                        simulationData.append(simulationDataDensity)
-                        colours.append(coloursDensity)
+eventEffect = EventEffect.AWAY_FROM_ORIGIN
+orderValue = NeighbourSelectionMode.FARTHEST
+disorderValue = NeighbourSelectionMode.NEAREST
 
-                #paths.append(f"density-vs-noise_ORDER_mode-comparision_n={n}_k=1_radius=10_density={density}_noise={noisePercentage}%_hierarchical_clustering_threshold=0.01.png")
-        #createMultiPlotFromImages(title, numX, numY, rowLabels, colLabels, paths)
-                    threshold = 0.01
-                    evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=100, threshold=threshold)
-                    stepData = evaluator.evaluate()    
-                    subdata[f"{i}-{j}"] = stepData    
-                    endEval = time.time()
-                    print(f"Duration eval {ServiceGeneral.formatTime(endEval-startEval)}") 
-        data[f"{a}-{b}"] = subdata   
+for i, k in enumerate(ks):
+    for j, neighbourSelectionMode in enumerate(neighbourSelectionModes): 
+            startEval = time.time()
+            print(f"d={density}, r={radius}, k={k}, init={initialStateString}")
+            modelParams = []
+            simulationData = []
+            colours = []
 
-ServiceImages.createMatrixOfPlotsFromScratch(
-                                             xLabelPlot=xLabelPlot,
-                                             yLabelPlot=yLabelPlot,
-                                             xLabelOuter=xLabelsOuter,
-                                             xLabelInner=xLabelsInner,
-                                             yLabelOuter=yLabelsOuter, 
-                                             yLabelInner=yLabelsInner, 
-                                             data=data, index=index, 
-                                             xAxisLabelOuter=xAxisLabelOuter, 
-                                             xAxisLabelInner=xAxisLabelInner,
-                                             yAxisLabelOuter=yAxisLabelOuter,
-                                             yAxisLabelInner=yAxisLabelInner, 
-                                             savePath="order_k-comp.svg", xlim=(0,tmax), ylim=(0,1.1))
+            for initialStateString in ["ordered", "random"]:
+                if initialStateString == "ordered":
+                     startValue = orderValue
+                else:
+                     startvalue = disorderValue
+                baseFilename = f"{baseDataLocation}{levelDataLocation}local_1e_switchType=MODE_{initialStateString}_st={startValue.value}_o={orderValue}_do={disorderValue}_d={density}_r={radius}_k={k}_noise={noisePercentage}_drn={psteps}_{e1Start}-{eventEffect.val}"
+                filenames = ServiceGeneral.createListOfFilenamesForI(baseFilename=baseFilename, minI=iStart, maxI=iStop, fileTypeString="json")
+                modelParamsDensity, simulationDataDensity, coloursDensity = ServiceSavedModel.loadModels(filenames, loadSwitchValues=False)
+                modelParams.append(modelParamsDensity)
+                simulationData.append(simulationDataDensity)
+                colours.append(coloursDensity)
+
+        #paths.append(f"density-vs-noise_ORDER_mode-comparision_n={n}_k=1_radius=10_density={density}_noise={noisePercentage}%_hierarchical_clustering_threshold=0.01.png")
+#createMultiPlotFromImages(title, numX, numY, rowLabels, colLabels, paths)
+            threshold = 0.01
+            evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=100, threshold=threshold)
+            savePath = f"{metric.value}_d={density}_n={n}_r={radius}_nsm={neighbourSelectionMode.value}_k={k}_ee={eventEffect.val}.svg"
+            evaluator.evaluateAndVisualize(labels=["ordered", "disordered"], xLabel=xAxisLabel, yLabel=yAxisLabel, colourBackgroundForTimesteps=[e1Start, e1Start+duration], savePath=savePath)    
+            endEval = time.time()
+            print(f"Duration eval {ServiceGeneral.formatTime(endEval-startEval)}") 
+
 endTime = time.time()
 print(f"Total duration: {ServiceGeneral.formatTime(endTime-startTime)}")
-            
-# -------------- LOCAL ------------------
-levelDataLocation = "global"
-
-data = {}
-
-# K VS. START
-
-xLabelPlot = "time steps"
-yLabelPlot = "order"
-
-xLabelsOuter = radii
-xAxisLabelOuter = "radius" 
-
-xLabelsInner = ["ordered", "disordered"]
-xAxisLabelInner = "starting condition"
-
-yLabelsOuter = densities
-yAxisLabelOuter = "density"
-
-yLabelsInner = getLabelsFromKValues(ks)
-yAxisLabelInner = ""
-
-index = getLabelsFromNeighbourSelectionModes(neighbourSelectionModes)
-
-tmax = 3000
-metric = Metrics.ORDER
-startTime = time.time()
-
-for a, density in enumerate(densities):
-    n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
-    for b, radius in enumerate(radii):
-        subdata = {}
-        for i, k in enumerate(ks):
-            for j, initialStateString in enumerate(["ordered", "random"]): 
-                    startEval = time.time()
-                    print(f"d={density}, r={radius}, k={k}, init={initialStateString}")
-                    modelParams = []
-                    simulationData = []
-                    colours = []
-
-                    for neighbourSelectionMode in neighbourSelectionModes:
-                        baseFilename = f"{baseDataLocation}/{levelDataLocation}/global_noev_nosw_d={density}_r={radius}_{initialStateString}_nsm={neighbourSelectionMode.value}_k={k}_n={n}_noise={noisePercentage}_psteps={psteps}"
-                        filenames = ServiceGeneral.createListOfFilenamesForI(baseFilename=baseFilename, minI=iStart, maxI=iStop, fileTypeString="json")
-                        modelParamsDensity, simulationDataDensity, coloursDensity = ServiceSavedModel.loadModels(filenames, loadSwitchValues=False)
-                        modelParams.append(modelParamsDensity)
-                        simulationData.append(simulationDataDensity)
-                        colours.append(coloursDensity)
-
-                #paths.append(f"density-vs-noise_ORDER_mode-comparision_n={n}_k=1_radius=10_density={density}_noise={noisePercentage}%_hierarchical_clustering_threshold=0.01.png")
-        #createMultiPlotFromImages(title, numX, numY, rowLabels, colLabels, paths)
-                    threshold = 0.01
-                    evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=100, threshold=threshold)
-                    stepData = evaluator.evaluate()    
-                    subdata[f"{i}-{j}"] = stepData    
-                    endEval = time.time()
-                    print(f"Duration eval {ServiceGeneral.formatTime(endEval-startEval)}") 
-        data[f"{a}-{b}"] = subdata   
-
-ServiceImages.createMatrixOfPlotsFromScratch(
-                                             xLabelPlot=xLabelPlot,
-                                             yLabelPlot=yLabelPlot,
-                                             xLabelOuter=xLabelsOuter,
-                                             xLabelInner=xLabelsInner,
-                                             yLabelOuter=yLabelsOuter, 
-                                             yLabelInner=yLabelsInner, 
-                                             data=data, index=index, 
-                                             xAxisLabelOuter=xAxisLabelOuter, 
-                                             xAxisLabelInner=xAxisLabelInner,
-                                             yAxisLabelOuter=yAxisLabelOuter,
-                                             yAxisLabelInner=yAxisLabelInner, 
-                                             savePath="order_k-comp.svg", xlim=(0,tmax), ylim=(0,1.1))
-endTime = time.time()
-print(f"Total duration: {ServiceGeneral.formatTime(endTime-startTime)}")
-            
     
-   
-    
-
