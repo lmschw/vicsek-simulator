@@ -129,10 +129,10 @@ for a, density in enumerate(densities):
         for nsmOrder in orderNeighbourSelectionModes:
             for nsmDisorder in disorderNeighbourSelectionModes:
                 subdata = {}
-                for k in k:
+                for k in ks:
                     for eventEffect in eventEffects:
                         startEval = time.time()
-                        print(f"d={density}, r={radius}, k={k}, init={initialStateString}")
+                        print(f"d={density}, r={radius}, k={k}, o={nsmOrder.value}, do={nsmDisorder.value}")
                         modelParams = []
                         simulationData = []
                         colours = []
@@ -175,7 +175,7 @@ for a, density in enumerate(densities):
                 for nsm in neighbourSelectionModes:
                     for eventEffect in eventEffects:
                         startEval = time.time()
-                        print(f"d={density}, r={radius}, k={k}, init={initialStateString}")
+                        print(f"d={density}, r={radius}, nsm={nsm.value}, init={initialStateString}")
                         modelParams = []
                         simulationData = []
                         colours = []
@@ -219,7 +219,7 @@ for a, density in enumerate(densities):
                 for k in ks:
                     for eventEffect in eventEffects:
                         startEval = time.time()
-                        print(f"d={density}, r={radius}, k={k}, init={initialStateString}")
+                        print(f"d={density}, r={radius}, k={k}, nsm={nsm.value}")
                         modelParams = []
                         simulationData = []
                         colours = []
