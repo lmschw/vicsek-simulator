@@ -104,8 +104,8 @@ iStop = 2
 
 baseDataLocation = "D:/vicsek-data2/adaptive_radius"
 
-densities = [0.01, 0.05, 0.09]
-radii = [5, 10, 20]
+densities = [0.05]
+radii = [10]
 interval = 1
 kMax = 5
 noisePercentage = 1
@@ -136,6 +136,8 @@ yAxisLabelInner = "neighbourhood size"
 
 index = getLabelsFromNeighbourSelectionModes(neighbourSelectionModes)
 
+
+tmax = 3000
 metric = Metrics.ORDER
 startTime = time.time()
 
@@ -150,15 +152,6 @@ for a, density in enumerate(densities):
                     modelParams = []
                     simulationData = []
                     colours = []
-
-                    if density == 0.01:
-                            neighbourSelectionModes = [NeighbourSelectionMode.FARTHEST, NeighbourSelectionMode.FARTHEST,
-                                                       NeighbourSelectionMode.FARTHEST, NeighbourSelectionMode.FARTHEST,
-                                                       NeighbourSelectionMode.FARTHEST, NeighbourSelectionMode.FARTHEST]
-                    else:
-                            neighbourSelectionModes = [NeighbourSelectionMode.NEAREST, NeighbourSelectionMode.NEAREST,
-                                                       NeighbourSelectionMode.NEAREST, NeighbourSelectionMode.NEAREST,
-                                                       NeighbourSelectionMode.NEAREST, NeighbourSelectionMode.NEAREST]
 
                     for neighbourSelectionMode in neighbourSelectionModes:
                         baseFilename = f"{baseDataLocation}/{levelDataLocation}/global_noev_nosw_d={density}_r={radius}_{initialStateString}_nsm={neighbourSelectionMode.value}_k={k}_n={n}_noise={noisePercentage}_psteps={psteps}"
@@ -190,48 +183,85 @@ ServiceImages.createMatrixOfPlotsFromScratch(
                                              xAxisLabelInner=xAxisLabelInner,
                                              yAxisLabelOuter=yAxisLabelOuter,
                                              yAxisLabelInner=yAxisLabelInner, 
-                                             savePath="order_k-vs-density_ordered_complex.svg", xlim=(0,1000), ylim=(0,1.1))
+                                             savePath="order_k-comp.svg", xlim=(0,tmax), ylim=(0,1.1))
+endTime = time.time()
+print(f"Total duration: {ServiceGeneral.formatTime(endTime-startTime)}")
+            
+# -------------- LOCAL ------------------
+levelDataLocation = "global"
+
+data = {}
+
+# K VS. START
+
+xLabelPlot = "time steps"
+yLabelPlot = "order"
+
+xLabelsOuter = radii
+xAxisLabelOuter = "radius" 
+
+xLabelsInner = ["ordered", "disordered"]
+xAxisLabelInner = "starting condition"
+
+yLabelsOuter = densities
+yAxisLabelOuter = "density"
+
+yLabelsInner = getLabelsFromKValues(ks)
+yAxisLabelInner = ""
+
+index = getLabelsFromNeighbourSelectionModes(neighbourSelectionModes)
+
+tmax = 3000
+metric = Metrics.ORDER
+startTime = time.time()
+
+for a, density in enumerate(densities):
+    n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
+    for b, radius in enumerate(radii):
+        subdata = {}
+        for i, k in enumerate(ks):
+            for j, initialStateString in enumerate(["ordered", "random"]): 
+                    startEval = time.time()
+                    print(f"d={density}, r={radius}, k={k}, init={initialStateString}")
+                    modelParams = []
+                    simulationData = []
+                    colours = []
+
+                    for neighbourSelectionMode in neighbourSelectionModes:
+                        baseFilename = f"{baseDataLocation}/{levelDataLocation}/global_noev_nosw_d={density}_r={radius}_{initialStateString}_nsm={neighbourSelectionMode.value}_k={k}_n={n}_noise={noisePercentage}_psteps={psteps}"
+                        filenames = ServiceGeneral.createListOfFilenamesForI(baseFilename=baseFilename, minI=iStart, maxI=iStop, fileTypeString="json")
+                        modelParamsDensity, simulationDataDensity, coloursDensity = ServiceSavedModel.loadModels(filenames, loadSwitchValues=False)
+                        modelParams.append(modelParamsDensity)
+                        simulationData.append(simulationDataDensity)
+                        colours.append(coloursDensity)
+
+                #paths.append(f"density-vs-noise_ORDER_mode-comparision_n={n}_k=1_radius=10_density={density}_noise={noisePercentage}%_hierarchical_clustering_threshold=0.01.png")
+        #createMultiPlotFromImages(title, numX, numY, rowLabels, colLabels, paths)
+                    threshold = 0.01
+                    evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=100, threshold=threshold)
+                    stepData = evaluator.evaluate()    
+                    subdata[f"{i}-{j}"] = stepData    
+                    endEval = time.time()
+                    print(f"Duration eval {ServiceGeneral.formatTime(endEval-startEval)}") 
+        data[f"{a}-{b}"] = subdata   
+
+ServiceImages.createMatrixOfPlotsFromScratch(
+                                             xLabelPlot=xLabelPlot,
+                                             yLabelPlot=yLabelPlot,
+                                             xLabelOuter=xLabelsOuter,
+                                             xLabelInner=xLabelsInner,
+                                             yLabelOuter=yLabelsOuter, 
+                                             yLabelInner=yLabelsInner, 
+                                             data=data, index=index, 
+                                             xAxisLabelOuter=xAxisLabelOuter, 
+                                             xAxisLabelInner=xAxisLabelInner,
+                                             yAxisLabelOuter=yAxisLabelOuter,
+                                             yAxisLabelInner=yAxisLabelInner, 
+                                             savePath="order_k-comp.svg", xlim=(0,tmax), ylim=(0,1.1))
 endTime = time.time()
 print(f"Total duration: {ServiceGeneral.formatTime(endTime-startTime)}")
             
     
+   
     
-"""
-    radius = ServicePreparation.getRadiusToSeeOnAverageNNeighbours(kMax, density)
-    # GLOBAL - COMPARE K FOR MODES WITHOUT SWITCH
-    tmax = 5000
-    for metric in [Metrics.ORDER]:
-        yLabel = metric.label
-        for density in [0.01, 0.05]:
-            n = ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize)
-            for radius in [5, 10, 20]:
-                for initialStateString in ["ordered", "random"]:
-                    startRun = time.time()
-                    #labels = getLabelsFromNeighbourSelectionModes([neighbourSelectionMode])
-                    subtitle = f"d={density}, r={radius}"
-                    modelParams = []
-                    simulationData = []
-                    colours = []
-                    labels = []
-                
-                    if initialStateString == "random":
-                        labelStr = "disordered"
-                    else:
-                        labelStr = "ordered"
-                    for neighbourSelectionMode in neighbourSelectionModes:
-                        for k in ks:
-                            labels.append(f"nsm={neighbourSelectionMode.name}, k={k}, start={labelStr}")
-                            baseFilename = f"{baseDataLocation}/{levelDataLocation}/global_noev_nosw_d={density}_r={radius}_{initialStateString}_nsm={neighbourSelectionMode.value}_k={k}_n={n}_noise={noisePercentage}_psteps={psteps}"
-                            filenames = ServiceGeneral.createListOfFilenamesForI(baseFilename=baseFilename, minI=iStart, maxI=iStop, fileTypeString="json")
-                            modelParamsDensity, simulationDataDensity, coloursDensity = ServiceSavedModel.loadModels(filenames, loadSwitchValues=False)
-                            modelParams.append(modelParamsDensity)
-                            simulationData.append(simulationDataDensity)
-                            colours.append(coloursDensity)
 
-                    savePath = f"global_{metric.label}_d={density}_r={radius}_{initialStateString}_n={n}_noise={noisePercentage}.svg"
-                    evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=interval)
-                    evaluator.evaluateAndVisualize(labels=labels, xLabel=xLabel, yLabel=yLabel, subtitle=subtitle,savePath=savePath)
-                
-                endRun = time.time()
-                ServiceGeneral.logWithTime(f"Completed 'GLOBAL - COMPARE K FOR MODES WITHOUT SWITCH', noise = {noisePercentage}%, nsm={neighbourSelectionMode.name}, init = {initialStateString} in {ServiceGeneral.formatTime(endRun-startRun)}")
-"""
