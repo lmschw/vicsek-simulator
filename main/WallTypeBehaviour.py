@@ -2,6 +2,9 @@ import numpy as np
 
 from EnumWallInfluenceType import WallInfluenceType
 
+import ServiceMetric
+import ServiceOrientations
+
 
 class WallType(object):
     def __init__(self, name, wallInfluenceType, influenceDistance=None, focusPoint=[None, None], radius=None, cornerPoints=[None], areParticlesWithinWall=True):
@@ -33,6 +36,9 @@ class WallType(object):
     def getDistanceFromBorder(self, position):
         pass
 
+    def getAvoidanceOrientation(self, orientation):
+        pass
+
     def checkCompleteness(self):
         hasFocusPoint = not self.__isPointOrListNull(self.focusPoint)
         hasCornerPoints = not self.__isPointOrListNull(self.cornerPoints)
@@ -58,6 +64,57 @@ class WallTypeCircle(WallType):
     def getDistanceFromBorder(self, position):
         return np.absolute((((self.focusPoint[0] - position[0])**2 + (self.focusPoint[1] - position[1])** 2)**(1/2)) - self.radius)
     
+    def getAvoidanceOrientation(self, position, orientation, speed, dt):
+        if self.wallInfluenceType != WallInfluenceType.FULL_AREA and self.getDistanceFromBorder(position) >= self.influenceDistance:
+            return orientation
+        
+        closestPointOnCircle = self.getClosestPointToCircle(position)
+        angleToClosestPoint = ServiceMetric.angleBetweenTwoVectors(closestPointOnCircle, position)
+        angleOrientation = ServiceOrientations.computeAngleForOrientation(orientation)
+        if angleOrientation > angleToClosestPoint:
+            return ServiceOrientations.computeUvCoordinates(self.getAngleToAvoidCollision(position, speed, dt, minAngle=angleOrientation))
+        return ServiceOrientations.computeUvCoordinates(self.getAngleToAvoidCollision(position, speed, dt, maxAngle=angleOrientation))
+
+    def getClosestPointToCircle(self, position):
+        vX = position[0] - self.focusPoint[0]
+        vY = position[1] - self.focusPoint[1]
+        magV = np.sqrt(vX*vX + vY*vY)
+        aX = self.focusPoint[0] + vX / magV * self.radius
+        aY = self.focusPoint[1] + vY / magV * self.radius 
+        return [aX, aY]
+    
+    def getAngleToAvoidCollision(self, position, speed, dt, minAngle=None, maxAngle=None, turnBy=0.3):
+        if maxAngle:
+            angle = maxAngle
+        else:
+            angle = minAngle
+        turns = (2*np.pi) / turnBy
+        turn = 0
+        orientation = ServiceOrientations.computeUvCoordinates(angle)
+        willCollide = self.__willCollide(position, orientation, dt, speed)
+        while willCollide and turn <= turns:
+            if maxAngle:
+                angle = self.__turnAngle(angle, maxAngle, turnBy=turnBy)
+            else:
+                angle = self.__turnAngle(angle, turnBy=turnBy)
+            orientation = ServiceOrientations.computeUvCoordinates(angle)
+            willCollide = self.__willCollide(position, orientation, dt, speed)
+            turn += 1
+        if willCollide:
+            angle = minAngle + np.pi
+        return angle
+    
+    def __turnAngle(self, angle, maxAngle=None, turnBy=0.03):
+        if maxAngle != None:
+            return angle - turnBy
+        return angle + turnBy
+    
+    def __willCollide(self, position, orientation, dt, speed):
+        do = [dt*speed*o for o in orientation]
+        newPos = [position[0] + do[0], position[1] + do[1]]
+        return not ((self.isInsideOfWalls(position) and self.isInsideOfWalls(newPos)) or (self.isInsideOfWalls(position) == False and self.isInsideOfWalls(newPos) == False))
+
+
 class WallTypeRectangle(WallType):
     def __init__(self, name, wallInfluenceType, minPoint, maxPoint, influenceDistance=None):
         super().__init__(name=name, wallInfluenceType=wallInfluenceType, influenceDistance=influenceDistance, cornerPoints=[minPoint, [minPoint[0], maxPoint[1]], [maxPoint[0], minPoint[1]], maxPoint])
@@ -90,8 +147,20 @@ class WallTypeRectangle(WallType):
         elif dy == 0:
             return dx
         return min(dx, dy)
+    
+    # TODO add implementation for getAvoidanceOrientation()
+    def getAvoidanceOrientation(self, position, orientation, speed, dt):
+        pass
 
 """
 circle = WallTypeCircle(name="circle", wallInfluenceType=WallInfluenceType.CLOSE_TO_BORDER, influenceDistance=5, focusPoint=[0,0], radius=10)
 rect = WallTypeRectangle(name="rect", wallInfluenceType=WallInfluenceType.CLOSE_TO_BORDER, influenceDistance=5, minPoint=[0,0], maxPoint=[4,5])
+"""
+
+"""
+circle = WallTypeCircle(name="circle", wallInfluenceType=WallInfluenceType.CLOSE_TO_BORDER, influenceDistance=50, focusPoint=[0,0], radius=100)
+position = [1, -98]
+orientation = ServiceOrientations.computeUvCoordinates(3*np.pi/2)
+print(ServiceOrientations.computeAngleForOrientation(orientation))
+print(ServiceOrientations.computeAngleForOrientation(circle.getAvoidanceOrientation(position, orientation, 1, 2)))
 """
