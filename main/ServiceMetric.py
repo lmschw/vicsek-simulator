@@ -194,7 +194,7 @@ def angleBetweenTwoVectors(vec1, vec2):
     Returns:
         Float representing the angle between the two vectors.
     """
-    return np.arccos(cosAngle(vec1, vec2))
+    return np.arctan2(vec1[1]-vec2[1], vec1[0]-vec2[0])
 
 def cosAngle(vec1, vec2):
     # TODO: move to ServiceOrientations
