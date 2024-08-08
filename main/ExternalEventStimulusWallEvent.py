@@ -1,7 +1,9 @@
+import numpy as np
+
 import ServiceVicsekHelper
 
 class ExternalEventStimulusWallEvent(object):
-    def __init__(self, startTimestep, endTimestep, wallTypeBehaviour):
+    def __init__(self, startTimestep, endTimestep, wallTypeBehaviour, noise=None):
         """
         Creates an external stimulus event that affects part of the swarm at a given timestep.
 
@@ -15,6 +17,7 @@ class ExternalEventStimulusWallEvent(object):
         self.startTimestep = startTimestep
         self.endTimestep = endTimestep
         self.wallTypeBehaviour = wallTypeBehaviour
+        self.noise = noise
 
     def getParameterSummary(self):
         summary = {
@@ -75,6 +78,11 @@ class ExternalEventStimulusWallEvent(object):
         """
         for idx in range(len(positions)):
             if self.wallTypeBehaviour.checkClosenessToBorder(positions[idx]):
-                orientations[idx] = self.wallTypeBehaviour.getAvoidanceOrientation(positions[idx], orientations[idx], speed, dt)
+                orientations[idx] = self.__applyNoiseDistribution(self.wallTypeBehaviour.getAvoidanceOrientation(positions[idx], orientations[idx], speed, dt))
         orientations = ServiceVicsekHelper.normalizeOrientations(orientations)
         return orientations
+    
+    def __applyNoiseDistribution(self, orientation):
+        if self.noise == None:
+            return orientation
+        return orientation + np.random.normal(scale=self.noise, size=(1, 2))
