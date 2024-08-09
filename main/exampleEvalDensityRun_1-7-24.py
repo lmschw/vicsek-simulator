@@ -21,7 +21,7 @@ import AnimatorMatplotlib
 import Animator2D
 
 
-def eval(density, radius, eventEffect, metric, type, nsm=None, k=None, combo=None):
+def eval(density, n, radius, eventEffect, metric, type, nsm=None, k=None, combo=None):
     yAxisLabel = metric.label
     startEval = time.time()
     print(f"d={density}, r={radius}")
@@ -180,30 +180,31 @@ startTime = time.time()
 
 density = 0.05
 radius = 10
-n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
+
 duration = 1000
 
 for density in densities:
+    n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
     for radius in radii:
         for nsm in neighbourSelectionModes:
             for k in ks:
                 for eventEffect in eventEffects:
                     for metric in metrics:
-                        eval(density=density, radius=radius, eventEffect=eventEffect, metric=metric, type="nosw", nsm=nsm, k=k)
+                        eval(density=density, n=n, radius=radius, eventEffect=eventEffect, metric=metric, type="nosw", nsm=nsm, k=k)
 
         for nsmCombo in [[NeighbourSelectionMode.FARTHEST, NeighbourSelectionMode.NEAREST],
                          [NeighbourSelectionMode.HIGHEST_ORIENTATION_DIFFERENCE, NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE]]:
             for k in ks:
                 for eventEffect in eventEffects:
                     for metric in metrics:
-                        eval(density=density, radius=radius, eventEffect=eventEffect, metric=metric, type="nsmsw", k=k, combo=nsmCombo)
+                        eval(density=density, n=n, radius=radius, eventEffect=eventEffect, metric=metric, type="nsmsw", k=k, combo=nsmCombo)
 
         for nsm in [NeighbourSelectionMode.NEAREST,
                     NeighbourSelectionMode.FARTHEST]:
             for kCombo in [[5,1]]:
                 for eventEffect in eventEffects:
                     for metric in metrics:
-                        eval(density=density, radius=radius, eventEffect=eventEffect, metric=metric, type="ksw", nsm=nsm, combo=kCombo)
+                        eval(density=density, n=n, radius=radius, eventEffect=eventEffect, metric=metric, type="ksw", nsm=nsm, combo=kCombo)
 endTime = time.time()
 print(f"Total duration: {ServiceGeneral.formatTime(endTime-startTime)}")
     
