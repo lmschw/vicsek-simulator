@@ -100,7 +100,7 @@ eventEffectsDisorder = [EventEffect.AWAY_FROM_ORIGIN,
 
 saveLocation = f""
 iStart = 1
-iStop = 2
+iStop = 11
 
 baseDataLocation = "D:/vicsek-data2/adaptive_radius/"
 
@@ -118,11 +118,12 @@ data = {}
 ks = [1, 5]
 
 # K VS. START
+metric = Metrics.AVERAGE_NUMBER_NEIGHBOURS
 xAxisLabel = "timesteps"
 yAxisLabel = "average neighbour distance"
+yAxisLabel = metric.label
+tmax = 15000
 
-tmax = 1500
-metric = Metrics.AVG_DISTANCE_NEIGHBOURS
 startTime = time.time()
 
 density = 0.05
@@ -131,13 +132,14 @@ n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domai
 duration = 1000
 
 eventEffect = EventEffect.AWAY_FROM_ORIGIN
-orderValue = NeighbourSelectionMode.FARTHEST
-disorderValue = NeighbourSelectionMode.NEAREST
+orderValue = NeighbourSelectionMode.HIGHEST_ORIENTATION_DIFFERENCE
+disorderValue = NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE
 
-for i, k in enumerate(ks):
-    for j, neighbourSelectionMode in enumerate(neighbourSelectionModes): 
+
+for i, neighbourSelectionMode in enumerate(neighbourSelectionModes): 
+    for j, k in enumerate(ks):
             startEval = time.time()
-            print(f"d={density}, r={radius}, k={k}, init={initialStateString}")
+            print(f"d={density}, r={radius}")
             modelParams = []
             simulationData = []
             colours = []
@@ -146,8 +148,10 @@ for i, k in enumerate(ks):
                 if initialStateString == "ordered":
                      startValue = orderValue
                 else:
-                     startvalue = disorderValue
-                baseFilename = f"{baseDataLocation}{levelDataLocation}local_1e_switchType=MODE_{initialStateString}_st={startValue.value}_o={orderValue}_do={disorderValue}_d={density}_r={radius}_k={k}_noise={noisePercentage}_drn={psteps}_{e1Start}-{eventEffect.val}"
+                     startValue = disorderValue
+                #baseFilename = f"{baseDataLocation}local/switchingInactive/local_1e_nosw_{initialStateString}_st={neighbourSelectionMode.value}__d={density}_n={n}_r={radius}_k={k}_noise=1_drn={duration}_{e1Start}-{eventEffect.val}"
+                #baseFilename = f"{baseDataLocation}{levelDataLocation}local_1e_switchType=K_{initialStateString}_st={startValue}_o={orderValue}_do={disorderValue}_d={density}_n={n}_r={radius}_nsm={neighbourSelectionMode.value}_noise={noisePercentage}_drn={duration}_{e1Start}-{eventEffect.val}"
+                baseFilename = f"{baseDataLocation}{levelDataLocation}local_1e_switchType=MODE_{initialStateString}_st={startValue.value}_o={orderValue.value}_do={disorderValue.value}_d={density}_n={n}_r={radius}_k={k}_noise={noisePercentage}_drn={duration}_{e1Start}-{eventEffect.val}"
                 filenames = ServiceGeneral.createListOfFilenamesForI(baseFilename=baseFilename, minI=iStart, maxI=iStop, fileTypeString="json")
                 modelParamsDensity, simulationDataDensity, coloursDensity = ServiceSavedModel.loadModels(filenames, loadSwitchValues=False)
                 modelParams.append(modelParamsDensity)
@@ -158,7 +162,9 @@ for i, k in enumerate(ks):
 #createMultiPlotFromImages(title, numX, numY, rowLabels, colLabels, paths)
             threshold = 0.01
             evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=100, threshold=threshold)
-            savePath = f"{metric.value}_d={density}_n={n}_r={radius}_nsm={neighbourSelectionMode.value}_k={k}_ee={eventEffect.val}.svg"
+            #savePath = f"{metric.val}_d={density}_n={n}_r={radius}_nosw_nsm={neighbourSelectionMode.value}_k={k}_ee={eventEffect.val}.svg"
+            #savePath = f"{metric.val}_d={density}_n={n}_r={radius}_swt=K_o={orderValue}_do={disorderValue}_nsm={neighbourSelectionMode.value}_ee={eventEffect.val}.svg"
+            savePath = f"{metric.val}_d={density}_n={n}_r={radius}_swt=MODE_o={orderValue.value}_do={disorderValue.value}_k={k}_ee={eventEffect.val}.svg"
             evaluator.evaluateAndVisualize(labels=["ordered", "disordered"], xLabel=xAxisLabel, yLabel=yAxisLabel, colourBackgroundForTimesteps=[e1Start, e1Start+duration], savePath=savePath)    
             endEval = time.time()
             print(f"Duration eval {ServiceGeneral.formatTime(endEval-startEval)}") 
