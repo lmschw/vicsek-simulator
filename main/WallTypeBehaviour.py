@@ -59,12 +59,12 @@ class WallTypeCircle(WallType):
         super().__init__(name=name, wallInfluenceType=wallInfluenceType, influenceDistance=influenceDistance, focusPoint=focusPoint, radius=radius)
     
     def isInsideOfWalls(self, position):
-        return ((self.focusPoint[0] - position[0])**2 + (self.focusPoint[1] - position[1])**2) <= self.radius **2 
+        return ((self.focusPoint[0] - position[0])**2 + (self.focusPoint[1] - position[1])**2) < self.radius **2 
 
     def getDistanceFromBorder(self, position):
         return np.absolute((((self.focusPoint[0] - position[0])**2 + (self.focusPoint[1] - position[1])** 2)**(1/2)) - self.radius)
     
-    def getAvoidanceOrientation(self, position, orientation, speed, dt):
+    def getAvoidanceOrientation(self, position, orientation, speed, dt, turnBy=0.3):
         if self.wallInfluenceType != WallInfluenceType.FULL_AREA and self.getDistanceFromBorder(position) >= self.influenceDistance:
             return orientation
         
@@ -72,8 +72,8 @@ class WallTypeCircle(WallType):
         angleToClosestPoint = ServiceMetric.angleBetweenTwoVectors(closestPointOnCircle, position)
         angleOrientation = ServiceOrientations.computeAngleForOrientation(orientation)
         if angleOrientation > angleToClosestPoint:
-            return ServiceOrientations.computeUvCoordinates(self.getAngleToAvoidCollision(position, speed, dt, minAngle=angleOrientation))
-        return ServiceOrientations.computeUvCoordinates(self.getAngleToAvoidCollision(position, speed, dt, maxAngle=angleOrientation))
+            return ServiceOrientations.computeUvCoordinates(self.getAngleToAvoidCollision(position, speed, dt, minAngle=angleOrientation, turnBy=turnBy))
+        return ServiceOrientations.computeUvCoordinates(self.getAngleToAvoidCollision(position, speed, dt, maxAngle=angleOrientation, turnBy=turnBy))
 
     def getClosestPointToCircle(self, position):
         vX = position[0] - self.focusPoint[0]
@@ -83,8 +83,8 @@ class WallTypeCircle(WallType):
         aY = self.focusPoint[1] + vY / magV * self.radius 
         return [aX, aY]
     
-    def getAngleToAvoidCollision(self, position, speed, dt, minAngle=None, maxAngle=None, turnBy=0.3):
-        if maxAngle:
+    def getAngleToAvoidCollision(self, position, speed, dt, minAngle=None, maxAngle=None, turnBy=1):
+        if maxAngle != None:
             angle = maxAngle
         else:
             angle = minAngle
@@ -101,7 +101,10 @@ class WallTypeCircle(WallType):
             willCollide = self.__willCollide(position, orientation, dt, speed)
             turn += 1
         if willCollide:
-            angle = minAngle + np.pi
+            if maxAngle == None:
+                angle = minAngle + np.pi
+            else:
+                angle = maxAngle - np.pi
         return angle
     
     def __turnAngle(self, angle, maxAngle=None, turnBy=0.03):
