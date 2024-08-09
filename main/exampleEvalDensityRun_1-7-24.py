@@ -24,7 +24,7 @@ import Animator2D
 def eval(density, n, radius, eventEffect, metric, type, nsm=None, k=None, combo=None):
     yAxisLabel = metric.label
     startEval = time.time()
-    print(f"d={density}, r={radius}")
+    print(f"d={density}, r={radius}, nsm={nsm}, k={k}, combo={combo}, eventEffect={eventEffect.val}, metric={metric.name}, type={type}")
     modelParams = []
     simulationData = []
     colours = []
