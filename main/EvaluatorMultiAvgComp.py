@@ -116,7 +116,7 @@ class EvaluatorMultiAvgComp(object):
             case EnumMetrics.Metrics.AVG_DISTANCE_NEIGHBOURS:
                 self.__createAverageDistanceNeighboursPlot(data, labels)
             case EnumMetrics.Metrics.AVG_CENTROID_DISTANCE:
-                self.__createAverageDistanceNeighboursPlot(data, labels)
+                self.__createAverageDistanceFromCentroidPlot(data, labels)
 
         if xLabel != None:
             plt.xlabel(xLabel)
@@ -279,7 +279,7 @@ class EvaluatorMultiAvgComp(object):
         """
         sorted(data.items())
         df = pd.DataFrame(data, index=labels).T
-        df.plot()
+        df.plot.line(ylim=(0,10))
 
     def __createMinAvgMaxNumberNeighboursPlot(self, data):
         """
@@ -294,6 +294,21 @@ class EvaluatorMultiAvgComp(object):
         sorted(data.items())
         df = pd.DataFrame(data, index=["min", "avg", "max"]).T
         df.plot()
+
+    def __createAverageDistanceFromCentroidPlot(self, data, labels):
+        """
+        Creates a line plot for the average number of neighbours in the system for every model at every timestep
+
+        Parameters:
+            - data (dictionary): a dictionary with the time step as its key and a list of the average number of neighbours for every model as its value
+            - labels (list of strings): labels for the models
+            
+        Returns:
+            Nothing.
+        """
+        sorted(data.items())
+        df = pd.DataFrame(data, index=labels).T
+        df.plot.line(ylim=(0,50))
 
     def getMinAvgMaxNumberOfNeighboursOverWholeRun(self):
         self.metric = EnumMetrics.Metrics.MIN_AVG_MAX_NUMBER_NEIGHBOURS
