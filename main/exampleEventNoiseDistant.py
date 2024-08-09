@@ -94,20 +94,20 @@ for eventNoisePercentage in [100]:
             areas = [(domainSize[0]/2, domainSize[1]/2, radius)]
             tmax = tmaxWithEvent
 
-            for orderValue in neighbourSelectionModes:
-                    startValue = orderValue
-                #for disorderValue in [NeighbourSelectionMode.NEAREST]: 
+            for nsmCombo in [[NeighbourSelectionMode.FARTHEST, NeighbourSelectionMode.NEAREST],
+                             [NeighbourSelectionMode.HIGHEST_ORIENTATION_DIFFERENCE, NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE]]: 
                     startNsm = time.time()
+                    orderValue, disorderValue = nsmCombo
                     for duration in durations:
                         switchType = SwitchType.NEIGHBOUR_SELECTION_MODE
                         for k in [1]:
                             for initialStateString in ["ordered", "random"]:
-                                """
+                                
                                 if initialStateString == "ordered":
                                     startValue = orderValue
                                 else:
                                     startValue = disorderValue
-                                """
+                                
                                 for eventEffectOrder in [EventEffect.ALIGN_TO_FIXED_ANGLE_NOISE]:
                                     for i in range(iStart,iStop):
                                         ServiceGeneral.logWithTime(f"Started nsm switch d={density}, r={radius}, drn={duration}, k={k}, {initialStateString}, eventEffect={eventEffectOrder.name}, i={i}")
@@ -146,7 +146,10 @@ for eventNoisePercentage in [100]:
                                                                                                         numberPreviousStepsForThreshold=psteps,
                                                                                                         switchBlockedAfterEventTimesteps=blockSteps,
                                                                                                         speed=speed,
-                                                                                                        switchingActive=False,
+                                                                                                        orderThresholds=[0.1],
+                                                                                                        thresholdType=ThresholdType.HYSTERESIS,
+                                                                                                        switchType=SwitchType.NEIGHBOUR_SELECTION_MODE,
+                                                                                                        switchValues=nsmCombo
                                                                                                         )
                                             
                                         
@@ -157,10 +160,10 @@ for eventNoisePercentage in [100]:
 
                                         # Save model values for future use
                                         eventsString = f"{event1.timestep}-{event1.eventEffect.val}"
-                                        savePath = f"nosw_event_noise={eventNoisePercentage}_{initialStateString}_nsm={orderValue.value}_d={density}_n={n}_r={radius}_k={k}_noise={noisePercentage}_drn={duration}_{eventsString}_{i}"
+                                        savePath = f"nsmsw_event_noise={eventNoisePercentage}_{initialStateString}_o={orderValue.value}_do={disorderValue.value}_d={density}_n={n}_r={radius}_k={k}_noise={noisePercentage}_drn={duration}_{eventsString}_{i}"
                                         ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, switchValues=switchValues, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
 
                                         endRun = time.time()
-                                        ServiceGeneral.logWithTime(f"Completed no-switch d={density}, r={radius}, drn={duration}, k={k}, {initialStateString}, eventEffect={eventEffectOrder.name}, i={i} in {ServiceGeneral.formatTime(endRun-startRun)}")
+                                        ServiceGeneral.logWithTime(f"Completed nsm-switch d={density}, r={radius}, drn={duration}, k={k}, {initialStateString}, eventEffect={eventEffectOrder.name}, i={i} in {ServiceGeneral.formatTime(endRun-startRun)}")
             endNsm = time.time()
             ServiceGeneral.logWithTime(f"Completed nsm-switch in {ServiceGeneral.formatTime(endNsm-startNsm)}")
