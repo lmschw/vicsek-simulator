@@ -65,6 +65,7 @@ def evaluateSingleTimestep(positions, orientations, metric, radius=None, thresho
             return avg
         case Metrics.AVG_CENTROID_DISTANCE:
             _, avg, _ = getMinAvgMaxDistanceFromCentroid(positions)
+            return avg
      
 def computeOrder(orientations):
     """
@@ -440,7 +441,7 @@ def getMinAvgMaxDistanceOfNeighbours(positions, radius):
 
 
 def getMinAvgMaxDistanceFromCentroid(positions):
-    centroid = np.average(positions)
+    centroid = np.mean(positions, axis=0)
     distances = [math.dist(pos, centroid) for pos in positions]
     return np.min(distances), np.average(distances), np.max(distances)
 
