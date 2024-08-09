@@ -21,7 +21,7 @@ import AnimatorMatplotlib
 import Animator2D
 
 
-def eval(density, n, radius, eventEffect, metric, type, nsm=None, k=None, combo=None):
+def eval(density, n, radius, eventEffect, metric, type, nsm=None, k=None, combo=None, evalInterval=1):
     yAxisLabel = metric.label
     startEval = time.time()
     ServiceGeneral.logWithTime(f"d={density}, r={radius}, nsm={nsm}, k={k}, combo={combo}, eventEffect={eventEffect.val}, metric={metric.name}, type={type}")
@@ -59,7 +59,7 @@ def eval(density, n, radius, eventEffect, metric, type, nsm=None, k=None, combo=
 #paths.append(f"density-vs-noise_ORDER_mode-comparision_n={n}_k=1_radius=10_density={density}_noise={noisePercentage}%_hierarchical_clustering_threshold=0.01.png")
 #createMultiPlotFromImages(title, numX, numY, rowLabels, colLabels, paths)
     threshold = 0.01
-    evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=100, threshold=threshold)
+    evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=evalInterval, threshold=threshold)
     
     if type == "nosw":
         savePath = f"{metric.val}_d={density}_n={n}_r={radius}_nosw_nsm={nsm.value}_k={k}_ee={eventEffect.val}.svg"
@@ -190,21 +190,21 @@ for density in densities:
             for k in ks:
                 for eventEffect in eventEffects:
                     for metric in metrics:
-                        eval(density=density, n=n, radius=radius, eventEffect=eventEffect, metric=metric, type="nosw", nsm=nsm, k=k)
+                        eval(density=density, n=n, radius=radius, eventEffect=eventEffect, metric=metric, type="nosw", nsm=nsm, k=k, evalInterval=interval)
 
         for nsmCombo in [[NeighbourSelectionMode.FARTHEST, NeighbourSelectionMode.NEAREST],
                          [NeighbourSelectionMode.HIGHEST_ORIENTATION_DIFFERENCE, NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE]]:
             for k in ks:
                 for eventEffect in eventEffects:
                     for metric in metrics:
-                        eval(density=density, n=n, radius=radius, eventEffect=eventEffect, metric=metric, type="nsmsw", k=k, combo=nsmCombo)
+                        eval(density=density, n=n, radius=radius, eventEffect=eventEffect, metric=metric, type="nsmsw", k=k, combo=nsmCombo, evalInterval=interval)
 
         for nsm in [NeighbourSelectionMode.NEAREST,
                     NeighbourSelectionMode.FARTHEST]:
             for kCombo in [[5,1]]:
                 for eventEffect in eventEffects:
                     for metric in metrics:
-                        eval(density=density, n=n, radius=radius, eventEffect=eventEffect, metric=metric, type="ksw", nsm=nsm, combo=kCombo)
+                        eval(density=density, n=n, radius=radius, eventEffect=eventEffect, metric=metric, type="ksw", nsm=nsm, combo=kCombo, evalInterval=interval)
 endTime = time.time()
 print(f"Total duration: {ServiceGeneral.formatTime(endTime-startTime)}")
     
