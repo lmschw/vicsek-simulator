@@ -115,6 +115,8 @@ class EvaluatorMultiAvgComp(object):
                 self.__createMinAvgMaxNumberNeighboursPlot(data, labels)
             case EnumMetrics.Metrics.AVG_DISTANCE_NEIGHBOURS:
                 self.__createAverageDistanceNeighboursPlot(data, labels)
+            case EnumMetrics.Metrics.AVG_CENTROID_DISTANCE:
+                self.__createAverageDistanceNeighboursPlot(data, labels)
 
         if xLabel != None:
             plt.xlabel(xLabel)

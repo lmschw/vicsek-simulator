@@ -104,8 +104,8 @@ iStop = 11
 
 baseDataLocation = "D:/vicsek-data2/adaptive_radius/"
 
-densities = [0.05]
-radii = [10]
+densities = [0.01, 0.05, 0.09]
+radii = [5, 10, 20]
 interval = 1
 kMax = 5
 noisePercentage = 1
@@ -118,10 +118,10 @@ data = {}
 ks = [1, 5]
 
 # K VS. START
-metric = Metrics.AVERAGE_NUMBER_NEIGHBOURS
+metrics = [Metrics.ORDER,
+           Metrics.AVG_DISTANCE_NEIGHBOURS,
+           Metrics.AVG_CENTROID_DISTANCE]
 xAxisLabel = "timesteps"
-yAxisLabel = "average neighbour distance"
-yAxisLabel = metric.label
 tmax = 15000
 
 startTime = time.time()
@@ -131,44 +131,78 @@ radius = 10
 n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
 duration = 1000
 
-eventEffect = EventEffect.AWAY_FROM_ORIGIN
-orderValue = NeighbourSelectionMode.HIGHEST_ORIENTATION_DIFFERENCE
-disorderValue = NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE
+for density in densities:
+    for radius in radii:
+        for nsm in neighbourSelectionModes:
+            for k in ks:
+                for eventEffect in eventEffects:
+                    for metric in metrics:
+                        eval(density=density, radius=radius, eventEffect=eventEffect, metric=metric, type="nosw", nsm=nsm, k=k)
 
+        for nsmCombo in [[NeighbourSelectionMode.FARTHEST, NeighbourSelectionMode.NEAREST],
+                         [NeighbourSelectionMode.HIGHEST_ORIENTATION_DIFFERENCE, NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE]]:
+            for k in ks:
+                for eventEffect in eventEffects:
+                    for metric in metrics:
+                        eval(density=density, radius=radius, eventEffect=eventEffect, metric=metric, type="nsmsw", k=k, combo=nsmCombo)
 
-for i, neighbourSelectionMode in enumerate(neighbourSelectionModes): 
-    for j, k in enumerate(ks):
-            startEval = time.time()
-            print(f"d={density}, r={radius}")
-            modelParams = []
-            simulationData = []
-            colours = []
-
-            for initialStateString in ["ordered", "random"]:
-                if initialStateString == "ordered":
-                     startValue = orderValue
-                else:
-                     startValue = disorderValue
-                #baseFilename = f"{baseDataLocation}local/switchingInactive/local_1e_nosw_{initialStateString}_st={neighbourSelectionMode.value}__d={density}_n={n}_r={radius}_k={k}_noise=1_drn={duration}_{e1Start}-{eventEffect.val}"
-                #baseFilename = f"{baseDataLocation}{levelDataLocation}local_1e_switchType=K_{initialStateString}_st={startValue}_o={orderValue}_do={disorderValue}_d={density}_n={n}_r={radius}_nsm={neighbourSelectionMode.value}_noise={noisePercentage}_drn={duration}_{e1Start}-{eventEffect.val}"
-                baseFilename = f"{baseDataLocation}{levelDataLocation}local_1e_switchType=MODE_{initialStateString}_st={startValue.value}_o={orderValue.value}_do={disorderValue.value}_d={density}_n={n}_r={radius}_k={k}_noise={noisePercentage}_drn={duration}_{e1Start}-{eventEffect.val}"
-                filenames = ServiceGeneral.createListOfFilenamesForI(baseFilename=baseFilename, minI=iStart, maxI=iStop, fileTypeString="json")
-                modelParamsDensity, simulationDataDensity, coloursDensity = ServiceSavedModel.loadModels(filenames, loadSwitchValues=False)
-                modelParams.append(modelParamsDensity)
-                simulationData.append(simulationDataDensity)
-                colours.append(coloursDensity)
-
-        #paths.append(f"density-vs-noise_ORDER_mode-comparision_n={n}_k=1_radius=10_density={density}_noise={noisePercentage}%_hierarchical_clustering_threshold=0.01.png")
-#createMultiPlotFromImages(title, numX, numY, rowLabels, colLabels, paths)
-            threshold = 0.01
-            evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=100, threshold=threshold)
-            #savePath = f"{metric.val}_d={density}_n={n}_r={radius}_nosw_nsm={neighbourSelectionMode.value}_k={k}_ee={eventEffect.val}.svg"
-            #savePath = f"{metric.val}_d={density}_n={n}_r={radius}_swt=K_o={orderValue}_do={disorderValue}_nsm={neighbourSelectionMode.value}_ee={eventEffect.val}.svg"
-            savePath = f"{metric.val}_d={density}_n={n}_r={radius}_swt=MODE_o={orderValue.value}_do={disorderValue.value}_k={k}_ee={eventEffect.val}.svg"
-            evaluator.evaluateAndVisualize(labels=["ordered", "disordered"], xLabel=xAxisLabel, yLabel=yAxisLabel, colourBackgroundForTimesteps=[e1Start, e1Start+duration], savePath=savePath)    
-            endEval = time.time()
-            print(f"Duration eval {ServiceGeneral.formatTime(endEval-startEval)}") 
-
+        for nsm in [NeighbourSelectionMode.NEAREST,
+                    NeighbourSelectionMode.FARTHEST]:
+            for kCombo in [[5,1]]:
+                for eventEffect in eventEffects:
+                    for metric in metrics:
+                        eval(density=density, radius=radius, eventEffect=eventEffect, metric=metric, type="ksw", nsm=nsm, combo=kCombo)
 endTime = time.time()
 print(f"Total duration: {ServiceGeneral.formatTime(endTime-startTime)}")
     
+
+def eval(density, radius, eventEffect, metric, type, nsm=None, k=None, combo=None):
+    yAxisLabel = metric.label
+    startEval = time.time()
+    print(f"d={density}, r={radius}")
+    modelParams = []
+    simulationData = []
+    colours = []
+
+    for initialStateString in ["ordered", "random"]:
+        if type in ["nsmsw", "ksw"]:
+            orderValue, disorderValue = combo
+        if type == "nsmsw": 
+            if initialStateString == "ordered":
+                nsm = orderValue
+            else:
+                nsm = disorderValue
+        elif type == "ksw": 
+            if initialStateString == "ordered":
+                k = orderValue
+            else:
+                k = disorderValue
+        
+        if type == "nosw":
+            baseFilename = f"{baseDataLocation}local/switchingInactive/local_1e_nosw_{initialStateString}_st={nsm.value}__d={density}_n={n}_r={radius}_k={k}_noise=1_drn={duration}_{e1Start}-{eventEffect.val}"
+        elif type == "nsmsw":
+            baseFilename = f"{baseDataLocation}{levelDataLocation}local_1e_switchType=MODE_{initialStateString}_st={nsm.value}_o={orderValue.value}_do={disorderValue.value}_d={density}_n={n}_r={radius}_k={k}_noise={noisePercentage}_drn={duration}_{e1Start}-{eventEffect.val}"
+        elif type == "ksw":
+            baseFilename = f"{baseDataLocation}{levelDataLocation}local_1e_switchType=K_{initialStateString}_st={k}_o={orderValue}_do={disorderValue}_d={density}_n={n}_r={radius}_nsm={nsm.value}_noise={noisePercentage}_drn={duration}_{e1Start}-{eventEffect.val}"
+
+        filenames = ServiceGeneral.createListOfFilenamesForI(baseFilename=baseFilename, minI=iStart, maxI=iStop, fileTypeString="json")
+        modelParamsDensity, simulationDataDensity, coloursDensity = ServiceSavedModel.loadModels(filenames, loadSwitchValues=False)
+        modelParams.append(modelParamsDensity)
+        simulationData.append(simulationDataDensity)
+        colours.append(coloursDensity)
+
+#paths.append(f"density-vs-noise_ORDER_mode-comparision_n={n}_k=1_radius=10_density={density}_noise={noisePercentage}%_hierarchical_clustering_threshold=0.01.png")
+#createMultiPlotFromImages(title, numX, numY, rowLabels, colLabels, paths)
+    threshold = 0.01
+    evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=100, threshold=threshold)
+    
+    if type == "nosw":
+        savePath = f"{metric.val}_d={density}_n={n}_r={radius}_nosw_nsm={nsm.value}_k={k}_ee={eventEffect.val}.svg"
+    elif type == "nsmsw":
+        savePath = f"{metric.val}_d={density}_n={n}_r={radius}_swt=MODE_o={orderValue.value}_do={disorderValue.value}_k={k}_ee={eventEffect.val}.svg"
+    elif type == "ksw":
+        savePath = f"{metric.val}_d={density}_n={n}_r={radius}_swt=K_o={orderValue}_do={disorderValue}_nsm={nsm.value}_ee={eventEffect.val}.svg"
+
+    evaluator.evaluateAndVisualize(labels=["ordered", "disordered"], xLabel=xAxisLabel, yLabel=yAxisLabel, colourBackgroundForTimesteps=[e1Start, e1Start+duration], savePath=savePath)    
+    endEval = time.time()
+    print(f"Duration eval {ServiceGeneral.formatTime(endEval-startEval)}") 
