@@ -115,6 +115,8 @@ class EvaluatorMultiAvgComp(object):
                 self.__createMinAvgMaxNumberNeighboursPlot(data)
             case EnumMetrics.Metrics.AVG_DISTANCE_NEIGHBOURS:
                 self.__createAverageDistanceNeighboursPlot(data)
+            case EnumMetrics.Metrics.AVG_CENTROID_DISTANCE:
+                self.__createAverageDistanceNeighboursPlot(data)
 
         if xLabel != None:
             plt.xlabel(xLabel)
@@ -128,7 +130,7 @@ class EvaluatorMultiAvgComp(object):
             ax.fill_betweenx(y, colourBackgroundForTimesteps[0], colourBackgroundForTimesteps[1], facecolor='light green', alpha=0.5)
         if savePath != None:
             plt.savefig(savePath)
-        #plt.show()
+        plt.show()
         plt.close()
 
     
