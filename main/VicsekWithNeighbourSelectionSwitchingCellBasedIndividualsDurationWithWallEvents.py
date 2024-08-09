@@ -169,7 +169,7 @@ class VicsekWithNeighbourSelection(VicsekWithNeighbourSelectionSwitchingCellBase
         self.localOrderHistory[0,:]=localOrders
 
         # for every time step, the positions, orientations, switchTypeValues and colours for each particle are updated and added to the histories
-        for it in range(numIntervals):
+        for it in range(1, numIntervals):
             self.t = it
 
             if t % 1000 == 0:
@@ -219,7 +219,8 @@ class VicsekWithNeighbourSelection(VicsekWithNeighbourSelectionSwitchingCellBase
             t+=dt
 
         # in case there is a moving event, e.g. a moving predator, the point of origin's values are appended as the last element to the histories before returning to preserve their movement data
-        positionsHistory, orientationsHistory, coloursHistory, switchTypeValuesHistory = self.addEventEntityToHistories(numIntervals, eventPositionHistory, eventOrientationHistory, positionsHistory, orientationsHistory, coloursHistory, switchTypeValuesHistory)
+        if events != None:
+            positionsHistory, orientationsHistory, coloursHistory, switchTypeValuesHistory = self.addEventEntityToHistories(numIntervals, eventPositionHistory, eventOrientationHistory, positionsHistory, orientationsHistory, coloursHistory, switchTypeValuesHistory)
 
         return (dt*np.arange(numIntervals), positionsHistory, orientationsHistory), coloursHistory, switchTypeValuesHistory
     
