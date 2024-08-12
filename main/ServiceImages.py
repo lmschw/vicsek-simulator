@@ -6,6 +6,7 @@ import math
 import random
 
 import EvaluatorMultiAvgComp
+import EvaluatorMultiAvgCompForTimestepLimit
 import ServiceSavedModel
 from EnumMetrics import Metrics
 import ServiceMetric
@@ -14,6 +15,8 @@ import AnimatorScatter
 import AnimatorScatterMulti
 import DefaultValues as dv
 from matplotlib.ticker import MultipleLocator
+
+import ServiceAnalysis
 
 """
 Service containing static methods to create images.
@@ -834,3 +837,108 @@ def createDensityVsThresholdPlot(type, thresholdType, radius, thresholdVals, den
         plt.close()
     else:
         plt.show()
+
+
+def plotMinAvgMaxOrderPerKAndMode(ks, modes, data, startTimestep, endTimestep, modeLabels):
+
+    nRows = len(ks)
+    nCols = 1
+    fig, axes = plt.subplots(nrows=nRows, ncols=nCols, sharex=True, sharey=True)
+
+    avgs = []
+    for y, k in enumerate(ks):
+        avgsK = []
+        for mode in modes:
+            dataset = data.get(f"{mode.value}-{k}")
+            dataset = dataset[startTimestep:endTimestep]
+            avgsK.append(np.average(dataset))
+        avgs.append(avgsK)
+
+        df = pd.DataFrame(avgs, index=modeLabels).T  
+
+        plt.scatter( x=[1, 2], y=avgsK)
+    plt.show()
+
+
+def createOrderForNsmVsKPlot(neighbourSelectionModes, ks, initialState="ordered", 
+                             startTimestep=0, endTimestep=None, iStart=1, iStop=11, density=0.05, radius=10, baseDataFilePath="", savePath=None):
+    """
+    Creates a matrix plot showing the minimum or maximum of the local order for every combination of density and radius provided.
+
+    Params:
+        - type ("minorder" or "maxorder"): if the minimum or maximum of the local order should be displayed
+        - initialState (string) [optional]: the initial state of the system: ordered or random
+        - savePath (string) [optional]: where the plot should be saved
+
+    Returns:
+        Nothing.
+    """
+    numRuns = iStop - iStart
+    metric = Metrics.ORDER
+    pointsForNsm = []
+    percentagesForNsm = []
+    for nsm in neighbourSelectionModes:
+        pointsForK = []
+        percentagesForK = []
+        for k in ks:
+            closeToOrderCount = 0
+            closeToDisorderCount = 0
+            modelParams = []
+            simulationData = []
+            colours = []
+            resultsK = []
+            for i in range(iStart, iStop):
+                baseFilename = f"{baseDataFilePath}plot_test_global_noev_nosw_d={density}_r={radius}_{initialState}_nsm={nsm.value}_k={k}_n=125_noise=1_psteps=100"
+                filenames = ServiceGeneral.createListOfFilenamesForI(baseFilename, maxI=iStop, minI=iStart, fileTypeString="json")
+                modelParamsDensity, simulationDataDensity, coloursDensity = ServiceSavedModel.loadModels(filenames, loadSwitchValues=False)
+                modelParams.append(modelParamsDensity)
+                simulationData.append(simulationDataDensity)
+                colours.append(coloursDensity)
+
+                evaluator = EvaluatorMultiAvgCompForTimestepLimit.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=1, startTimestep=startTimestep, endTimestep=endTimestep)
+                results = evaluator.evaluate()
+                avgOrder = np.average(list(results.values()))
+                resultsK.append(avgOrder)
+
+                if ServiceAnalysis.isCloseToOrder(avgOrder):
+                    closeToOrderCount += 1
+                elif ServiceAnalysis.isCloseToDisorder(avgOrder):
+                    closeToDisorderCount += 1
+            pointsForK.append(np.average(resultsK))
+            percentagesForK.append([closeToOrderCount/numRuns, closeToDisorderCount/numRuns])
+
+        pointsForNsm.append(pointsForK)
+        percentagesForNsm.append(percentagesForK)
+
+    figure = plt.figure()
+    ax = figure.add_subplot(111)
+    ax.set_title(f"{density}, radius={radius}")
+    
+    # using the matshow() function 
+    caxes = ax.matshow(np.array(pointsForNsm), interpolation ='nearest', vmin=0, vmax=1)
+
+    colorbar = figure.colorbar(caxes)
+    #colorbar.set_ticks([0, 0.2, 0.4, 0.6, 0.8, 1])
+
+    #axes.yaxis.set_major_locator(MultipleLocator(1))  # <- HERE
+        #axes.xaxis.set_major_locator(MultipleLocator(5))  # <- HERE
+    labelsNsm = [nsm.value for nsm in neighbourSelectionModes]
+    ax.set_xticklabels(['']+ks)
+    ax.set_yticklabels(['']+labelsNsm)
+    ax.set_xlabel("k")
+    ax.set_ylabel("neighbour selection mode")
+
+    for (i, j), z in np.ndenumerate(pointsForNsm):
+        ax.text(j, i, formatPercentages(percentagesForNsm[i][j]), ha='center', va='center',
+                bbox=dict(boxstyle='round', facecolor='white', edgecolor='0.3'))
+   
+    if savePath != None:
+        
+        plt.savefig(savePath)
+        plt.show()
+        #plt.close()
+    else:
+        plt.show()
+
+def formatPercentages(percentages):
+    return f"{np.round(percentages[0], 2) * 100}%/{np.round(percentages[1], 2) * 100}%"

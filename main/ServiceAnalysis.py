@@ -70,3 +70,10 @@ def findNumberOfSwitchesForParticle(idx, n, switchValues, startTime=0, endTime=N
     """
     switchers = findParticlesSwitchingValues(n, switchValues, startTime, endTime)
     return idx, len(switchers.get(idx))
+
+
+def isCloseToOrder(orderValue):
+    return orderValue >= 0.9
+
+def isCloseToDisorder(orderValue):
+    return orderValue <= 0.1
