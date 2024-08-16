@@ -23,3 +23,17 @@ def loadSimulationDataAsDataframe(path, loadSwitchValues=False):
 
     df = pd.DataFrame(data, columns=cols)
     return df
+
+def createDataframeOfResultsData(data):
+    cols = ['time']
+    for col in range(len(data[list(data.keys())[0]])):
+        cols.append(f"results_{col}")
+    transformedData = []
+    for t in data.keys():
+        dataT = [t]
+        for result in data[t]:
+            dataT.append(result)
+        transformedData.append(dataT)
+
+    df = pd.DataFrame(transformedData, columns=cols)
+    return df
