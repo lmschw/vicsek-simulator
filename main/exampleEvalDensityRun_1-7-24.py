@@ -22,6 +22,12 @@ import Animator2D
 
 
 def eval(density, n, radius, eventEffect, metric, type, nsm=None, k=None, combo=None, evalInterval=1):
+    xlim = (0, 15000)
+    if metric in [Metrics.ORDER, Metrics.DUAL_OVERLAY_ORDER_AND_PERCENTAGE]:
+        ylim = (0, 1.1)
+    else:
+        ylim = (0, 50)
+   
     yAxisLabel = metric.label
     startEval = time.time()
     ServiceGeneral.logWithTime(f"d={density}, r={radius}, nsm={nsm}, k={k}, combo={combo}, eventEffect={eventEffect.val}, metric={metric.name}, type={type}")
@@ -68,7 +74,7 @@ def eval(density, n, radius, eventEffect, metric, type, nsm=None, k=None, combo=
     elif type == "ksw":
         savePath = f"{metric.val}_d={density}_n={n}_r={radius}_swt=K_o={orderValue}_do={disorderValue}_nsm={nsm.value}_ee={eventEffect.val}.svg"
 
-    evaluator.evaluateAndVisualize(labels=["ordered", "disordered"], xLabel=xAxisLabel, yLabel=yAxisLabel, colourBackgroundForTimesteps=[e1Start, e1Start+duration], savePath=savePath)    
+    evaluator.evaluateAndVisualize(labels=["ordered", "disordered"], xLabel=xAxisLabel, yLabel=yAxisLabel, colourBackgroundForTimesteps=[e1Start, e1Start+duration], showVariance=True, xlim=xlim, ylim=ylim, savePath=savePath)    
     endEval = time.time()
     print(f"Duration eval {ServiceGeneral.formatTime(endEval-startEval)}") 
 
@@ -171,7 +177,7 @@ ks = [1, 5]
 
 # K VS. START
 metrics = [Metrics.ORDER,
-           Metrics.AVG_DISTANCE_NEIGHBOURS,
+           Metrics.DUAL_OVERLAY_ORDER_AND_PERCENTAGE,
            Metrics.AVG_CENTROID_DISTANCE]
 xAxisLabel = "timesteps"
 tmax = 15000
