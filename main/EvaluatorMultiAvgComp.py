@@ -170,7 +170,7 @@ class EvaluatorMultiAvgComp(object):
         plt.show()
         plt.close()
 
-    def evaluateAndVisualize(self, labels, xLabel=None, yLabel=None, subtitle=None, colourBackgroundForTimesteps=(None,None), showVariance=False, savePath=None):
+    def evaluateAndVisualize(self, labels, xLabel=None, yLabel=None, subtitle=None, colourBackgroundForTimesteps=(None,None), showVariance=False, xlim=None, ylim=None, savePath=None):
         """
         Evaluates and subsequently visualises the results for multiple models.
 
@@ -185,7 +185,7 @@ class EvaluatorMultiAvgComp(object):
         data, varianceData = self.evaluate()
         if showVariance == False:
             varianceData = None
-        self.visualize(data, labels, xLabel=xLabel, yLabel=yLabel, subtitle=subtitle, colourBackgroundForTimesteps=colourBackgroundForTimesteps, varianceData=varianceData, savePath=savePath)
+        self.visualize(data, labels, xLabel=xLabel, yLabel=yLabel, subtitle=subtitle, colourBackgroundForTimesteps=colourBackgroundForTimesteps, varianceData=varianceData, xlim=xlim, ylim=ylim, savePath=savePath)
         
     def __createStandardLineplot(self, data, labels, varianceData=None, xlim=None, ylim=None):
         """
