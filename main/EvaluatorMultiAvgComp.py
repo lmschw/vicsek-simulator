@@ -168,7 +168,7 @@ class EvaluatorMultiAvgComp(object):
             ax.fill_betweenx(y, colourBackgroundForTimesteps[0], colourBackgroundForTimesteps[1], facecolor='green', alpha=0.2)
         if savePath != None:
             plt.savefig(savePath)
-        plt.show()
+        #plt.show()
         plt.close()
 
     def evaluateAndVisualize(self, labels, xLabel=None, yLabel=None, subtitle=None, colourBackgroundForTimesteps=(None,None), showVariance=False, xlim=None, ylim=None, savePath=None):
