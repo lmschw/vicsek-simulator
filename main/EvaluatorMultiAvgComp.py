@@ -131,7 +131,8 @@ class EvaluatorMultiAvgComp(object):
             case EnumMetrics.Metrics.DUAL_OVERLAY_ORDER_AND_PERCENTAGE:
                 if ylim == None:
                     ylim = (0, 1.1)
-                self.__createDualOrderPlot(data, xlim=xlim, ylim=ylim)
+                self.__createDualOrderPlot(data, labels=labels, varianceData=varianceData,
+                                           xlim=xlim, ylim=ylim)
             case EnumMetrics.Metrics.AVERAGE_NUMBER_NEIGHBOURS:
                 self.__createStandardLineplot(data, labels, varianceData, xlim=xlim, ylim=ylim)
             case EnumMetrics.Metrics.MIN_AVG_MAX_NUMBER_NEIGHBOURS:
@@ -167,7 +168,7 @@ class EvaluatorMultiAvgComp(object):
             ax.fill_betweenx(y, colourBackgroundForTimesteps[0], colourBackgroundForTimesteps[1], facecolor='green', alpha=0.2)
         if savePath != None:
             plt.savefig(savePath)
-        #plt.show()
+        plt.show()
         plt.close()
 
     def evaluateAndVisualize(self, labels, xLabel=None, yLabel=None, subtitle=None, colourBackgroundForTimesteps=(None,None), showVariance=False, xlim=None, ylim=None, savePath=None):
@@ -232,7 +233,7 @@ class EvaluatorMultiAvgComp(object):
         else:
             df.plot.line()
 
-    def __createDualOrderPlot(self, data, varianceData=None, xlim=None, ylim=None):
+    def __createDualOrderPlot(self, data, labels=None, varianceData=None, xlim=None, ylim=None):
         """
         Creates a line plot overlaying the percentage of particles choosing the order switch type value and the order value. 
 
@@ -243,8 +244,11 @@ class EvaluatorMultiAvgComp(object):
         Returns:
             Nothing.
         """
+        if labels == None:
+            labels = ["order", "percentage of order value"]
+
         sorted(data.items())
-        df = pd.DataFrame(data, index=["order", "percentage of order value"]).T
+        df = pd.DataFrame(data, index=labels).T
         if xlim != None and ylim != None:
             df.plot.line(xlim=xlim, ylim=ylim)
         elif xlim != None:
