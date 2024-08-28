@@ -119,7 +119,6 @@ e2Start = 10000
 e3Start = 15000
 
 noisePercentages = [1] # to run again with other noise percentages, make sure to comment out anything that has fixed noise (esp. local)
-densities = [0.01]
 psteps = 100
 numbersOfPreviousSteps = [psteps]
 durations = [1000]
@@ -159,17 +158,15 @@ iStart = 1
 iStop = 3
 
 baseDataLocation = "D:/vicsek-data2/adaptive_radius/"
-baseDataLocation = "D:/temp/"
 
-densities = [0.01]
+densities = [0.01, 0.05, 0.09]
 radii = [5, 10, 20]
-interval = 5000
+interval = 1
 kMax = 5
 noisePercentage = 1
 
 # ------------------------------------------------ LOCAL ---------------------------------------------------------------
 levelDataLocation = "local/switchingActive/"
-levelDataLocation = ""
 data = {}
 
 ks = [1, 5]
@@ -189,38 +186,34 @@ radius = 10
 duration = 1000
 
 vals = []
-for density in [0.01]:
+for density in densities:
     n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
     for radius in radii:
         
-        """
+        
         for nsm in neighbourSelectionModes:
             for k in ks:
                 for eventEffect in eventEffects:
                     for metric in metrics:
                         eval(vals=vals, density=density, n=n, radius=radius, eventEffect=eventEffect, metric=metric, type="nosw", nsm=nsm, k=k, evalInterval=interval)
 
-        """
+        
         for k in ks:
             for nsmCombo in [[NeighbourSelectionMode.FARTHEST, NeighbourSelectionMode.NEAREST],
                         ]:
                 for eventEffect in eventEffects:
                     for metric in metrics:
                         vals = eval(vals=vals, density=density, n=n, radius=radius, eventEffect=eventEffect, metric=metric, type="nsmsw", k=k, combo=nsmCombo, evalInterval=interval)
-                        print(vals) 
-        """
+        
         for nsm in neighbourSelectionModes:
             for kCombo in [[5,1]]:
                 for eventEffect in eventEffects:
                     for metric in metrics:
                         vals = eval(vals=vals, density=density, n=n, radius=radius, eventEffect=eventEffect, metric=metric, type="ksw", nsm=nsm, combo=kCombo, evalInterval=interval)
-                        print(vals) 
 
-        """
-print(vals)    
+        
 endTime = time.time()
 print(f"Total duration: {ServiceGeneral.formatTime(endTime-startTime)}")
 df = pd.DataFrame(data=vals, columns=["type", "density", "radius", "nsm", "k", "combo", "value"])
 df.to_csv("avg_neighbours.csv")
-print(df.head())
      
