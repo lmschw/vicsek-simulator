@@ -67,11 +67,11 @@ def eval(vals, density, n, radius, eventEffect, metric, type, nsm=None, k=None, 
     result, _ = evaluator.evaluate()   
     avg = np.average(list(result.values()))
     if type == "nosw": 
-        vals.append([type, density, radius, nsm.value, k, None, avg])
+        vals.append([type, density, radius, nsm.value, k, None, eventEffect.val, avg])
     elif type == "nsmsw":
-        vals.append([type, density, radius, None, k, f"{combo[0].value}-{combo[1].value}", avg])
+        vals.append([type, density, radius, None, k, f"{combo[0].value}-{combo[1].value}", eventEffect.val, avg])
     elif type == "ksw":
-        vals.append([type, density, radius, nsm.value, None, f"{combo[0]}-{combo[1]}", avg])
+        vals.append([type, density, radius, nsm.value, None, f"{combo[0]}-{combo[1]}", eventEffect.val, avg])
 
     endEval = time.time()
     print(f"Duration eval {ServiceGeneral.formatTime(endEval-startEval)}")
@@ -155,7 +155,7 @@ eventEffectsDisorder = [EventEffect.AWAY_FROM_ORIGIN,
 
 saveLocation = f""
 iStart = 1
-iStop = 3
+iStop = 11
 
 baseDataLocation = "D:/vicsek-data2/adaptive_radius/"
 
@@ -197,7 +197,6 @@ for density in densities:
                     for metric in metrics:
                         eval(vals=vals, density=density, n=n, radius=radius, eventEffect=eventEffect, metric=metric, type="nosw", nsm=nsm, k=k, evalInterval=interval)
 
-        
         for k in ks:
             for nsmCombo in [[NeighbourSelectionMode.FARTHEST, NeighbourSelectionMode.NEAREST],
                         ]:
@@ -214,6 +213,6 @@ for density in densities:
         
 endTime = time.time()
 print(f"Total duration: {ServiceGeneral.formatTime(endTime-startTime)}")
-df = pd.DataFrame(data=vals, columns=["type", "density", "radius", "nsm", "k", "combo", "value"])
+df = pd.DataFrame(data=vals, columns=["type", "density", "radius", "nsm", "k", "combo", "eventEffect", "value"])
 df.to_csv("avg_neighbours.csv")
      
