@@ -33,6 +33,9 @@ def evaluateSingleTimestep(positions, orientations, metric, radius=None, thresho
         case Metrics.CLUSTER_NUMBER:
             nClusters, _ = findClusters(positions, orientations, threshold)
             return nClusters
+        case Metrics.CLUSTER_NUMBER_WITH_RADIUS:
+            nClusters, _ = findClustersWithRadius(positions, orientations, radius, threshold)
+            return nClusters
         case Metrics.CLUSTER_SIZE:
             nClusters, clusters = findClusters(positions, orientations, threshold)
             clusterSizes = computeClusterSizes(nClusters, clusters)
