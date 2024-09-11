@@ -236,3 +236,10 @@ TODO 26.07.:
 - check if we could measure cohesion as size of largest cluster (cf. Kong et al. (2024))
 - run global k = [2, 3, 4, 10] for single combination (d=0.05, 10)
 - run experiments with only 5 agents (with global vision and/or with a smaller domain)
+
+TODO 31.07.:
+- find and check Lei (2020) data
+- create plots for overleaf
+- clean overleaf
+- implement predator outside of domain
+- check switching/no switching for Distant With noise

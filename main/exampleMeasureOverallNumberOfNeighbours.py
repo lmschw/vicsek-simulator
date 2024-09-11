@@ -1,5 +1,6 @@
 import time
 import numpy as np
+import pandas as pd
 
 from EnumNeighbourSelectionMode import NeighbourSelectionMode
 from EnumMetrics import Metrics
@@ -20,15 +21,7 @@ import DefaultValues as dv
 import AnimatorMatplotlib
 import Animator2D
 
-
-def eval(density, n, radius, eventEffect, metric, type, nsm=None, k=None, combo=None, evalInterval=1):
-    xlim = (0, 15000)
-    if metric in [Metrics.ORDER, Metrics.DUAL_OVERLAY_ORDER_AND_PERCENTAGE]:
-        ylim = (0, 1.1)
-    else:
-        ylim = (0, 50)
-   
-    yAxisLabel = metric.label
+def eval(vals, density, n, radius, eventEffect, metric, type, nsm=None, k=None, combo=None, evalInterval=1):
     startEval = time.time()
     ServiceGeneral.logWithTime(f"d={density}, r={radius}, nsm={nsm}, k={k}, combo={combo}, eventEffect={eventEffect.val}, metric={metric.name}, type={type}")
     modelParams = []
@@ -71,21 +64,18 @@ def eval(density, n, radius, eventEffect, metric, type, nsm=None, k=None, combo=
 #createMultiPlotFromImages(title, numX, numY, rowLabels, colLabels, paths)
     threshold = 0.01
     evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=evalInterval, threshold=threshold, switchTypeValues=switchTypes, switchTypeOptions=combo)
-    
-    labels = ["ordered", "disordered"]
-    if metric == Metrics.DUAL_OVERLAY_ORDER_AND_PERCENTAGE:
-        labels = ["ordered - order", "ordered - percentage of order-inducing value", "disordered - order", "disordered - percentage of order-inducing value"]
-    if type == "nosw":
-        savePath = f"{metric.val}_d={density}_n={n}_r={radius}_nosw_nsm={nsm.value}_k={k}_ee={eventEffect.val}.svg"
+    result, _ = evaluator.evaluate()   
+    avg = np.average(list(result.values()))
+    if type == "nosw": 
+        vals.append([type, density, radius, nsm.value, k, None, eventEffect.val, avg])
     elif type == "nsmsw":
-        savePath = f"{metric.val}_d={density}_n={n}_r={radius}_swt=MODE_o={orderValue.value}_do={disorderValue.value}_k={k}_ee={eventEffect.val}.svg"
+        vals.append([type, density, radius, None, k, f"{combo[0].value}-{combo[1].value}", eventEffect.val, avg])
     elif type == "ksw":
-        savePath = f"{metric.val}_d={density}_n={n}_r={radius}_swt=K_o={orderValue}_do={disorderValue}_nsm={nsm.value}_ee={eventEffect.val}.svg"
+        vals.append([type, density, radius, nsm.value, None, f"{combo[0]}-{combo[1]}", eventEffect.val, avg])
 
-    evaluator.evaluateAndVisualize(labels=labels, xLabel=xAxisLabel, yLabel=yAxisLabel, colourBackgroundForTimesteps=[e1Start, e1Start+duration], showVariance=True, xlim=xlim, ylim=ylim, savePath=savePath)    
     endEval = time.time()
-    print(f"Duration eval {ServiceGeneral.formatTime(endEval-startEval)}") 
-
+    print(f"Duration eval {ServiceGeneral.formatTime(endEval-startEval)}")
+    return vals
 
 def getLabelsFromNoisePercentages(noisePercentages):
     return [f"{noisePercentage}% noise" for noisePercentage in noisePercentages]
@@ -129,7 +119,6 @@ e2Start = 10000
 e3Start = 15000
 
 noisePercentages = [1] # to run again with other noise percentages, make sure to comment out anything that has fixed noise (esp. local)
-densities = [0.01]
 psteps = 100
 numbersOfPreviousSteps = [psteps]
 durations = [1000]
@@ -170,7 +159,7 @@ iStop = 11
 
 baseDataLocation = "D:/vicsek-data2/adaptive_radius/"
 
-densities = [0.01]
+densities = [0.01, 0.05, 0.09]
 radii = [5, 10, 20]
 interval = 1
 kMax = 5
@@ -178,14 +167,13 @@ noisePercentage = 1
 
 # ------------------------------------------------ LOCAL ---------------------------------------------------------------
 levelDataLocation = "local/switchingActive/"
-
 data = {}
 
 ks = [1, 5]
 
 # K VS. START
 metrics = [
-           Metrics.CLUSTER_NUMBER
+           Metrics.AVERAGE_NUMBER_NEIGHBOURS
            ]
 xAxisLabel = "timesteps"
 tmax = 15000
@@ -197,31 +185,34 @@ radius = 10
 
 duration = 1000
 
+vals = []
 for density in densities:
     n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
     for radius in radii:
+        
         
         for nsm in neighbourSelectionModes:
             for k in ks:
                 for eventEffect in eventEffects:
                     for metric in metrics:
-                        eval(density=density, n=n, radius=radius, eventEffect=eventEffect, metric=metric, type="nosw", nsm=nsm, k=k, evalInterval=interval)
+                        eval(vals=vals, density=density, n=n, radius=radius, eventEffect=eventEffect, metric=metric, type="nosw", nsm=nsm, k=k, evalInterval=interval)
 
-        
-        for nsmCombo in [[NeighbourSelectionMode.FARTHEST, NeighbourSelectionMode.NEAREST],
-                         [NeighbourSelectionMode.HIGHEST_ORIENTATION_DIFFERENCE, NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE]]:
-            for k in ks:
+        for k in ks:
+            for nsmCombo in [[NeighbourSelectionMode.FARTHEST, NeighbourSelectionMode.NEAREST],
+                        ]:
                 for eventEffect in eventEffects:
                     for metric in metrics:
-                        eval(density=density, n=n, radius=radius, eventEffect=eventEffect, metric=metric, type="nsmsw", k=k, combo=nsmCombo, evalInterval=interval)
+                        vals = eval(vals=vals, density=density, n=n, radius=radius, eventEffect=eventEffect, metric=metric, type="nsmsw", k=k, combo=nsmCombo, evalInterval=interval)
         
         for nsm in neighbourSelectionModes:
             for kCombo in [[5,1]]:
                 for eventEffect in eventEffects:
                     for metric in metrics:
-                        eval(density=density, n=n, radius=radius, eventEffect=eventEffect, metric=metric, type="ksw", nsm=nsm, combo=kCombo, evalInterval=interval)
+                        vals = eval(vals=vals, density=density, n=n, radius=radius, eventEffect=eventEffect, metric=metric, type="ksw", nsm=nsm, combo=kCombo, evalInterval=interval)
+
         
 endTime = time.time()
 print(f"Total duration: {ServiceGeneral.formatTime(endTime-startTime)}")
-    
-
+df = pd.DataFrame(data=vals, columns=["type", "density", "radius", "nsm", "k", "combo", "eventEffect", "value"])
+df.to_csv("avg_neighbours.csv")
+     

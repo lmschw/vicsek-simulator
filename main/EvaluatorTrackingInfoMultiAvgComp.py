@@ -114,7 +114,7 @@ class EvaluatorTrackingInfoMultiAvgComp(object):
             ax.fill_betweenx(y, colourBackgroundForTimesteps[0], colourBackgroundForTimesteps[1], facecolor='light green', alpha=0.5)
         if savePath != None:
             plt.savefig(savePath)
-        plt.show()
+        #plt.show()
         plt.close()
 
     

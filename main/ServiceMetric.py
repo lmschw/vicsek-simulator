@@ -66,6 +66,9 @@ def evaluateSingleTimestep(positions, orientations, metric, radius=None, thresho
         case Metrics.AVG_DISTANCE_NEIGHBOURS:
             _, avg, _ = getMinAvgMaxDistanceOfNeighbours(positions, radius)
             return avg
+        case Metrics.AVG_CENTROID_DISTANCE:
+            _, avg, _ = getMinAvgMaxDistanceFromCentroid(positions)
+            return avg
      
 def computeOrder(orientations):
     """
@@ -197,7 +200,7 @@ def angleBetweenTwoVectors(vec1, vec2):
     Returns:
         Float representing the angle between the two vectors.
     """
-    return np.arccos(cosAngle(vec1, vec2))
+    return np.arctan2(vec1[1]-vec2[1], vec1[0]-vec2[0])
 
 def cosAngle(vec1, vec2):
     # TODO: move to ServiceOrientations
@@ -378,6 +381,7 @@ def checkTurnSuccess(orientations, fixedAngle, noise, eventStartTimestep, interv
     Returns:
         Boolean signifying whether the whole swarm has managed to align to the fixed angle.
     """
+    #print("starting turn success eval...")
     if eventStartTimestep == 0:
         raise Exception("Cannot be used if there is no previous timestep for comparison")
     if eventStartTimestep + interval > len(orientations[0]):
@@ -391,11 +395,19 @@ def checkTurnSuccess(orientations, fixedAngle, noise, eventStartTimestep, interv
         after = [ServiceOrientations.normaliseAngle(ServiceOrientations.computeAngleForOrientation(orientationsAfter[i])) for i in range(0, len(orientationsAfter))]
         expected = [ServiceOrientations.normaliseAngle(ServiceOrientations.computeAngleForOrientation(orientationsExpected[i])) for i in range(0, len(orientationsExpected))]
 
-        # if the average new angle is closer to the expected angle and the difference between the expected and the new angles can be explained by noise, the turn was successful
-        if np.absolute(np.average(expected)-np.average(after)) < np.absolute(np.average(before)-np.average(after)) and np.absolute(np.average(expected)-np.average(after)) <= noise:
-            return True
+        beforeAvg = np.average(before)
+        afterAvg = np.average(after)
+        expectedAvg = np.average(expected)
 
-    return False
+        if np.absolute(beforeAvg-expectedAvg) <= noise:
+            #print("No turn necessary")
+            return "not_necessary"
+
+        # if the average new angle is closer to the expected angle and the difference between the expected and the new angles can be explained by noise, the turn was successful
+        if np.absolute(expectedAvg-afterAvg) < np.absolute(beforeAvg-afterAvg) and np.absolute(expectedAvg-afterAvg) <= noise:
+            return "turned"
+
+    return "not_turned"
 
 def getOverallMinAvgMaxNumberOfNeighbours(positions, radius):
     mins = []
@@ -439,6 +451,11 @@ def getMinAvgMaxDistanceOfNeighbours(positions, radius):
         return 0, 0, 0
     return np.min(distancesFlattened), np.average(distancesFlattened), np.max(distancesFlattened)
 
+
+def getMinAvgMaxDistanceFromCentroid(positions):
+    centroid = np.mean(positions, axis=0)
+    distances = [math.dist(pos, centroid) for pos in positions]
+    return np.min(distances), np.average(distances), np.max(distances)
 
 """
 json:

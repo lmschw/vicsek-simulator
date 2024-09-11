@@ -234,6 +234,13 @@ class ExternalStimulusOrientationChangeEvent:
         areaminy = max(area[1] - area[2], 0) # the radius may be greater than the available space
         areamaxy = min(area[1] + area[2], self.domainSize[1]) # the radius may be greater than the available space
 
+        # if the area is outside to the left or above, then the highest/leftmost cell (i.e. the first cell) is used
+        left = 0
+        upper = 0
+        # if the area is outside to the right or below, then the lowest/rightmost cell (i.e. the last cell) is used
+        right = len(cells)-1
+        lower = len(cells)-1
+        
         for cellidx, cell in enumerate(cells):
             xmin = cell[0][0]
             xmax = cell[1][0]
@@ -249,6 +256,7 @@ class ExternalStimulusOrientationChangeEvent:
             if ymin < areamaxy and ymax >= areamaxy and area[0] >= xmin and area[0] <= xmax:
                 lower = cellidx
 
+        
         colLeft = math.floor(left / cellDims[1])
         colRight = math.floor(right / cellDims[1])
         rowUpper = (upper % cellDims[1])
