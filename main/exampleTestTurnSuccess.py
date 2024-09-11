@@ -38,8 +38,8 @@ intervals = [50, 100, 150, 200]
 domainSize = (50, 50)
 
 
-dataLocationNoSw = "E:/vicsek-data2/adaptive_radius/local/switchingInactive/"
-dataLocationSw = "E:/vicsek-data2/adaptive_radius/local/switchingActive/"
+dataLocationNoSw = "D:/vicsek-data2/adaptive_radius/local/switchingInactive/"
+dataLocationSw = "D:/vicsek-data2/adaptive_radius/local/switchingActive/"
 
 filenameNoSw = "local_1e_nosw_ordered_st=A__d=0.01_n=25_r=5_k=1_noise=1_drn=1000_5000-align_fixed_1.json"
 filenameKSw = "local_1e_switchType=K_ordered_st=5_o=5_do=1_d=0.01_n=25_r=5_nsm=A_noise=1_drn=1000_5000-align_fixed_5.json"
@@ -53,11 +53,13 @@ noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(noisePercentage)
 fixedAngle = np.pi
 
 iStart = 1
-iStop = 2
+iStop = 11
 
 intervalResults = {}
 resultArray = []
 for interval in intervals:
+    overallResults = []
+    
     ServiceGeneral.logWithTime(f"Starting interval {interval}")
     overallResults = []
     ServiceGeneral.logWithTime("STARTING NOSW")
@@ -65,6 +67,7 @@ for interval in intervals:
         n = ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize)
         for radius in radii:
             results = []
+            
             for initialState in initialStates:
                 for nsm in nsms:
                     for k in ks:
@@ -75,7 +78,7 @@ for interval in intervals:
                             result = ServiceMetric.checkTurnSuccess(orientations=orientations, fixedAngle=np.pi, noise=noise, eventStartTimestep=startTimestep, interval=interval)
                             #ServiceGeneral.logWithTime(f"turn success for d={density}, r={radius}, {initialState}, nsm={nsm.value}, k={k}, i={i}: {result}")
                             results.append(result)
-                            resultArray.append([interval, 'nosw', density, radius, initialState, nsm.value, k, result])
+                            resultArray.append([i, interval, 'nosw', density, radius, initialState, nsm.value, k, result])
 
             #print(results)
             overallResults.append(results)
@@ -88,7 +91,7 @@ for interval in intervals:
             ServiceGeneral.logWithTime(f"d={density}, r={radius}")
             ServiceGeneral.logWithTime(f"not_necessary: {notNecessaryCount}, not_turned: {notTurnedCount}, turned: {turnedCount}")
             
-
+    """
     ServiceGeneral.logWithTime("STARTING KSW")
     kOrdered = 5
     kDisordered = 1
@@ -111,7 +114,7 @@ for interval in intervals:
                         result = ServiceMetric.checkTurnSuccess(orientations=orientations, fixedAngle=np.pi, noise=noise, eventStartTimestep=startTimestep, interval=interval)
                         #ServiceGeneral.logWithTime(f"turn success for d={density}, r={radius}, {initialState}, nsm={nsm.value}, i={i}: {result}")
                         results.append(result)
-                        resultArray.append([interval, 'ksw', density, radius, initialState, nsm.value, f"{orderVal}-{disorderVal}", result])
+                        resultArray.append([interval, 'ksw', density, radius, initialState, nsm.value, f"{kOrdered}-{kDisordered}", result])
 
             #print(results)
             overallResults.append(results)
@@ -154,12 +157,12 @@ for interval in intervals:
             #print(results)
             overallResults.append(results)
     intervalResults[interval] = overallResults
-    
+"""    
 
 
 
-df = pd.DataFrame(resultArray, columns=["interval", "switchtype", "density", "radius", "initialState", "nsm", "k", "result"])
-df.to_csv("turn_successes.csv")
+df = pd.DataFrame(resultArray, columns=["i", "interval", "switchtype", "density", "radius", "initialState", "nsm", "k", "result"])
+df.to_csv("turn_successes_nosw.csv")
 
 for interval in intervals:
     ServiceGeneral.logWithTime(f"Overall results - {interval}:")
