@@ -54,16 +54,15 @@ noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(noisePercentage)
 tmaxWithoutEvent = 3000
 tmaxWithEvent = 15000
 
-densities = [0.05]
+densities = [0.09]
 psteps = 100
 numbersOfPreviousSteps = [psteps]
-durations = [1000]
+durations = [1, 5, 10, 25, 50, 100, 150, 200, 250, 500]
 ks = [1, 5]
 additionalKs = [0, 2, 3, 4]
-radii = [10] # area is always 4x bigger than the last
+radii = [20] # area is always 4x bigger than the last
 
-neighbourSelectionModes = [NeighbourSelectionMode.ALL,
-                           NeighbourSelectionMode.RANDOM,
+neighbourSelectionModes = [
                            NeighbourSelectionMode.NEAREST,
                            NeighbourSelectionMode.FARTHEST,
                            NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE,
@@ -102,92 +101,13 @@ for density in densities:
     # ----------------------------------------------- GLOBAL STARTS HERE ----------------------------------------------
     #saveLocation = f"{baseLocation}/global"
     for radius in radii:
-        for noisePercentage in [0, 0.5, 1.5, 2, 2.5, 3]:
-            noisePercentage = 1
-            noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(noisePercentage)
-
-            print(f"d={density}, n={n}, r={radius}, size={domainSize}")
-
-    # ---neighbourSelectionMode only (3000) for all 6 modes
-            tmax = tmaxWithoutEvent
-
-            for initialStateString in ["ordered", "random"]:
-                for neighbourSelectionMode in neighbourSelectionModes:
-                    for k in additionalKs:
-                        for i in range(iStart,iStop): 
-                            ServiceGeneral.logWithTime(f"Starting d={density}, r={radius}, {initialStateString}, nsm={neighbourSelectionMode.name}, k={k} i={i}")
-                            startRun = time.time()
-
-                            if initialStateString == "ordered":
-                                initialState = ServicePreparation.createOrderedInitialDistributionEquidistanced(domainSize, n)
-
-                            simulator = VicsekWithNeighbourSelectionSwitchingCellBased.VicsekWithNeighbourSelection(
-                                                                                            neighbourSelectionModel=neighbourSelectionMode, 
-                                                                                            domainSize=domainSize, 
-                                                                                            numberOfParticles=n, 
-                                                                                            k=k, 
-                                                                                            noise=noise, 
-                                                                                            radius=radius,
-                                                                                            speed=speed,
-                                                                                            )
-                            if initialStateString == "ordered":
-                                simulationData, colours = simulator.simulate(tmax=tmax, initialState=initialState)
-                            else:
-                                simulationData, colours = simulator.simulate(tmax=tmax)
-
-                            # Save model values for future use
-                            savePath = f"{saveLocation}plot_test_global_noev_nosw_d={density}_r={radius}_{initialStateString}_nsm={neighbourSelectionMode.value}_k={k}_n={n}_noise={noisePercentage}_psteps={psteps}_{i}"
-                            ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
-
-                            endRun = time.time()
-                            ServiceGeneral.logWithTime(f"Completed d={density}, r={radius}, {initialStateString}, nsm={neighbourSelectionMode.name}, k={k} i={i} in {ServiceGeneral.formatTime(endRun-startRun)}")
-                endTotal = time.time()
-                ServiceGeneral.logWithTime(f"Completed GLOBAL in {ServiceGeneral.formatTime(endTotal-startTotal)}")
-
-            
-        """
-        # ---neighbourSelectionMode only (3000) for all 6 modes
-        tmax = tmaxWithoutEvent
-
-        for initialStateString in ["ordered", "random"]:
-            for neighbourSelectionMode in neighbourSelectionModes:
-                for k in ks:
-                    for i in range(iStart,iStop): 
-                        ServiceGeneral.logWithTime(f"Starting d={density}, r={radius}, {initialStateString}, nsm={neighbourSelectionMode.name}, k={k} i={i}")
-                        startRun = time.time()
-
-                        if initialStateString == "ordered":
-                            initialState = ServicePreparation.createOrderedInitialDistributionEquidistanced(domainSize, n)
-
-                        simulator = VicsekWithNeighbourSelectionSwitchingCellBased.VicsekWithNeighbourSelection(
-                                                                                        neighbourSelectionModel=neighbourSelectionMode, 
-                                                                                        domainSize=domainSize, 
-                                                                                        numberOfParticles=n, 
-                                                                                        k=k, 
-                                                                                        noise=noise, 
-                                                                                        radius=radius,
-                                                                                        speed=speed,
-                                                                                        )
-                        if initialStateString == "ordered":
-                            simulationData, colours = simulator.simulate(tmax=tmax, initialState=initialState)
-                        else:
-                            simulationData, colours = simulator.simulate(tmax=tmax)
-
-                        # Save model values for future use
-                        savePath = f"{saveLocation}/global_noev_nosw_d={density}_r={radius}_{initialStateString}_nsm={neighbourSelectionMode.value}_k={k}_n={n}_noise={noisePercentage}_psteps={psteps}_{i}"
-                        ServiceSavedModel.saveModel(simulationData=simulationData, colours=colours, path=f"{savePath}.json", modelParams=simulator.getParameterSummary())
-
-                        endRun = time.time()
-                        ServiceGeneral.logWithTime(f"Completed d={density}, r={radius}, {initialStateString}, nsm={neighbourSelectionMode.name}, k={k} i={i} in {ServiceGeneral.formatTime(endRun-startRun)}")
-            endTotal = time.time()
-            ServiceGeneral.logWithTime(f"Completed GLOBAL in {ServiceGeneral.formatTime(endTotal-startTotal)}")
-        """
+        
 # ----------------------------------------------- LOCAL STARTS HERE ----------------------------------------------
         #saveLocation = f"{baseLocation}/local"
         areas = [(domainSize[0]/2, domainSize[1]/2, radius)]
         tmax = tmaxWithEvent
         
-        """
+        
         for duration in durations:
             # --- single event, no switchvals for all modes with k = 1 and k = 5 (15000)        
             for k in ks:
@@ -243,8 +163,7 @@ for density in densities:
 
                                 endRun = time.time()
                                 ServiceGeneral.logWithTime(f"Completed d={density}, r={radius}, drn={duration}, k={k}, nsm={neighbourSelectionMode.name}, {initialStateString}, eventEffect={eventEffectOrder.name}, i={i} in {ServiceGeneral.formatTime(endRun-startRun)}")
-        """
-        """
+
         saveLocation = f"{saveLocation}/switchingActive"
         
 
@@ -311,8 +230,7 @@ for density in densities:
                                     ServiceGeneral.logWithTime(f"Completed nsm-switch d={density}, r={radius}, drn={duration}, k={k}, {initialStateString}, eventEffect={eventEffectOrder.name}, i={i} in {ServiceGeneral.formatTime(endRun-startRun)}")
         endNsm = time.time()
         ServiceGeneral.logWithTime(f"Completed nsm-switch in {ServiceGeneral.formatTime(endNsm-startNsm)}")
-        """
-        """
+
         startK = time.time()
         for duration in durations:
             switchType = SwitchType.K
@@ -376,4 +294,4 @@ for density in densities:
 
                             endK = time.time()
 ServiceGeneral.logWithTime(f"Completed k-switch in {ServiceGeneral.formatTime(endK-startK)}")
-"""
+

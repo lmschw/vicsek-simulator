@@ -6,6 +6,7 @@ Contains the evaluation metric options.
 class Metrics(Enum):
     ORDER = "order", "order",
     CLUSTER_NUMBER = "clusternumber", "number of clusters",
+    CLUSTER_NUMBER_WITH_RADIUS = "numclusterr", "number of clusters"
     CLUSTER_SIZE = "clustersize", "cluster size",
     CLUSTER_NUMBER_OVER_PARTICLE_LIFETIME = "clusternumber_lifetime", "numbers of clusters a particle has belonged to over its lifetime",
     CLUSTER_CONSISTENCY_AVERAGE_STEPS = "clusterconst_steps", "average number of steps a cluster has remained consistent",
