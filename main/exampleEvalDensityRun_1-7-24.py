@@ -196,7 +196,7 @@ metrics = [
            Metrics.CLUSTER_NUMBER_WITH_RADIUS
            ]
 xAxisLabel = "timesteps"
-tmax = 15000
+
 
 startTime = time.time()
 
@@ -205,12 +205,14 @@ duration = 1000
 for density in densities:
     n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
     for radius in radii:
+        tmax = 3000
         for nsm in neighbourSelectionModes:
             for k in ks:
                 for eventEffect in eventEffects:
                     for metric in metrics:
                         eval(density=density, n=n, radius=radius, eventEffect=eventEffect, metric=metric, type="global", nsm=nsm, k=k, evalInterval=interval)
 
+        tmax = 15000
         for nsm in neighbourSelectionModes:
             for k in ks:
                 for eventEffect in eventEffects:
