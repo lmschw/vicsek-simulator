@@ -147,7 +147,7 @@ def findClustersWithRadius(positions, orientations, radius, threshold=0.99):
     for i in range(n):
         neighbourIndices = findNeighbours(i, positions, radius)
         for neighbourIdx in neighbourIndices:
-            if cosAngle(orientations[i], orientations[neighbourIdx]) >= threshold:
+            if computeOrder([orientations[i], orientations[neighbourIdx]]) >= threshold:
                 clusterMembers[i][neighbourIdx] = 1
     
     clusterCounter = 1
