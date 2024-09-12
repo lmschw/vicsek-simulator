@@ -25,6 +25,8 @@ def eval(density, n, radius, eventEffect, metric, type, nsm=None, k=None, combo=
     xlim = (0, 15000)
     if metric in [Metrics.ORDER, Metrics.DUAL_OVERLAY_ORDER_AND_PERCENTAGE]:
         ylim = (0, 1.1)
+    elif metric == Metrics.CLUSTER_NUMBER_WITH_RADIUS:
+        ylim = (0, n)
     else:
         ylim = (0, 50)
    
@@ -56,7 +58,9 @@ def eval(density, n, radius, eventEffect, metric, type, nsm=None, k=None, combo=
             baseFilename = f"{baseDataLocation}{levelDataLocation}local_1e_switchType=MODE_{initialStateString}_st={nsm.value}_o={orderValue.value}_do={disorderValue.value}_d={density}_n={n}_r={radius}_k={k}_noise={noisePercentage}_drn={duration}_{e1Start}-{eventEffect.val}"
         elif type == "ksw":
             baseFilename = f"{baseDataLocation}{levelDataLocation}local_1e_switchType=K_{initialStateString}_st={k}_o={orderValue}_do={disorderValue}_d={density}_n={n}_r={radius}_nsm={nsm.value}_noise={noisePercentage}_drn={duration}_{e1Start}-{eventEffect.val}"
-
+        elif type == "global":
+            baseFilename = f"E:/data/visek-data2/adaptive_radius/data/global/global_noev_nosw_d={density}_r={radius}_{initialStateString}_nsm={nsm.value}_k={k}_n={n}_noise={noisePercentage}_psteps={psteps}"
+        
         filenames = ServiceGeneral.createListOfFilenamesForI(baseFilename=baseFilename, minI=iStart, maxI=iStop, fileTypeString="json")
         if type != "nosw":
             modelParamsDensity, simulationDataDensity, coloursDensity, switchTypeValues = ServiceSavedModel.loadModels(filenames, loadSwitchValues=True)
@@ -81,6 +85,8 @@ def eval(density, n, radius, eventEffect, metric, type, nsm=None, k=None, combo=
         savePath = f"{metric.val}_d={density}_n={n}_r={radius}_swt=MODE_o={orderValue.value}_do={disorderValue.value}_k={k}_ee={eventEffect.val}.svg"
     elif type == "ksw":
         savePath = f"{metric.val}_d={density}_n={n}_r={radius}_swt=K_o={orderValue}_do={disorderValue}_nsm={nsm.value}_ee={eventEffect.val}.svg"
+    elif type == "global":
+        savePath = f"{metric.val}_d={density}_n={n}_r={radius}_global_nsm={nsm.value}_k={k}.svg"
 
     evaluator.evaluateAndVisualize(labels=labels, xLabel=xAxisLabel, yLabel=yAxisLabel, colourBackgroundForTimesteps=[e1Start, e1Start+duration], showVariance=True, xlim=xlim, ylim=ylim, savePath=savePath)    
     endEval = time.time()
@@ -135,12 +141,14 @@ numbersOfPreviousSteps = [psteps]
 durations = [1000]
 ks = [1,5]
 
-neighbourSelectionModes = [NeighbourSelectionMode.ALL,
-                           NeighbourSelectionMode.RANDOM,
+neighbourSelectionModes = [
                            NeighbourSelectionMode.NEAREST,
                            NeighbourSelectionMode.FARTHEST,
                            NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE,
-                           NeighbourSelectionMode.HIGHEST_ORIENTATION_DIFFERENCE]
+                           NeighbourSelectionMode.HIGHEST_ORIENTATION_DIFFERENCE,
+                           NeighbourSelectionMode.ALL,
+                           NeighbourSelectionMode.RANDOM
+                           ]
 
 orderNeighbourSelectionModes = [NeighbourSelectionMode.ALL,
                                 NeighbourSelectionMode.RANDOM,
@@ -170,8 +178,8 @@ iStop = 11
 
 baseDataLocation = "D:/vicsek-data2/adaptive_radius/"
 
-densities = [0.01]
-radii = [5, 10, 20]
+densities = [0.09, 0.05, 0.01]
+radii = [20, 10, 5]
 interval = 1
 kMax = 5
 noisePercentage = 1
@@ -185,22 +193,24 @@ ks = [1, 5]
 
 # K VS. START
 metrics = [
-           Metrics.CLUSTER_NUMBER
+           Metrics.CLUSTER_NUMBER_WITH_RADIUS
            ]
 xAxisLabel = "timesteps"
 tmax = 15000
 
 startTime = time.time()
 
-density = 0.05
-radius = 10
-
 duration = 1000
 
 for density in densities:
     n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
     for radius in radii:
-        
+        for nsm in neighbourSelectionModes:
+            for k in ks:
+                for eventEffect in eventEffects:
+                    for metric in metrics:
+                        eval(density=density, n=n, radius=radius, eventEffect=eventEffect, metric=metric, type="global", nsm=nsm, k=k, evalInterval=interval)
+
         for nsm in neighbourSelectionModes:
             for k in ks:
                 for eventEffect in eventEffects:
