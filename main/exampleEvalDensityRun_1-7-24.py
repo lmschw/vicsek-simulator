@@ -62,7 +62,7 @@ def eval(density, n, radius, eventEffect, metric, type, nsm=None, k=None, combo=
             baseFilename = f"E:/data/visek-data2/adaptive_radius/data/global/global_noev_nosw_d={density}_r={radius}_{initialStateString}_nsm={nsm.value}_k={k}_n={n}_noise={noisePercentage}_psteps={psteps}"
         
         filenames = ServiceGeneral.createListOfFilenamesForI(baseFilename=baseFilename, minI=iStart, maxI=iStop, fileTypeString="json")
-        if type != "nosw":
+        if type not in ["nosw", "global"]:
             modelParamsDensity, simulationDataDensity, coloursDensity, switchTypeValues = ServiceSavedModel.loadModels(filenames, loadSwitchValues=True)
             switchTypes.append(switchTypeValues)
         else:
@@ -206,6 +206,7 @@ for density in densities:
     n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
     for radius in radii:
         tmax = 3000
+        iStop = 101
         for nsm in neighbourSelectionModes:
             for k in ks:
                 for eventEffect in eventEffects:
@@ -213,6 +214,7 @@ for density in densities:
                         eval(density=density, n=n, radius=radius, eventEffect=eventEffect, metric=metric, type="global", nsm=nsm, k=k, evalInterval=interval)
 
         tmax = 15000
+        iStop = 11
         for nsm in neighbourSelectionModes:
             for k in ks:
                 for eventEffect in eventEffects:
