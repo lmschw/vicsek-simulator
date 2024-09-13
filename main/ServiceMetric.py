@@ -144,10 +144,12 @@ def findClustersWithRadius(positions, orientations, radius, threshold=0.99):
     n = len(positions)
     clusters = np.zeros(n)
     clusterMembers = np.zeros((n,n))
+
     for i in range(n):
         neighbourIndices = findNeighbours(i, positions, radius)
         for neighbourIdx in neighbourIndices:
-            if computeOrder([orientations[i], orientations[neighbourIdx]]) >= threshold:
+            localOrder = computeOrder([orientations[i], orientations[neighbourIdx]])
+            if localOrder >= threshold:
                 clusterMembers[i][neighbourIdx] = 1
     
     clusterCounter = 1

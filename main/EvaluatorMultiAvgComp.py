@@ -120,6 +120,8 @@ class EvaluatorMultiAvgComp(object):
                 self.__createStandardLineplot(data, labels, varianceData, xlim=xlim, ylim=ylim)
             case EnumMetrics.Metrics.CLUSTER_NUMBER:
                 self.__createStandardLineplot(data, labels, varianceData, xlim=xlim, ylim=ylim)
+            case EnumMetrics.Metrics.CLUSTER_NUMBER_WITH_RADIUS:
+                self.__createStandardLineplot(data, labels, varianceData, xlim=xlim, ylim=ylim)
             case EnumMetrics.Metrics.CLUSTER_SIZE:
                 self.__createStandardLineplot(data, labels, varianceData, xlim=xlim, ylim=ylim)
             case EnumMetrics.Metrics.CLUSTER_NUMBER_OVER_PARTICLE_LIFETIME:
