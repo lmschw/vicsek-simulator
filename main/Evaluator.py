@@ -33,6 +33,7 @@ class Evaluator(object):
 
         if metric in [EnumMetrics.Metrics.CLUSTER_NUMBER, 
                       EnumMetrics.Metrics.CLUSTER_SIZE, 
+                      EnumMetrics.Metrics.CLUSTER_NUMBER_WITH_RADIUS,
                       EnumMetrics.Metrics.CLUSTER_NUMBER_OVER_PARTICLE_LIFETIME,
                       EnumMetrics.Metrics.CLUSTER_CONSISTENCY_AVERAGE_STEPS,
                       EnumMetrics.Metrics.CLUSTER_CONSISTENCY_NUMBER_OF_CLUSTER_CHANGES,
@@ -61,8 +62,8 @@ class Evaluator(object):
             #if i % 100 == 0:
                 #print(f"evaluating {i}/{len(self.time)}")
             if i % self.evaluationTimestepInterval == 0 and i >= startTimestep and i <= endTimestep:
-                #if self.switchTypeValues == None:
-                if any(ele is None for ele in self.switchTypeValues):
+                if self.switchTypeValues == None:
+                #if any(ele is None for ele in self.switchTypeValues):
                     valuesPerTimeStep[self.time[i]] = ServiceMetric.evaluateSingleTimestep(self.positions[i], self.orientations[i], self.metric, self.radius, threshold=self.threshold)
                 else:
                     valuesPerTimeStep[self.time[i]] = ServiceMetric.evaluateSingleTimestep(self.positions[i], self.orientations[i], self.metric, self.radius, threshold=self.threshold, switchTypeValues=self.switchTypeValues[i], switchTypeOptions=self.switchTypeOptions)

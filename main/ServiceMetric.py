@@ -33,6 +33,9 @@ def evaluateSingleTimestep(positions, orientations, metric, radius=None, thresho
         case Metrics.CLUSTER_NUMBER:
             nClusters, _ = findClusters(positions, orientations, threshold)
             return nClusters
+        case Metrics.CLUSTER_NUMBER_WITH_RADIUS:
+            nClusters, _ = findClustersWithRadius(positions, orientations, radius, threshold)
+            return nClusters
         case Metrics.CLUSTER_SIZE:
             nClusters, clusters = findClusters(positions, orientations, threshold)
             clusterSizes = computeClusterSizes(nClusters, clusters)
@@ -141,10 +144,12 @@ def findClustersWithRadius(positions, orientations, radius, threshold=0.99):
     n = len(positions)
     clusters = np.zeros(n)
     clusterMembers = np.zeros((n,n))
+
     for i in range(n):
         neighbourIndices = findNeighbours(i, positions, radius)
         for neighbourIdx in neighbourIndices:
-            if cosAngle(orientations[i], orientations[neighbourIdx]) >= threshold:
+            localOrder = computeOrder([orientations[i], orientations[neighbourIdx]])
+            if localOrder >= threshold:
                 clusterMembers[i][neighbourIdx] = 1
     
     clusterCounter = 1

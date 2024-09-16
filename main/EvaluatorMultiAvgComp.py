@@ -62,7 +62,7 @@ class EvaluatorMultiAvgComp(object):
             results = []
             for individualRun in range(len(self.simulationData[model])):
                 #print(f"step {individualRun}/{len(self.simulationData[model])}")
-                if self.switchTypeValues == None:
+                if self.switchTypeValues == None or self.switchTypeValues == []:
                     evaluator = Evaluator.Evaluator(self.modelParams[model][individualRun], self.metric, self.simulationData[model][individualRun], self.evaluationTimestepInterval, self.threshold)
                 else:    
                     evaluator = Evaluator.Evaluator(self.modelParams[model][individualRun], self.metric, self.simulationData[model][individualRun], self.evaluationTimestepInterval, self.threshold, self.switchTypeValues[model][individualRun], self.switchTypeOptions)
@@ -119,6 +119,8 @@ class EvaluatorMultiAvgComp(object):
                     ylim = (0, 1.1)
                 self.__createStandardLineplot(data, labels, varianceData, xlim=xlim, ylim=ylim)
             case EnumMetrics.Metrics.CLUSTER_NUMBER:
+                self.__createStandardLineplot(data, labels, varianceData, xlim=xlim, ylim=ylim)
+            case EnumMetrics.Metrics.CLUSTER_NUMBER_WITH_RADIUS:
                 self.__createStandardLineplot(data, labels, varianceData, xlim=xlim, ylim=ylim)
             case EnumMetrics.Metrics.CLUSTER_SIZE:
                 self.__createStandardLineplot(data, labels, varianceData, xlim=xlim, ylim=ylim)
