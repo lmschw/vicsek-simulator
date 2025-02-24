@@ -243,3 +243,7 @@ TODO 31.07.:
 - clean overleaf
 - implement predator outside of domain
 - check switching/no switching for Distant With noise
+
+TODO 07.10:
+- add group-induced effects
+- find a way to test for the optimal parameters (nsms, ks) to achieve each state
