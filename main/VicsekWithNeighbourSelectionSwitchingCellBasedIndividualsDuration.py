@@ -2,6 +2,7 @@ import numpy as np
 
 import DefaultValues as dv
 import ServiceVicsekHelper
+import ServiceSavedModel
 
 import VicsekWithNeighbourSelectionSwitchingCellBasedIndividuals
 
@@ -15,7 +16,7 @@ class VicsekWithNeighbourSelection(VicsekWithNeighbourSelectionSwitchingCellBase
                  k=dv.DEFAULT_K_NEIGHBOURS, showExample=dv.DEFAULT_SHOW_EXAMPLE_PARTICLE, numCells=None, 
                  switchType=None, switchValues=(None, None), thresholdType=None, orderThresholds=None, 
                  numberPreviousStepsForThreshold=10, switchBlockedAfterEventTimesteps=-1, occlusionActive=False,
-                 switchingActive=True):
+                 switchingActive=True, returnHistories=True, logPath=None):
         """
         Initialize the model with all its parameters
 
@@ -59,7 +60,9 @@ class VicsekWithNeighbourSelection(VicsekWithNeighbourSelectionSwitchingCellBase
                          numberPreviousStepsForThreshold=numberPreviousStepsForThreshold,
                          switchBlockedAfterEventTimesteps=switchBlockedAfterEventTimesteps,
                          occlusionActive=occlusionActive,
-                         switchingActive=switchingActive)
+                         switchingActive=switchingActive,
+                         returnHistories=returnHistories,
+                         logPath=logPath)
 
 
     def simulate(self, initialState=(None, None, None), dt=None, tmax=None, events=None):
@@ -103,24 +106,19 @@ class VicsekWithNeighbourSelection(VicsekWithNeighbourSelectionSwitchingCellBase
         t=0
         numIntervals=int(tmax/dt+1)
         
-        positionsHistory = np.zeros((numIntervals,self.numberOfParticles,len(self.domainSize)))
-        orientationsHistory = np.zeros((numIntervals,self.numberOfParticles,len(self.domainSize)))  
-        self.localOrderHistory = np.zeros((numIntervals,self.numberOfParticles))        
-        switchTypeValuesHistory = numIntervals * [self.numberOfParticles * [None]]
-        coloursHistory = numIntervals * [self.numberOfParticles * ['k']]
         eventPositionHistory = np.zeros((numIntervals,1,len(self.domainSize)))
         eventOrientationHistory = np.zeros((numIntervals,1,len(self.domainSize)))
-
-        positionsHistory[0,:,:]=positions
-        orientationsHistory[0,:,:]=orientations
-        switchTypeValuesHistory[0]=switchTypeValues
-
 
         self.cells = self.initialiseCells()
         self.neighbouringCells = self.determineNeighbouringCells()
 
         cellToParticleDistribution, particleToCellDistribution = self.createCellDistributions(positions)
 
+        self.initialiseHistoriesAndLogs(numIntervals=numIntervals,
+                                        positions=positions,
+                                        orientations=orientations,
+                                        switchTypeValues=switchTypeValues)
+        
         localOrders = self.__initialiseLocalOrders(positions, orientations, cellToParticleDistribution, particleToCellDistribution)
         self.localOrderHistory[0,:]=localOrders
 
@@ -161,21 +159,21 @@ class VicsekWithNeighbourSelection(VicsekWithNeighbourSelectionSwitchingCellBase
             orientations = self.calculateMeanOrientations(positions, orientations, switchTypeValues, neighbourCandidates)
             orientations = ServiceVicsekHelper.normalizeOrientations(orientations+self.generateNoise())
 
-            # update histories
-            positionsHistory[it,:,:]=positions
-            orientationsHistory[it,:,:]=orientations
-            self.localOrderHistory[it,:]=localOrders
-            switchTypeValuesHistory[it]=switchTypeValues
-            coloursHistory[it]=colours
-
+            self.updateHistoriesAndLogs(t=it,
+                            positions=positions,
+                            orientations=orientations,
+                            switchTypeValues=switchTypeValues,
+                            colours=colours,
+                            localOrders=localOrders)
             t+=dt
 
-        # in case there is a moving event, e.g. a moving predator, the point of origin's values are appended as the last element to the histories before returning to preserve their movement data
-        positionsHistory, orientationsHistory, coloursHistory, switchTypeValuesHistory = self.addEventEntityToHistories(numIntervals, eventPositionHistory, eventOrientationHistory, positionsHistory, orientationsHistory, coloursHistory, switchTypeValuesHistory)
-
-        return (dt*np.arange(numIntervals), positionsHistory, orientationsHistory), coloursHistory, switchTypeValuesHistory
+        if self.returnHistories:
+            # in case there is a moving event, e.g. a moving predator, the point of origin's values are appended as the last element to the histories before returning to preserve their movement data
+            self.positionsHistory, self.orientationsHistory, self.coloursHistory, self.switchTypeValuesHistory = self.addEventEntityToHistories(numIntervals, eventPositionHistory, eventOrientationHistory)
+            return (dt*np.arange(numIntervals), self.positionsHistory, self.orientationsHistory), self.coloursHistory, self.switchTypeValuesHistory
+        return (None, None, None), None, None
     
-    def addEventEntityToHistories(self, numIntervals, eventPositionHistory, eventOrientationHistory, positionsHistory, orientationsHistory, coloursHistory, switchTypeValuesHistory):
+    def addEventEntityToHistories(self, numIntervals, eventPositionHistory, eventOrientationHistory):
         """
         Adds the information (positions, orientations) of the point of origin of an event as the last element of the histories.
         For the coloursHistory, the event's point of origin is always set to yellow. The switchTypeValue is always set to the disorder value.
@@ -196,14 +194,14 @@ class VicsekWithNeighbourSelection(VicsekWithNeighbourSelectionSwitchingCellBase
         newPositionsHistory = np.zeros((numIntervals,self.numberOfParticles+1,len(self.domainSize))) 
         newOrientationsHistory = np.zeros((numIntervals,self.numberOfParticles+1,len(self.domainSize))) 
 
-        for t in range(len(positionsHistory)):
+        for t in range(len(self.positionsHistory)):
             if any(ele is None for ele in eventPositionHistory[t]):
-                newPositionsHistory[t] = np.concatenate((positionsHistory[t], [[-1,-1]]), axis=0)
+                newPositionsHistory[t] = np.concatenate((self.positionsHistory[t], [[-1,-1]]), axis=0)
             else:
-                newPositionsHistory[t] = np.concatenate((positionsHistory[t], eventPositionHistory[t]), axis=0)
+                newPositionsHistory[t] = np.concatenate((self.positionsHistory[t], eventPositionHistory[t]), axis=0)
 
-            newOrientationsHistory[t] = np.concatenate((orientationsHistory[t], eventOrientationHistory[t]), axis=0)
+            newOrientationsHistory[t] = np.concatenate((self.orientationsHistory[t], eventOrientationHistory[t]), axis=0)
 
-            coloursHistory[t].append('y')
-            switchTypeValuesHistory[t].append(self.disorderSwitchValue)
-        return newPositionsHistory, newOrientationsHistory, coloursHistory, switchTypeValuesHistory
+            self.coloursHistory[t].append('y')
+            self.switchTypeValuesHistory[t].append(self.disorderSwitchValue)
+        return newPositionsHistory, newOrientationsHistory, self.coloursHistory, self.switchTypeValuesHistory

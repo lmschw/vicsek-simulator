@@ -1,5 +1,6 @@
-import codecs, json
+import codecs, json, csv
 import numpy as np
+import pandas as pd
 """
 Service contains static methods to save and load models to/from json files.
 """
@@ -31,6 +32,68 @@ def saveModel(simulationData, colours, path="sample.json", modelParams=None, sav
         dict["switchValues"] = switchValues
     __saveDict(path, dict, modelParams)
 
+def logModelParams(path, modelParamsDict):
+    """
+    Logs the model params as a single row with headers.
+    """
+    with open(f"{path}.csv", 'w', newline='') as f:
+        w = csv.writer(f)
+        w.writerow(modelParamsDict.keys())
+        w.writerow(modelParamsDict.values())
+
+def initialiseCsvFileHeaders(path, headers=['t', 'i', 'x', 'y', 'u', 'v', 'colour'], addSwitchValueHeader=True):
+    """
+    Appends the headers to the csv file.
+
+    Params:
+        - headers (list of strings): the headers to be inserted into the file
+        - save_path (string): the path of the file where the headers should be inserted
+
+    Returns:
+        Nothing.
+    """
+    if addSwitchValueHeader:
+        headers.append('switchValue')
+    with open(f"{path}.csv", 'w', newline='') as f:
+        w = csv.writer(f)
+        w.writerow(headers)
+
+def createDictList(timestep, positions, orientations, colours, switchValues, switchingActive=True):
+    if switchingActive:
+        return [{'t': timestep, 'i': i, 'x': positions[i][0], 'y': positions[i][1], 'u': orientations[i][0], 'v': orientations[i][1], 'colour': colours[i]} for i in range(len(positions))]
+    return [{'t': timestep, 'i': i, 'x': positions[i][0], 'y': positions[i][1], 'u': orientations[i][0], 'v': orientations[i][1], 'colour': colours[i], 'switchValue': switchValues[i]} for i in range(len(positions))]
+
+def saveModelTimestep(timestep, positions, orientations, colours, path, switchValues, switchingActive=True):
+    dict_list = createDictList(timestep, positions, orientations, colours, switchValues, switchingActive)
+    with open(f"{path}.csv", 'a', newline='') as f:
+        w = csv.writer(f)
+        for dict in dict_list:
+            w.writerow(dict.values())
+
+def loadModelFromCsv(filepathData, filePathModelParams, loadSwitchValues=False):
+    dfParams = pd.read_csv(filePathModelParams,index_col=False)
+    modelParams = dfParams.to_dict(orient='records')[0]
+
+    df = pd.read_csv(filepathData,index_col=False)
+    times = []
+    positions = []
+    orientations = []
+    colours = []
+    switchValues = []
+    #tmax = df['t'].max()
+    for t in df['t']:
+        if t not in times:
+            times.append(t)
+            dfT = df[df['t'] == t]
+            positions.append(np.column_stack((dfT['x'], dfT['y'])))
+            orientations.append(np.column_stack((dfT['u'], dfT['v'])))
+            colours.append(dfT['colour'].to_list())
+            if loadSwitchValues:
+                switchValues.append(dfT['switchValue'])
+    if loadSwitchValues:
+        return modelParams, (times, positions, orientations), colours, switchValues
+    return modelParams, (times, positions, orientations), colours
+
 def loadModel(path, loadSwitchValues=False):
     """
     Loads a single model from a single file.
@@ -48,7 +111,8 @@ def loadModel(path, loadSwitchValues=False):
     time = np.array(loadedJson["time"])
     positions = np.array(loadedJson["positions"])
     orientations = np.array(loadedJson["orientations"])
-    colours = np.array(loadedJson["colours"])
+    #colours = np.array(loadedJson["colours"])
+    colours = np.full((10000, 100), 'k')
     if loadSwitchValues == True:
         switchValues = np.array(loadedJson["switchValues"])
         return modelParams, (time, positions, orientations), colours, switchValues

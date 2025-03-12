@@ -7,6 +7,7 @@ from EnumThresholdType import ThresholdType
 import ServiceMetric
 import ServiceVicsekHelper
 import ServiceOrientations
+import ServiceSavedModel
 
 """
 Version of the modified Vicsek model used for local updatese by individuals without events or with events with a duration of a single timestep.
@@ -18,7 +19,7 @@ class VicsekWithNeighbourSelection:
                  k=dv.DEFAULT_K_NEIGHBOURS, showExample=dv.DEFAULT_SHOW_EXAMPLE_PARTICLE, numCells=None, 
                  switchType=None, switchValues=(None, None), thresholdType=None, orderThresholds=None, 
                  numberPreviousStepsForThreshold=10, switchBlockedAfterEventTimesteps=-1, occlusionActive=False,
-                 switchingActive=True):
+                 switchingActive=True, returnHistories=True, logPath=None):
         """
         Initialize the model with all its parameters
 
@@ -62,6 +63,8 @@ class VicsekWithNeighbourSelection:
         self.switchBlockedAfterEventTimesteps = switchBlockedAfterEventTimesteps
         self.occlusionActive = occlusionActive
         self.switchingActive = switchingActive
+        self.returnHistories = returnHistories
+        self.logPath = logPath
         self.selectedIndices = {}
 
         if numCells == None:
@@ -69,6 +72,8 @@ class VicsekWithNeighbourSelection:
             print(f"domainSize = {domainSize}, radius = {radius}, numCells = {self.numCells}")
         else:
             self.numCells = numCells
+
+        self.events = None
 
 
     def getParameterSummary(self, asString=False):
@@ -155,7 +160,10 @@ class VicsekWithNeighbourSelection:
             times, positionsHistory, orientationsHistory, coloursHistory, switchTypeValueHistory. All of them as ordered arrays so that they can be matched by index matching
         """
 
-        if any(events):
+        import time
+        st = time.time()
+        #if any(events):
+        if events != None:
             self.events = events
 
         # Preparations and setting of parameters if they are not passed to the method
@@ -177,16 +185,6 @@ class VicsekWithNeighbourSelection:
         # Initialisations for the loop and the return variables
         t=0
         numIntervals=int(tmax/dt+1)
-        
-        positionsHistory = np.zeros((numIntervals,self.numberOfParticles,len(self.domainSize)))
-        orientationsHistory = np.zeros((numIntervals,self.numberOfParticles,len(self.domainSize)))  
-        self.localOrderHistory = np.zeros((numIntervals,self.numberOfParticles))        
-        switchTypeValuesHistory = numIntervals * [self.numberOfParticles * [None]]
-        coloursHistory = numIntervals * [self.numberOfParticles * ['k']]
-
-        positionsHistory[0,:,:]=positions
-        orientationsHistory[0,:,:]=orientations
-        switchTypeValuesHistory[0]=switchTypeValues
 
         # preparing the cells
         self.cells = self.initialiseCells()
@@ -194,6 +192,11 @@ class VicsekWithNeighbourSelection:
 
         cellToParticleDistribution, particleToCellDistribution = self.createCellDistributions(positions)
 
+        self.initialiseHistoriesAndLogs(numIntervals=numIntervals,
+                                        positions=positions,
+                                        orientations=orientations,
+                                        switchTypeValues=switchTypeValues)
+        
         localOrders = self.__initialiseLocalOrders(positions, orientations, cellToParticleDistribution, particleToCellDistribution)
         self.localOrderHistory[0,:]=localOrders
 
@@ -234,16 +237,30 @@ class VicsekWithNeighbourSelection:
                 cellToParticleDistribution, particleToCellDistribution = self.updateCellForParticle(i, positions, cellToParticleDistribution, particleToCellDistribution)
                 positions[i] += -self.domainSize*np.floor(positions[i]/self.domainSize)
 
-            # update histories
-            positionsHistory[it,:,:]=positions
-            orientationsHistory[it,:,:]=orientations
-            self.localOrderHistory[it,:]=localOrders
-            switchTypeValuesHistory[it]=switchTypeValues
-            coloursHistory[it]=colours
+            self.updateHistoriesAndLogs(t=it,
+                                        positions=positions,
+                                        orientations=orientations,
+                                        switchTypeValues=switchTypeValues,
+                                        colours=colours,
+                                        localOrders=localOrders)
 
+            """
+            if t >= tmax-5:
+                print(f"t={t}")
+                print("pos")
+                print(positions)
+                print("ori")
+                print(orientations)
+            """
+            print(f"t={t}, order={ServiceMetric.computeOrder(orientations)}")
+
+            
             t+=dt
 
-        return (dt*np.arange(numIntervals), positionsHistory, orientationsHistory), coloursHistory, switchTypeValuesHistory
+        import ServiceGeneral
+        et = time.time()
+        ServiceGeneral.logWithTime(f"duration simulate(): {ServiceGeneral.formatTime(et-st)}")
+        return (dt*np.arange(numIntervals), self.positionsHistory, self.orientationsHistory), self.coloursHistory, self.switchTypeValuesHistory
     
 
     def initialiseCells(self):
@@ -664,3 +681,41 @@ class VicsekWithNeighbourSelection:
             Nothing.
         """
         self.selectedIndices = {k: v for k, v in self.selectedIndices.items() if (k + self.switchBlockedAfterEventTimesteps) > timestep}
+
+    def initialiseHistoriesAndLogs(self, numIntervals, positions, orientations, switchTypeValues):
+        self.localOrderHistory = np.zeros((numIntervals,self.numberOfParticles))        
+       
+        if self.returnHistories:
+            self.positionsHistory = np.zeros((numIntervals,self.numberOfParticles,len(self.domainSize)))
+            self.orientationsHistory = np.zeros((numIntervals,self.numberOfParticles,len(self.domainSize)))  
+            self.switchTypeValuesHistory = numIntervals * [self.numberOfParticles * [None]]
+            self.coloursHistory = numIntervals * [self.numberOfParticles * ['k']]
+            eventPositionHistory = np.zeros((numIntervals,1,len(self.domainSize)))
+            eventOrientationHistory = np.zeros((numIntervals,1,len(self.domainSize)))
+
+            self.positionsHistory[0,:,:]=positions
+            self.orientationsHistory[0,:,:]=orientations
+            self.switchTypeValuesHistory[0]=switchTypeValues
+
+        if self.logPath:
+            ServiceSavedModel.logModelParams(path=f"{self.logPath}_modelParams", modelParamsDict=self.getParameterSummary())
+            ServiceSavedModel.initialiseCsvFileHeaders(path=self.logPath, addSwitchValueHeader=self.switchingActive)
+
+
+    def updateHistoriesAndLogs(self, t, positions, orientations, switchTypeValues, colours, localOrders):
+        if self.returnHistories:
+            # update histories
+            self.positionsHistory[t,:,:]=positions
+            self.orientationsHistory[t,:,:]=orientations
+            self.switchTypeValuesHistory[t]=switchTypeValues
+            self.coloursHistory[t]=colours
+        self.localOrderHistory[t,:]=localOrders
+
+        if self.logPath:
+            ServiceSavedModel.saveModelTimestep(timestep=t, 
+                                                positions=positions, 
+                                                orientations=orientations,
+                                                colours=colours,
+                                                path=self.logPath,
+                                                switchValues=switchTypeValues,
+                                                switchingActive=self.switchingActive)

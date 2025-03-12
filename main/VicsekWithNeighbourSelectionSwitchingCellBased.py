@@ -138,12 +138,12 @@ class VicsekWithNeighbourSelection:
         t=0
         numIntervals=int(tmax/dt+1)
         
-        positionsHistory = np.zeros((numIntervals,self.numberOfParticles,len(self.domainSize)))
-        orientationsHistory = np.zeros((numIntervals,self.numberOfParticles,len(self.domainSize)))
-        coloursHistory = numIntervals * [self.numberOfParticles * ['k']]
+        self.positionsHistory = np.zeros((numIntervals,self.numberOfParticles,len(self.domainSize)))
+        self.orientationsHistory = np.zeros((numIntervals,self.numberOfParticles,len(self.domainSize)))
+        self.coloursHistory = numIntervals * [self.numberOfParticles * ['k']]
 
-        positionsHistory[0,:,:]=positions
-        orientationsHistory[0,:,:]=orientations
+        self.positionsHistory[0,:,:]=positions
+        self.orientationsHistory[0,:,:]=orientations
 
 
         self.cells = self.initialiseCells()
@@ -180,13 +180,13 @@ class VicsekWithNeighbourSelection:
             orientations = self.calculateMeanOrientations(positions, orientations, cellToParticleDistribution, particleToCellDistribution)
             orientations = self.__normalizeOrientations(orientations+self.generateNoise())
 
-            positionsHistory[it,:,:]=positions
-            orientationsHistory[it,:,:]=orientations
-            coloursHistory[it]=colours
+            self.positionsHistory[it,:,:]=positions
+            self.orientationsHistory[it,:,:]=orientations
+            self.coloursHistory[it]=colours
 
             t+=dt
 
-        return (dt*np.arange(numIntervals), positionsHistory, orientationsHistory), coloursHistory
+        return (dt*np.arange(numIntervals), self.positionsHistory, self.orientationsHistory), self.coloursHistory
     
 
     def initialiseCells(self):
