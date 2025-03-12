@@ -76,10 +76,10 @@ def saveModelTimestep(timestep, positions, orientations, colours, path, switchVa
             w.writerow(dict.values())
 
 def loadModelFromCsv(filepathData, filePathModelParams, loadSwitchValues=False):
-    dfParams = pd.read_csv(filePathModelParams,index_col=False)
+    dfParams = pd.read_csv(f"{filePathModelParams}.csv",index_col=False)
     modelParams = dfParams.to_dict(orient='records')[0]
 
-    df = pd.read_csv(filepathData,index_col=False)
+    df = pd.read_csv(f"{filepathData}.csv",index_col=False)
     times = []
     positions = []
     orientations = []
@@ -123,7 +123,7 @@ def loadModel(path, loadSwitchValues=False):
         return modelParams, (time, positions, orientations), colours, switchValues
     return modelParams, (time, positions, orientations), colours
 
-def loadModels(paths, loadSwitchValues=False):
+def loadModels(paths, loadSwitchValues=False, fromCsv=False):
     """
     Loads multiple models from multiple files.
 
@@ -140,13 +140,19 @@ def loadModels(paths, loadSwitchValues=False):
     switchValuesArr = []
     for path in paths:
         if loadSwitchValues == True:
-            modelParams, simulationData, colours, switchValues = loadModel(path, loadSwitchValues=loadSwitchValues)
+            if fromCsv:
+                modelParams, simulationData, colours, switchValues = loadModelFromCsv(path, loadSwitchValues=loadSwitchValues)
+            else:
+                modelParams, simulationData, colours, switchValues = loadModel(path, loadSwitchValues=loadSwitchValues)
             params.append(modelParams)
             data.append(simulationData)
             coloursArr.append(colours)
             switchValuesArr.append(switchValues)
         else:
-            modelParams, simulationData, colours = loadModel(path, loadSwitchValues=loadSwitchValues)
+            if fromCsv:
+                modelParams, simulationData, colours = loadModelFromCsv(path, loadSwitchValues=loadSwitchValues)
+            else:
+                modelParams, simulationData, colours = loadModel(path, loadSwitchValues=loadSwitchValues)
             params.append(modelParams)
             data.append(simulationData)
             coloursArr.append(colours)
