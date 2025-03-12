@@ -15,7 +15,7 @@ class VicsekWithNeighbourSelection(VicsekWithNeighbourSelectionSwitchingCellBase
                  k=dv.DEFAULT_K_NEIGHBOURS, showExample=dv.DEFAULT_SHOW_EXAMPLE_PARTICLE, numCells=None, 
                  switchType=None, switchValues=(None, None), thresholdType=None, orderThresholds=None, 
                  numberPreviousStepsForThreshold=10, switchBlockedAfterEventTimesteps=-1, occlusionActive=False,
-                 switchingActive=True):
+                 switchingActive=True, returnHistories=True, logPath=None, logInterval=1):
         """
         Initialize the model with all its parameters
 
@@ -59,7 +59,10 @@ class VicsekWithNeighbourSelection(VicsekWithNeighbourSelectionSwitchingCellBase
                          numberPreviousStepsForThreshold=numberPreviousStepsForThreshold,
                          switchBlockedAfterEventTimesteps=switchBlockedAfterEventTimesteps,
                          occlusionActive=occlusionActive,
-                         switchingActive=switchingActive)
+                         switchingActive=switchingActive,
+                         returnHistories=returnHistories,
+                         logPath=logPath,
+                         logInterval=logInterval)
         
     def getParameterSummary(self, asString=False):
         """
@@ -146,25 +149,20 @@ class VicsekWithNeighbourSelection(VicsekWithNeighbourSelectionSwitchingCellBase
         # Initialisations for the loop and the return variables
         t=0
         numIntervals=int(tmax/dt+1)
-        
-        self.positionsHistory = np.zeros((numIntervals,self.numberOfParticles,len(self.domainSize)))
-        self.orientationsHistory = np.zeros((numIntervals,self.numberOfParticles,len(self.domainSize)))  
-        self.localOrderHistory = np.zeros((numIntervals,self.numberOfParticles))        
-        self.switchTypeValuesHistory = numIntervals * [self.numberOfParticles * [None]]
-        self.coloursHistory = numIntervals * [self.numberOfParticles * ['k']]
+
         eventPositionHistory = np.zeros((numIntervals,1,len(self.domainSize)))
         eventOrientationHistory = np.zeros((numIntervals,1,len(self.domainSize)))
-
-        self.positionsHistory[0,:,:]=positions
-        self.orientationsHistory[0,:,:]=orientations
-        self.switchTypeValuesHistory[0]=switchTypeValues
-
 
         self.cells = self.initialiseCells()
         self.neighbouringCells = self.determineNeighbouringCells()
 
         cellToParticleDistribution, particleToCellDistribution = self.createCellDistributions(positions)
 
+        self.initialiseHistoriesAndLogs(numIntervals=numIntervals,
+                                        positions=positions,
+                                        orientations=orientations,
+                                        switchTypeValues=switchTypeValues)
+        
         localOrders = self.__initialiseLocalOrders(positions, orientations, cellToParticleDistribution, particleToCellDistribution)
         self.localOrderHistory[0,:]=localOrders
 
@@ -209,21 +207,22 @@ class VicsekWithNeighbourSelection(VicsekWithNeighbourSelectionSwitchingCellBase
             orientations = self.calculateMeanOrientations(positions, orientations, switchTypeValues, neighbourCandidates)
             orientations = ServiceVicsekHelper.normalizeOrientations(orientations+self.generateNoise())
 
-            # update histories
-            self.positionsHistory[it,:,:]=positions
-            self.orientationsHistory[it,:,:]=orientations
-            self.localOrderHistory[it,:]=localOrders
-            self.switchTypeValuesHistory[it]=switchTypeValues
-            self.coloursHistory[it]=colours
-
+            self.updateHistoriesAndLogs(t=it,
+                            positions=positions,
+                            orientations=orientations,
+                            switchTypeValues=switchTypeValues,
+                            colours=colours,
+                            localOrders=localOrders)
             t+=dt
 
         # in case there is a moving event, e.g. a moving predator, the point of origin's values are appended as the last element to the histories before returning to preserve their movement data
         if events != None:
             self.positionsHistory, self.orientationsHistory, self.coloursHistory, self.switchTypeValuesHistory = self.addEventEntityToHistories(numIntervals, eventPositionHistory, eventOrientationHistory)
 
-        return (dt*np.arange(numIntervals), self.positionsHistory, self.orientationsHistory), self.coloursHistory, self.switchTypeValuesHistory
-    
+        if self.returnHistories:
+            return (dt*np.arange(numIntervals), self.positionsHistory, self.orientationsHistory), self.coloursHistory, self.switchTypeValuesHistory
+        return (None, None, None), None, None
+        
     def addEventEntityToHistories(self, numIntervals, eventPositionHistory, eventOrientationHistory):
         """
         Adds the information (positions, orientations) of the point of origin of an event as the last element of the histories.

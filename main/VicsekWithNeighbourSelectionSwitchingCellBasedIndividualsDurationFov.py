@@ -15,7 +15,8 @@ class VicsekWithNeighbourSelection(VicsekWithNeighbourSelectionSwitchingCellBase
                  k=dv.DEFAULT_K_NEIGHBOURS, showExample=dv.DEFAULT_SHOW_EXAMPLE_PARTICLE, numCells=None, 
                  switchType=None, switchValues=(None, None), thresholdType=None, orderThresholds=None, 
                  numberPreviousStepsForThreshold=10, switchBlockedAfterEventTimesteps=-1,
-                 degreesOfVision=2*np.pi, occlusionActive=False, switchingActive=True):
+                 degreesOfVision=2*np.pi, occlusionActive=False, switchingActive=True, returnHistories=True, 
+                 logPath=None, logInterval=1):
         """
         Initialize the model with all its parameters
 
@@ -60,7 +61,10 @@ class VicsekWithNeighbourSelection(VicsekWithNeighbourSelectionSwitchingCellBase
                          numberPreviousStepsForThreshold=numberPreviousStepsForThreshold,
                          switchBlockedAfterEventTimesteps=switchBlockedAfterEventTimesteps,
                          occlusionActive=occlusionActive,
-                         switchingActive=switchingActive)
+                         switchingActive=switchingActive,
+                         returnHistories=returnHistories,
+                         logPath=logPath,
+                         logInterval=logInterval)
         self.degreesOfVision = degreesOfVision
     
     def isVisibleToParticle(self, particleIdx, candidateIdx, positions, orientations, neighbourCandidates):

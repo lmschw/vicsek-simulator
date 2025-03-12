@@ -58,10 +58,15 @@ def initialiseCsvFileHeaders(path, headers=['t', 'i', 'x', 'y', 'u', 'v', 'colou
         w = csv.writer(f)
         w.writerow(headers)
 
+def transformSwitchValue(switchValue):
+    if isinstance(switchValue, int) or isinstance(switchValue, float):
+        return switchValue
+    return switchValue.value
+
 def createDictList(timestep, positions, orientations, colours, switchValues, switchingActive=True):
     if switchingActive:
-        return [{'t': timestep, 'i': i, 'x': positions[i][0], 'y': positions[i][1], 'u': orientations[i][0], 'v': orientations[i][1], 'colour': colours[i]} for i in range(len(positions))]
-    return [{'t': timestep, 'i': i, 'x': positions[i][0], 'y': positions[i][1], 'u': orientations[i][0], 'v': orientations[i][1], 'colour': colours[i], 'switchValue': switchValues[i]} for i in range(len(positions))]
+        return [{'t': timestep, 'i': i, 'x': positions[i][0], 'y': positions[i][1], 'u': orientations[i][0], 'v': orientations[i][1], 'colour': colours[i], 'switchValue': transformSwitchValue(switchValues[i])} for i in range(len(positions))]
+    return [{'t': timestep, 'i': i, 'x': positions[i][0], 'y': positions[i][1], 'u': orientations[i][0], 'v': orientations[i][1], 'colour': colours[i]} for i in range(len(positions))]
 
 def saveModelTimestep(timestep, positions, orientations, colours, path, switchValues, switchingActive=True):
     dict_list = createDictList(timestep, positions, orientations, colours, switchValues, switchingActive)
@@ -89,7 +94,7 @@ def loadModelFromCsv(filepathData, filePathModelParams, loadSwitchValues=False):
             orientations.append(np.column_stack((dfT['u'], dfT['v'])))
             colours.append(dfT['colour'].to_list())
             if loadSwitchValues:
-                switchValues.append(dfT['switchValue'])
+                switchValues.append(dfT['switchValue'].to_list())
     if loadSwitchValues:
         return modelParams, (times, positions, orientations), colours, switchValues
     return modelParams, (times, positions, orientations), colours

@@ -19,7 +19,7 @@ class VicsekWithNeighbourSelection:
                  k=dv.DEFAULT_K_NEIGHBOURS, showExample=dv.DEFAULT_SHOW_EXAMPLE_PARTICLE, numCells=None, 
                  switchType=None, switchValues=(None, None), thresholdType=None, orderThresholds=None, 
                  numberPreviousStepsForThreshold=10, switchBlockedAfterEventTimesteps=-1, occlusionActive=False,
-                 switchingActive=True, returnHistories=True, logPath=None):
+                 switchingActive=True, returnHistories=True, logPath=None, logInterval=1):
         """
         Initialize the model with all its parameters
 
@@ -65,6 +65,7 @@ class VicsekWithNeighbourSelection:
         self.switchingActive = switchingActive
         self.returnHistories = returnHistories
         self.logPath = logPath
+        self.logInterval = logInterval
         self.selectedIndices = {}
 
         if numCells == None:
@@ -711,7 +712,7 @@ class VicsekWithNeighbourSelection:
             self.coloursHistory[t]=colours
         self.localOrderHistory[t,:]=localOrders
 
-        if self.logPath:
+        if self.logPath and t % self.logInterval == 0:
             ServiceSavedModel.saveModelTimestep(timestep=t, 
                                                 positions=positions, 
                                                 orientations=orientations,

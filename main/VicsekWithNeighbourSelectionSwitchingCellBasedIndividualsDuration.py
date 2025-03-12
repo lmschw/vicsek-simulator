@@ -16,7 +16,7 @@ class VicsekWithNeighbourSelection(VicsekWithNeighbourSelectionSwitchingCellBase
                  k=dv.DEFAULT_K_NEIGHBOURS, showExample=dv.DEFAULT_SHOW_EXAMPLE_PARTICLE, numCells=None, 
                  switchType=None, switchValues=(None, None), thresholdType=None, orderThresholds=None, 
                  numberPreviousStepsForThreshold=10, switchBlockedAfterEventTimesteps=-1, occlusionActive=False,
-                 switchingActive=True, returnHistories=True, logPath=None):
+                 switchingActive=True, returnHistories=True, logPath=None, logInterval=1):
         """
         Initialize the model with all its parameters
 
@@ -62,7 +62,8 @@ class VicsekWithNeighbourSelection(VicsekWithNeighbourSelectionSwitchingCellBase
                          occlusionActive=occlusionActive,
                          switchingActive=switchingActive,
                          returnHistories=returnHistories,
-                         logPath=logPath)
+                         logPath=logPath,
+                         logInterval=logInterval)
 
 
     def simulate(self, initialState=(None, None, None), dt=None, tmax=None, events=None):
