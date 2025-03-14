@@ -1,3 +1,5 @@
+import numpy as np
+
 import ServiceSavedModel
 import ServiceMetric
 import EnumMetrics
@@ -55,18 +57,21 @@ class Evaluator(object):
         if len(self.time) < 1:
             print("ERROR: cannot evaluate without simulationData. Please supply simulationData, modelParams and metric at Evaluator instantiation.")
             return
+        times = np.array(self.time)
+        maxT = np.max(times)
         if endTimestep == None:
-            endTimestep = len(self.time)
+            endTimestep = max(len(self.time), maxT)
         valuesPerTimeStep = {}
-        for i in range(len(self.time)):
+        for i in times:
             #if i % 100 == 0:
                 #print(f"evaluating {i}/{len(self.time)}")
             if i % self.evaluationTimestepInterval == 0 and i >= startTimestep and i <= endTimestep:
-                #if self.switchTypeValues == None:
-                if any(ele is None for ele in self.switchTypeValues):
-                    valuesPerTimeStep[self.time[i]] = ServiceMetric.evaluateSingleTimestep(self.positions[i], self.orientations[i], self.metric, self.radius, threshold=self.threshold)
+                idx = np.where(times == i)[0][0]
+                if self.switchTypeValues == None:
+                #if any(ele is None for ele in self.switchTypeValues):
+                    valuesPerTimeStep[i] = ServiceMetric.evaluateSingleTimestep(self.positions[idx], self.orientations[idx], self.metric, self.radius, threshold=self.threshold)
                 else:
-                    valuesPerTimeStep[self.time[i]] = ServiceMetric.evaluateSingleTimestep(self.positions[i], self.orientations[i], self.metric, self.radius, threshold=self.threshold, switchTypeValues=self.switchTypeValues[i], switchTypeOptions=self.switchTypeOptions)
+                    valuesPerTimeStep[i] = ServiceMetric.evaluateSingleTimestep(self.positions[i], self.orientations[i], self.metric, self.radius, threshold=self.threshold, switchTypeValues=self.switchTypeValues[i], switchTypeOptions=self.switchTypeOptions)
 
         #print("Evaluation completed.")
         if(self.metric == EnumMetrics.Metrics.CLUSTER_NUMBER_OVER_PARTICLE_LIFETIME):
