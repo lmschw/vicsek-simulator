@@ -78,7 +78,8 @@ def saveModelTimestep(timestep, positions, orientations, colours, path, switchVa
 def loadModelFromCsv(filepathData, filePathModelParams, loadSwitchValues=False):
     dfParams = pd.read_csv(filePathModelParams,index_col=False)
     modelParams = dfParams.to_dict(orient='records')[0]
-
+    domainSize = modelParams['domainSize'].split(',')
+    modelParams['domainSize'] = [float(domainSize[0][1:]), float(domainSize[1][:-1])]
     df = pd.read_csv(filepathData,index_col=False)
     times = []
     positions = []
@@ -96,8 +97,8 @@ def loadModelFromCsv(filepathData, filePathModelParams, loadSwitchValues=False):
             if loadSwitchValues:
                 switchValues.append(dfT['switchValue'].to_list())
     if loadSwitchValues:
-        return modelParams, (times, positions, orientations), colours, switchValues
-    return modelParams, (times, positions, orientations), colours
+        return modelParams, (np.array(times), np.array(positions), np.array(orientations)), np.array(colours), np.array(switchValues)
+    return modelParams, (np.array(times), np.array(positions), np.array(orientations)), np.array(colours)
 
 def loadModel(path, loadSwitchValues=False):
     """
