@@ -2,6 +2,8 @@
 """
 Service containing static methods that can be used for analysis.
 """
+import numpy as np
+import ServiceMetric
 
 def findParticlesSwitchingValues(n, switchValues, startTime=0, endTime=None):
     """
@@ -77,3 +79,25 @@ def isCloseToOrder(orderValue):
 
 def isCloseToDisorder(orderValue):
     return orderValue <= 0.1
+
+def getMinAvgMaxTransitionSpeedForMultipleRuns(simulationData, eventStartTimestep):
+    transitionDurations = []
+    for i in range(len(simulationData)):
+        _, _, orientations = simulationData[i]
+        speed = measureTransitionSpeed(orientations=orientations, eventStartTimestep=eventStartTimestep)
+        if speed == -1:
+            print(f"orientations for i = {i} does not transition")
+        else:
+            transitionDurations.append(speed)
+    if len(transitionDurations) == 0:
+        return -1, -1, -1
+    return np.min(transitionDurations), np.average(transitionDurations), np.max(transitionDurations)
+
+def measureTransitionSpeed(orientations, eventStartTimestep):
+    orderBeforeEvent = ServiceMetric.computeOrder(orientations=orientations[eventStartTimestep-1])
+    goToOrder = orderBeforeEvent <= 0.5 # if we're closer to disorder, we expect the transition to go towards order
+    for t in range(eventStartTimestep, len(orientations)):
+        order = ServiceMetric.computeOrder(orientations=orientations[t])
+        if (goToOrder and isCloseToOrder(order)) or (not goToOrder and isCloseToDisorder(order)):
+            return t-eventStartTimestep
+    return -1
