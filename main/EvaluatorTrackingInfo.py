@@ -1,5 +1,5 @@
 import ServiceSavedModel
-import ServiceNetwork
+import main.ServiceTrackingInformation as ServiceTrackingInformation
 import EnumMetricsTrackingInfo
 
 class Evaluator(object):
@@ -51,7 +51,7 @@ class Evaluator(object):
         for i in range(len(self.timesteps)):
             if i % self.evaluationTimestepInterval == 0 and i >= startTimestep and i <= endTimestep:
                 iStr = str(i)
-                valuesPerTimeStep[self.timesteps[i]] = ServiceNetwork.evaluateSingleTimestep(self.metric, neighbours=self.neighbours[iStr], distances=self.distances[iStr], localOrders=self.localOrders[iStr], orientationDifferences=self.orientationDifferences[iStr], selected=self.selected[iStr], threshold=self.threshold)
+                valuesPerTimeStep[self.timesteps[i]] = ServiceTrackingInformation.evaluateSingleTimestep(self.metric, neighbours=self.neighbours[iStr], distances=self.distances[iStr], localOrders=self.localOrders[iStr], orientationDifferences=self.orientationDifferences[iStr], selected=self.selected[iStr], threshold=self.threshold)
 
         #print("Evaluation completed.")
         # if saveTimestepsResultsPath != None:
