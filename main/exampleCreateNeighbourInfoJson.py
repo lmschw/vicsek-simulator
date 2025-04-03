@@ -3,7 +3,7 @@ import ServiceGeneral
 import time
 import ServicePreparation
 import ServiceSavedModel
-import ServiceNetwork
+import main.ServiceTrackingInformation as ServiceTrackingInformation
 
 from EnumNeighbourSelectionMode import NeighbourSelectionMode
 from EnumEventEffect import EventEffect
@@ -83,7 +83,7 @@ for i in range(iStart, iStop):
                             modelParamsDensity, simulationDataDensity, coloursDensity = ServiceSavedModel.loadModel(f"{baseFilename}_{i}.json", loadSwitchValues=False)
                             steps, positions, orientations = simulationDataDensity
                             savePath = f"D:/vicsek-data2/adaptive_radius/trackinginfo/local/nosw/trackinginfo_local_1e_nosw_{start}_st={neighbourSelectionMode.value}__d={density}_n={n}_r={radius}_k={k}_noise=1_drn=1000_5000-{eventEffect.val}_{i}.json"
-                            ServiceSavedModel.saveConnectionTrackingInformation(ServiceNetwork.getConnectionTrackingInformation(positions=positions, orientations=orientations, radius=radius, neighbourSelectionMode=neighbourSelectionMode, k=k), path=savePath)
+                            ServiceSavedModel.saveConnectionTrackingInformation(ServiceTrackingInformation.getConnectionTrackingInformation(positions=positions, orientations=orientations, radius=radius, neighbourSelectionMode=neighbourSelectionMode, k=k), path=savePath)
                             ServiceGeneral.logWithTime(f"Saved tracking info for nsm={neighbourSelectionMode.name}, d={density}, r={radius}, k={k}, start={start}, i={i}")
     
     

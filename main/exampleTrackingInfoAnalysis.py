@@ -1,7 +1,7 @@
 
 import ServiceGeneral
 import ServiceSavedModel
-import ServiceNetwork
+import main.ServiceTrackingInformation as ServiceTrackingInformation
 
 import EvaluatorTrackingInfoMultiAvgComp
 

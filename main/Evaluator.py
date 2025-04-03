@@ -67,8 +67,8 @@ class Evaluator(object):
                 #print(f"evaluating {i}/{len(self.time)}")
             if i % self.evaluationTimestepInterval == 0 and i >= startTimestep and i <= endTimestep:
                 idx = np.where(times == i)[0][0]
-                if self.switchTypeValues == None:
-                #if any(ele is None for ele in self.switchTypeValues):
+                #if self.switchTypeValues == None:
+                if any(ele is None for ele in self.switchTypeValues):
                     valuesPerTimeStep[i] = ServiceMetric.evaluateSingleTimestep(self.positions[idx], self.orientations[idx], self.metric, self.radius, threshold=self.threshold)
                 else:
                     valuesPerTimeStep[i] = ServiceMetric.evaluateSingleTimestep(self.positions[i], self.orientations[i], self.metric, self.radius, threshold=self.threshold, switchTypeValues=self.switchTypeValues[i], switchTypeOptions=self.switchTypeOptions)
