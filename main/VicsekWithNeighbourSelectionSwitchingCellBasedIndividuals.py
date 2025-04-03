@@ -134,7 +134,7 @@ class VicsekWithNeighbourSelection:
         Returns:
             An array of the adapted orientations.
         """
-        neighbours = self.__selectNeighbours(neighbourCandidates, positions, orientations, switchTypeValues)
+        neighbours = self.selectNeighbours(neighbourCandidates, positions, orientations, switchTypeValues)
         summedOrientations = np.sum(neighbours[:,:,np.newaxis]*orientations[np.newaxis,:,:],axis=1)
         return ServiceVicsekHelper.normalizeOrientations(summedOrientations)
 
@@ -452,7 +452,7 @@ class VicsekWithNeighbourSelection:
         return isVisible
         
 
-    def __selectNeighbours(self, neighbourCandidates, positions, orientations, switchTypeValues):
+    def selectNeighbours(self, neighbourCandidates, positions, orientations, switchTypeValues):
         """
         Decides which neighbours will be considered for the orientation update. Always includes the particle's own orientation.
 
