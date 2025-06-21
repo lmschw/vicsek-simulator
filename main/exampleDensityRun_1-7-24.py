@@ -23,15 +23,6 @@ for "Neighbour selection can cause collective response"
 --------------------------------------------------------------------------------
 """
 
-def getOrderDisorderValue(switchType):
-    match switchType:
-        case SwitchType.K:
-            return 5, 1
-        case SwitchType.NEIGHBOUR_SELECTION_MODE:
-            #return NeighbourSelectionMode.FARTHEST, NeighbourSelectionMode.NEAREST
-            return NeighbourSelectionMode.FARTHEST, NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE
-
-
 angle = np.pi
 blockSteps = -1
 thresholdType = ThresholdType.HYSTERESIS
@@ -314,7 +305,7 @@ for density in densities:
                 startK = time.time()
                 for duration in durations:
                     switchType = SwitchType.K
-                    kCombo = getOrderDisorderValue(switchType)     
+                    kCombo = (1, 5)
                     disorderValue, orderValue = kCombo 
                     for neighbourSelectionMode in reducedNeighbourSelectionModes:
                         for initialStateString in ["ordered", "random"]:
