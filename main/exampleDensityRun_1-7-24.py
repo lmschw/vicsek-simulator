@@ -364,8 +364,8 @@ for density in densities:
                                     endRun = time.time()
                                     ServiceGeneral.logWithTime(f"Completed k-switch d={density}, r={radius}, drn={duration}, nsm={neighbourSelectionMode.name}, {initialStateString}, eventEffect={eventEffectOrder.name}, i={i} in {ServiceGeneral.formatTime(endRun-startRun)}")
 
-                                    endK = time.time()
-    ServiceGeneral.logWithTime(f"Completed k-switch in {ServiceGeneral.formatTime(endK-startK)}")
+                endK = time.time()
+                ServiceGeneral.logWithTime(f"Completed k-switch in {ServiceGeneral.formatTime(endK-startK)}")
 
 
 endTotal = time.time()
