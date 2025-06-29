@@ -52,7 +52,7 @@ def initialiseCsvFileHeaders(path, headers=['t', 'i', 'x', 'y', 'u', 'v', 'colou
     Returns:
         Nothing.
     """
-    if addSwitchValueHeader:
+    if addSwitchValueHeader and 'switchValue' not in headers:
         headers.append('switchValue')
     with open(f"{path}.csv", 'w', newline='') as f:
         w = csv.writer(f)
@@ -159,7 +159,7 @@ def loadModels(paths, modelParamsPaths=None, loadSwitchValues=False, fromCsv=Fal
             coloursArr.append(colours)
     if loadSwitchValues == True:
         return params, data, coloursArr, switchValuesArr
-    return params, data, coloursArr
+    return params, data
 
 def saveTimestepsResults(results, path, modelParams=None, saveInterval=1):
     """
