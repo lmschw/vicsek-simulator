@@ -219,7 +219,7 @@ for density in densities:
                     for metric in metrics:
                         eval(density=density, n=n, radius=radius, eventEffect=eventEffect, metric=metric, type="nsmsw", k=k, combo=nsmCombo, evalInterval=interval, tmax=tmax)
 
-        for nsm in reducedNeighbourSelectionModes:
+        for nsm in [NeighbourSelectionMode.NEAREST, NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE]:
             for kCombo in [[1,5]]:
                 for eventEffect in eventEffects:
                     for metric in metrics:

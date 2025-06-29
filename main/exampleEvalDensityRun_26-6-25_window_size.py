@@ -131,7 +131,7 @@ e3Start = 15000
 
 noisePercentages = [1] # to run again with other noise percentages, make sure to comment out anything that has fixed noise (esp. local)
 densities = [0.01]
-psteps = 100
+#psteps = 100
 numbersOfPreviousSteps = [1, 25, 50, 75, 200]
 numbersOfPreviousSteps = [1, 25, 50]
 
@@ -202,7 +202,7 @@ duration = 1000
 for density in densities:
     n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
     for radius in radii:
-        for psteps in numbersOfPreviousSteps:
+        for psteps in [1, 25, 50, 75, 200]:
             tmax = 15000
             iStop = 11
 
