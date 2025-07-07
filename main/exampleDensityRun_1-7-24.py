@@ -45,7 +45,7 @@ densities = [0.09]
 psteps = 100
 numbersOfPreviousSteps = [psteps]
 durations = [1000]
-ks = [1]
+ks = [1,5]
 radii = [10] # area is always 4x bigger than the last
 
 neighbourSelectionModes = [NeighbourSelectionMode.ALL,
@@ -56,9 +56,7 @@ neighbourSelectionModes = [NeighbourSelectionMode.ALL,
                            NeighbourSelectionMode.HIGHEST_ORIENTATION_DIFFERENCE]
 
 reducedNeighbourSelectionModes = [NeighbourSelectionMode.NEAREST,
-                                  NeighbourSelectionMode.FARTHEST,
-                                  NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE,
-                                  NeighbourSelectionMode.HIGHEST_ORIENTATION_DIFFERENCE]
+                                  NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE]
 
 orderNeighbourSelectionModes = [NeighbourSelectionMode.ALL,
                                 NeighbourSelectionMode.RANDOM,
@@ -84,8 +82,8 @@ eventEffectsDisorder = [EventEffect.AWAY_FROM_ORIGIN,
 
 #baseLocation = f"D:/vicsek-data2/adaptive_radius"
 saveLocation = "J:/noise_old_code/"
-iStart = 1
-iStop = 11
+iStart = 11
+iStop = 51
 
 startTotal = time.time()
 for density in densities:
@@ -93,8 +91,8 @@ for density in densities:
     # ----------------------------------------------- GLOBAL STARTS HERE ----------------------------------------------
     #saveLocation = f"{baseLocation}/global"
     for radius in radii:
-        for speed in [0.1, 1]:
-            for noisePercentage in [2, 3, 4]:
+        for speed in [1]:
+            for noisePercentage in [1]:
                 noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(noisePercentage)
 
                 print(f"d={density}, n={n}, r={radius}, size={domainSize}")
@@ -237,8 +235,7 @@ for density in densities:
                                         ServiceGeneral.logWithTime(f"Completed d={density}, r={radius}, drn={duration}, k={k}, nsm={neighbourSelectionMode.name}, {initialStateString}, eventEffect={eventEffectOrder.name}, i={i} in {ServiceGeneral.formatTime(endRun-startRun)}")        
                         
 
-                    for nsmCombo in [[NeighbourSelectionMode.NEAREST, NeighbourSelectionMode.FARTHEST],
-                                    [NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE, NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE]]:
+                    for nsmCombo in [[NeighbourSelectionMode.NEAREST, NeighbourSelectionMode.FARTHEST]]:
                             disorderValue, orderValue = nsmCombo
                             startNsm = time.time()
                             for duration in durations:
