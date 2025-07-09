@@ -90,8 +90,10 @@ class EvaluatorMultiAvgComp(object):
                     if self.metric == EnumMetrics.Metrics.CLUSTER_SIZE:
                         for i in range(len(ddi[idx])):
                             ddi[idx][i] = np.max(ddi[idx][i])
-                    dd[idx].append(np.average(ddi[idx]))
-                    varianceDataModel.append(np.array(ddi[idx]))
+                    dd[idx].append(np.median(ddi[idx]))
+                    quantile25 = np.quantile(ddi[idx], 0.25)
+                    quantile75 = np.quantile(ddi[idx], 0.75)
+                    varianceDataModel.append([quantile25, quantile75])
             varianceData.append(varianceDataModel)
         return dd, varianceData
 
@@ -155,7 +157,7 @@ class EvaluatorMultiAvgComp(object):
             xlim = ax.get_xlim()
             x = np.arange(start=0, stop=len(varianceData[0]), step=1)
             for i in range(len(varianceData)):
-                ax.fill_between(x, np.mean(varianceData[i], axis=1) - np.std(varianceData[i], axis=1), np.mean(varianceData[i], axis=1) + np.std(varianceData[i], axis=1), color=COLOURS[i], alpha=0.2)
+                ax.fill_between(x, np.array(varianceData[i])[:,0], np.array(varianceData[i])[:,1], color=COLOURS[i], alpha=0.2)
 
         if xLabel != None:
             plt.xlabel(xLabel)
