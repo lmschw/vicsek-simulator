@@ -23,7 +23,7 @@ class EvaluatorMultiAvgComp(object):
     
 
     def __init__(self, modelParams, metric, simulationData=None, evaluationTimestepInterval=1, threshold=0.01, switchTypeValues=None, 
-                 switchTypeOptions=None):
+                 switchTypeOptions=None, useMedian=True):
         """
         Initialises the evaluator.
 
@@ -46,6 +46,7 @@ class EvaluatorMultiAvgComp(object):
         self.threshold = threshold
         self.switchTypeValues = switchTypeValues
         self.switchTypeOptions = switchTypeOptions
+        self.useMedian = useMedian
 
     def evaluate(self):
         """
@@ -90,10 +91,15 @@ class EvaluatorMultiAvgComp(object):
                     if self.metric == EnumMetrics.Metrics.CLUSTER_SIZE:
                         for i in range(len(ddi[idx])):
                             ddi[idx][i] = np.max(ddi[idx][i])
-                    dd[idx].append(np.median(ddi[idx]))
-                    quantile25 = np.quantile(ddi[idx], 0.25)
-                    quantile75 = np.quantile(ddi[idx], 0.75)
-                    varianceDataModel.append([quantile25, quantile75])
+
+                    if self.useMedian:
+                        dd[idx].append(np.median(ddi[idx]))
+                        quantile25 = np.quantile(ddi[idx], 0.25)
+                        quantile75 = np.quantile(ddi[idx], 0.75)
+                        varianceDataModel.append([quantile25, quantile75])
+                    else:
+                        dd[idx].append(np.average(ddi[idx]))
+                        varianceDataModel.append(np.array(ddi[idx]))
             varianceData.append(varianceDataModel)
         return dd, varianceData
 
