@@ -57,21 +57,14 @@ def eval(density, n, radius, eventEffect, metric, type, nsm=None, k=None, combo=
             else:
                 k = disorderValue
         
-        if type == "nosw":
-            baseFilename = f"{baseDataLocation}{levelDataLocation}local_1e_nosw_{initialStateString}_st={nsm.value}__d={density}_n={n}_r={radius}_k={k}_noise=1_drn={duration}_{e1Start}-{eventEffect.val}"
-        elif type == "nsmsw":
-            baseFilename = f"{baseDataLocation}{levelDataLocation}local_nsmsw_1ev_{initialStateString}_st={nsm.value}_d={density}_n={n}_r={radius}_nsmCombo={disorderValue.value}-{orderValue.value}_k={k}_noise={noisePercentage}_speed={speed}_ee={eventEffect.val}"
+        if type == "nsmsw":
+            baseFilename = f"{baseDataLocation}{levelDataLocation}local_nsmsw_1ev_{initialStateString}_st={nsm.value}_d={density}_n={n}_r={radius}_nsmCombo={nsmCombo[1].value}-{nsmCombo[0].value}_k={k}_noise={noisePercentage}_speed={speed}_psteps={psteps}_ee={eventEffect.val}"
         elif type == "ksw":
-            baseFilename = f"{baseDataLocation}{levelDataLocation}local_ksw_1ev_{initialStateString}_st={k}_d={density}_n={n}_r={radius}_nsm={nsm.value}_kCombo={disorderValue}-{orderValue}_ee={eventEffect.val}_noise={noisePercentage}_speed={speed}"
-        elif type == "global":
-            baseFilename = f"{baseDataLocation}global_noev_nosw_d={density}_r={radius}_{initialStateString}_nsm={nsm.value}_k={k}_n={n}_noise={noisePercentage}_speed={speed}_psteps={psteps}"
-        
+            baseFilename = f"{baseDataLocation}{levelDataLocation}local_ksw_1ev_{initialStateString}_st={k}_d={density}_n={n}_r={radius}_nsm={nsm.value}_kCombo={kCombo[1]}-{kCombo[0]}_ee={eventEffect.val}_noise={noisePercentage}_speed={speed}_psteps={psteps}"
+       
         filenames = ServiceGeneral.createListOfFilenamesForI(baseFilename=baseFilename, minI=iStart, maxI=iStop, fileTypeString="json")
-        if type not in ["nosw", "global"]:
-            modelParamsDensity, simulationDataDensity, coloursDensity, switchTypeValues = ServiceSavedModel.loadModels(filenames, loadSwitchValues=True)
-            switchTypes.append(switchTypeValues)
-        else:
-            modelParamsDensity, simulationDataDensity, coloursDensity = ServiceSavedModel.loadModels(filenames, loadSwitchValues=False, fromCsv=False)
+        modelParamsDensity, simulationDataDensity, coloursDensity, switchTypeValues = ServiceSavedModel.loadModels(filenames, loadSwitchValues=True)
+        switchTypes.append(switchTypeValues)
         modelParams.append(modelParamsDensity)
         simulationData.append(simulationDataDensity)
         colours.append(coloursDensity)
@@ -80,19 +73,16 @@ def eval(density, n, radius, eventEffect, metric, type, nsm=None, k=None, combo=
 #createMultiPlotFromImages(title, numX, numY, rowLabels, colLabels, paths)
     threshold = 0.01
     evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=evalInterval, threshold=threshold, switchTypeValues=switchTypes, switchTypeOptions=combo)
-    
+
+    plot_save_location = "results_window_size/"   
     labels = ["ordered", "disordered"]
     if metric == Metrics.DUAL_OVERLAY_ORDER_AND_PERCENTAGE:
         labels = ["ordered - order", "ordered - percentage of order-inducing value", "disordered - order", "disordered - percentage of order-inducing value"]
-    if type == "nosw":
-        savePath = f"{saveLocation}{metric.val}_d={density}_n={n}_r={radius}_nosw_nsm={nsm.value}_k={k}_ee={eventEffect.val}.svg"
-    elif type == "nsmsw":
-        savePath = f"{saveLocation}{metric.val}_d={density}_n={n}_r={radius}_swt=MODE_o={orderValue.value}_do={disorderValue.value}_k={k}_ee={eventEffect.val}.svg"
+    if type == "nsmsw":
+        savePath = f"{plot_save_location}{metric.val}_d={density}_n={n}_r={radius}_swt=MODE_o={orderValue.value}_do={disorderValue.value}_k={k}_ee={eventEffect.val}_psteps={psteps}.svg"
     elif type == "ksw":
-        savePath = f"{saveLocation}{metric.val}_d={density}_n={n}_r={radius}_swt=K_o={orderValue}_do={disorderValue}_nsm={nsm.value}_ee={eventEffect.val}.svg"
-    elif type == "global":
-        savePath = f"{saveLocation}{metric.val}_d={density}_n={n}_r={radius}_global_nsm={nsm.value}_k={k}_th={threshold}.svg"
-
+        savePath = f"{plot_save_location}{metric.val}_d={density}_n={n}_r={radius}_swt=K_o={orderValue}_do={disorderValue}_nsm={nsm.value}_ee={eventEffect.val}_psteps={psteps}.svg"
+    
     evaluator.evaluateAndVisualize(labels=labels, xLabel=xAxisLabel, yLabel=yAxisLabel, colourBackgroundForTimesteps=[e1Start, e1Start+duration], showVariance=True, xlim=xlim, ylim=ylim, savePath=savePath)    
     endEval = time.time()
     print(f"Duration eval {ServiceGeneral.formatTime(endEval-startEval)}") 
@@ -109,6 +99,14 @@ def getLabelsFromNeighbourSelectionModes(neighbourSelectionModes):
 
 def getLabelsFromEventEffects(eventEffects):
     return [eventEffect.label for eventEffect in eventEffects]
+
+def getOrderDisorderValue(switchType):
+    match switchType:
+        case SwitchType.K:
+            return 5, 1
+        case SwitchType.NEIGHBOUR_SELECTION_MODE:
+            return NeighbourSelectionMode.FARTHEST, NeighbourSelectionMode.NEAREST
+
 
 xLabel = "time steps"
 
@@ -133,8 +131,10 @@ e3Start = 15000
 
 noisePercentages = [1] # to run again with other noise percentages, make sure to comment out anything that has fixed noise (esp. local)
 densities = [0.01]
-psteps = 100
-numbersOfPreviousSteps = [psteps]
+#psteps = 100
+numbersOfPreviousSteps = [1, 25, 50, 75, 200]
+numbersOfPreviousSteps = [1, 25, 50]
+
 durations = [1000]
 ks = [1,5]
 
@@ -169,11 +169,11 @@ eventEffectsOrder = [
 eventEffectsDisorder = [EventEffect.AWAY_FROM_ORIGIN,
                         EventEffect.RANDOM]
 
-saveLocation = f"results_090725/"
+saveLocation = f""
 iStart = 1
-iStop = 101
+iStop = 11
 
-baseDataLocation = "J:/noise_old_code/"
+baseDataLocation = "J:/window_size_check/"
 
 densities = [0.09]
 radii = [10]
@@ -186,7 +186,7 @@ levelDataLocation = ""
 
 data = {}
 
-ks = [1, 5]
+ks = [1]
 
 # K VS. START
 metrics = [
@@ -198,36 +198,26 @@ xAxisLabel = "timesteps"
 startTime = time.time()
 
 duration = 1000
-tmax = 15000
 
 for density in densities:
     n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
     for radius in radii:
-        for nsm in neighbourSelectionModes:
-            for k in ks:
-                    for metric in metrics:
-                        eval(density=density, n=n, radius=radius, eventEffect=None, metric=metric, type="global", nsm=nsm, k=k, evalInterval=interval, tmax=tmax)
+        for psteps in [1, 25, 50, 75, 200]:
+            tmax = 15000
+            iStop = 11
 
-        # ks = [1]
-        # for nsm in neighbourSelectionModes:
-        #     for k in ks:
-        #         for eventEffect in eventEffects:
-        #             for metric in metrics:
-        #                 eval(density=density, n=n, radius=radius, eventEffect=eventEffect, metric=metric, type="nosw", nsm=nsm, k=k, evalInterval=interval, tmax=tmax)
-
-        
-        for nsmCombo in [[NeighbourSelectionMode.FARTHEST, NeighbourSelectionMode.NEAREST]]:
-            for k in ks:
-                for eventEffect in eventEffects:
-                    for metric in metrics:
-                        eval(density=density, n=n, radius=radius, eventEffect=eventEffect, metric=metric, type="nsmsw", k=k, combo=nsmCombo, evalInterval=interval, tmax=tmax)
-         
-        for nsm in [NeighbourSelectionMode.NEAREST, NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE]:
-            for kCombo in [[5,1]]:
-                for eventEffect in eventEffects:
-                    for metric in metrics:
-                        eval(density=density, n=n, radius=radius, eventEffect=eventEffect, metric=metric, type="ksw", nsm=nsm, combo=kCombo, evalInterval=interval, tmax=tmax)
-        
+            for nsmCombo in [[NeighbourSelectionMode.FARTHEST, NeighbourSelectionMode.NEAREST]]:
+                for k in ks:
+                    for eventEffect in eventEffects:
+                        for metric in metrics:
+                            eval(density=density, n=n, radius=radius, eventEffect=eventEffect, metric=metric, type="nsmsw", k=k, combo=nsmCombo, evalInterval=interval, tmax=tmax)
+            
+            for nsm in neighbourSelectionModes:
+                for kCombo in [[5,1]]:
+                    for eventEffect in eventEffects:
+                        for metric in metrics:
+                            eval(density=density, n=n, radius=radius, eventEffect=eventEffect, metric=metric, type="ksw", nsm=nsm, combo=kCombo, evalInterval=interval, tmax=tmax)
+            
 endTime = time.time()
 print(f"Total duration: {ServiceGeneral.formatTime(endTime-startTime)}")
     
