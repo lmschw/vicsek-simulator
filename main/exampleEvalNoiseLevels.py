@@ -30,7 +30,7 @@ def eval(density, n, radius, eventEffect, metrics, type, nsm=None, k=None, combo
     colours = []
     switchTypes = []
 
-    for initialStateString in ["ordered"]:
+    for initialStateString in ["ordered", "random"]:
         if type in ["nsmswnoev", "nsmsw", "kswnoev", "ksw"]:
             orderValue, disorderValue = combo
         if type in ["nsmswnoev", "nsmsw"]: 
@@ -97,9 +97,9 @@ def eval(density, n, radius, eventEffect, metrics, type, nsm=None, k=None, combo
         else:
             sType = None
         
-        evaluator = EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=evalInterval, threshold=threshold, switchType=sType, switchTypeValues=switchTypes, switchTypeOptions=combo)
+        evaluator = EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=evalInterval, threshold=threshold, switchTypeValues=switchTypes, switchTypeOptions=combo)
         
-        labels = ["ordered"]
+        labels = ["ordered", "random"]
         if metric == Metrics.DUAL_OVERLAY_ORDER_AND_PERCENTAGE:
             labels = ["ordered - order", "ordered - percentage of order-inducing value", "disordered - order", "disordered - percentage of order-inducing value"]
             labels = ["order", "percentage of order-inducing value"]
@@ -170,7 +170,7 @@ nsmsReduced = [NeighbourSelectionMode.NEAREST,
                NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE,
                NeighbourSelectionMode.HIGHEST_ORIENTATION_DIFFERENCE]
 
-ks = [1,5]
+ks = [1]
 
 eventEffects = [EventEffect.ALIGN_TO_FIXED_ANGLE,
                 EventEffect.AWAY_FROM_ORIGIN,
@@ -193,7 +193,7 @@ metrics = [
            ]
 xAxisLabel = "timesteps"
 
-noisePercentages = [1,2,3,4,5]
+noisePercentages = [1,4]
 
 startTime = time.time()
 startNoswnoev = time.time()
