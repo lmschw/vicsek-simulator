@@ -43,7 +43,7 @@ def eval(density, n, radius, eventEffect, metric, type, nsm=None, k=None, combo=
     colours = []
     switchTypes = []
 
-    for initialStateString in ["random"]:
+    for initialStateString in ["ordered", "random"]:
         if type in ["nsmsw", "nsmswnoev", "ksw", "kswnoev"]:
             disorderValue, orderValue = combo
         if type == "nsmsw" or type == "nsmswnoev": 
@@ -89,11 +89,11 @@ def eval(density, n, radius, eventEffect, metric, type, nsm=None, k=None, combo=
     evaluator = EvaluatorMultiAvgComp.EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=evalInterval, threshold=threshold, switchTypeValues=switchTypes, switchTypeOptions=combo)
     
     saveLocationPlot = ""
-    labels = ["ordered"]
+    labels = ["ordered", "disordered"]
     if metric == Metrics.DUAL_OVERLAY_ORDER_AND_PERCENTAGE:
         labels = ["ordered - order", "ordered - percentage of order-inducing value", "disordered - order", "disordered - percentage of order-inducing value"]
 
-    savePath = f"{saveLocationPlot}hod_long_d={density}_n={n}_r={radius}_k={k}"
+    savePath = f"{saveLocationPlot}hod_long_d={density}_n={n}_r={radius}_k={k}.svg"
     evaluator.evaluateAndVisualize(labels=labels, xLabel=xAxisLabel, yLabel=yAxisLabel, colourBackgroundForTimesteps=[e1Start, e1Start+duration], showVariance=False, xlim=xlim, ylim=ylim, savePath=savePath)    
     endEval = time.time()
     print(f"Duration eval {ServiceGeneral.formatTime(endEval-startEval)}") 
