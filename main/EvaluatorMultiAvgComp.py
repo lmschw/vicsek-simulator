@@ -104,7 +104,7 @@ class EvaluatorMultiAvgComp(object):
         return dd, varianceData
 
     
-    def visualize(self, data, labels, xLabel=None, yLabel=None, subtitle=None, colourBackgroundForTimesteps=None, varianceData=None, xlim=None, ylim=None, fontsize=14, savePath=None):
+    def visualize(self, data, labels, xLabel=None, yLabel=None, subtitle=None, colourBackgroundForTimesteps=None, varianceData=None, xlim=None, ylim=None, fontsize=20, savePath=None):
         """
         Visualizes and optionally saves the results of the evaluation as a graph.
 
@@ -182,7 +182,7 @@ class EvaluatorMultiAvgComp(object):
         #plt.show()
         plt.close()
 
-    def evaluateAndVisualize(self, labels, xLabel=None, yLabel=None, subtitle=None, colourBackgroundForTimesteps=(None,None), showVariance=False, xlim=None, ylim=None, fontsize=14, savePath=None):
+    def evaluateAndVisualize(self, labels, xLabel=None, yLabel=None, subtitle=None, colourBackgroundForTimesteps=(None,None), showVariance=False, xlim=None, ylim=None, fontsize=20, savePath=None):
         """
         Evaluates and subsequently visualises the results for multiple models.
 
@@ -199,7 +199,7 @@ class EvaluatorMultiAvgComp(object):
             varianceData = None
         self.visualize(data, labels, xLabel=xLabel, yLabel=yLabel, subtitle=subtitle, colourBackgroundForTimesteps=colourBackgroundForTimesteps, varianceData=varianceData, xlim=xlim, ylim=ylim, fontsize=fontsize, savePath=savePath)
         
-    def __createStandardLineplot(self, data, labels, varianceData=None, xlim=None, ylim=None, fontsize=14):
+    def __createStandardLineplot(self, data, labels, varianceData=None, xlim=None, ylim=None, fontsize=20):
         """
         Creates a bar plot for the number of clusters in the system for every model at every timestep
 
@@ -222,7 +222,7 @@ class EvaluatorMultiAvgComp(object):
         else:
             df.plot.line(fontsize=fontsize)
 
-    def __createSwitchValuePlot(self, data, labels, varianceData=None, xlim=None, ylim=None, fontsize=14):
+    def __createSwitchValuePlot(self, data, labels, varianceData=None, xlim=None, ylim=None, fontsize=20):
         """
         Creates a line plot for the percentage of particles choosing the order switch type value at any given timestep.
 
@@ -244,7 +244,7 @@ class EvaluatorMultiAvgComp(object):
         else:
             df.plot.line(fontsize=fontsize)
 
-    def __createDualOrderPlot(self, data, labels=None, varianceData=None, xlim=None, ylim=None, fontsize=14):
+    def __createDualOrderPlot(self, data, labels=None, varianceData=None, xlim=None, ylim=None, fontsize=20):
         """
         Creates a line plot overlaying the percentage of particles choosing the order switch type value and the order value. 
 
@@ -269,7 +269,7 @@ class EvaluatorMultiAvgComp(object):
         else:
             df.plot.line(fontsize=fontsize)
 
-    def __createMinAvgMaxLinePlot(self, data, varianceData=None, xlim=None, ylim=None, fontsize=14):
+    def __createMinAvgMaxLinePlot(self, data, varianceData=None, xlim=None, ylim=None, fontsize=20):
         """
         Creates a line plot overlaying minimum, average and maximum number of neighbours.
 
