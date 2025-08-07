@@ -83,9 +83,9 @@ eventEffectsDisorder = [EventEffect.AWAY_FROM_ORIGIN,
                         EventEffect.RANDOM]
 
 #baseLocation = f"D:/vicsek-data2/adaptive_radius"
-saveLocation = "J:/noise_global/"
-iStart = 1
-iStop = 11
+saveLocation = "F:/noise_old_2/"
+iStart = 11
+iStop = 51
 
 startTotal = time.time()
 for density in densities:
@@ -103,7 +103,12 @@ for density in densities:
                 tmax = tmaxWithoutEvent
 
                 for initialStateString in ["ordered", "random"]:
-                    for neighbourSelectionMode in reducedNeighbourSelectionModes:
+                    for neighbourSelectionMode in [NeighbourSelectionMode.ALL,
+                                                   NeighbourSelectionMode.RANDOM,
+                                                   NeighbourSelectionMode.NEAREST,
+                                                   NeighbourSelectionMode.FARTHEST,
+                                                   NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE,
+                                                   NeighbourSelectionMode.HIGHEST_ORIENTATION_DIFFERENCE]:
                         for k in ks:
                             for i in range(iStart,iStop): 
                                 ServiceGeneral.logWithTime(f"Starting d={density}, r={radius}, {initialStateString}, nsm={neighbourSelectionMode.name}, k={k} i={i}")
