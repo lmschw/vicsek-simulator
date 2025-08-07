@@ -104,7 +104,7 @@ class EvaluatorMultiAvgComp(object):
         return dd, varianceData
 
     
-    def visualize(self, data, labels, xLabel=None, yLabel=None, subtitle=None, colourBackgroundForTimesteps=None, varianceData=None, xlim=None, ylim=None, savePath=None):
+    def visualize(self, data, labels, xLabel=None, yLabel=None, subtitle=None, colourBackgroundForTimesteps=None, varianceData=None, xlim=None, ylim=None, fontsize=14, savePath=None):
         """
         Visualizes and optionally saves the results of the evaluation as a graph.
 
@@ -125,32 +125,32 @@ class EvaluatorMultiAvgComp(object):
             case EnumMetrics.Metrics.ORDER:
                 if ylim == None:
                     ylim = (0, 1.1)
-                self.__createStandardLineplot(data, labels, varianceData, xlim=xlim, ylim=ylim)
+                self.__createStandardLineplot(data, labels, varianceData, xlim=xlim, ylim=ylim, fontsize=fontsize)
             case EnumMetrics.Metrics.CLUSTER_NUMBER:
-                self.__createStandardLineplot(data, labels, varianceData, xlim=xlim, ylim=ylim)
+                self.__createStandardLineplot(data, labels, varianceData, xlim=xlim, ylim=ylim, fontsize=fontsize)
             case EnumMetrics.Metrics.CLUSTER_NUMBER_WITH_RADIUS:
-                self.__createStandardLineplot(data, labels, varianceData, xlim=xlim, ylim=ylim)
+                self.__createStandardLineplot(data, labels, varianceData, xlim=xlim, ylim=ylim, fontsize=fontsize)
             case EnumMetrics.Metrics.CLUSTER_SIZE:
-                self.__createStandardLineplot(data, labels, varianceData, xlim=xlim, ylim=ylim)
+                self.__createStandardLineplot(data, labels, varianceData, xlim=xlim, ylim=ylim, fontsize=fontsize)
             case EnumMetrics.Metrics.CLUSTER_NUMBER_OVER_PARTICLE_LIFETIME:
-                self.__createStandardLineplot(data, labels, varianceData, xlim=xlim, ylim=ylim)
+                self.__createStandardLineplot(data, labels, varianceData, xlim=xlim, ylim=ylim, fontsize=fontsize)
             case EnumMetrics.Metrics.ORDER_VALUE_PERCENTAGE:
                 if ylim == None:
                     ylim = (0, 100.1)
-                self.__createStandardLineplot(data, labels, varianceData, xlim=xlim, ylim=ylim)
+                self.__createStandardLineplot(data, labels, varianceData, xlim=xlim, ylim=ylim, fontsize=fontsize)
             case EnumMetrics.Metrics.DUAL_OVERLAY_ORDER_AND_PERCENTAGE:
                 if ylim == None:
                     ylim = (0, 1.1)
                 self.__createDualOrderPlot(data, labels=labels, varianceData=varianceData,
-                                           xlim=xlim, ylim=ylim)
+                                           xlim=xlim, ylim=ylim, fontsize=fontsize)
             case EnumMetrics.Metrics.AVERAGE_NUMBER_NEIGHBOURS:
-                self.__createStandardLineplot(data, labels, varianceData, xlim=xlim, ylim=ylim)
+                self.__createStandardLineplot(data, labels, varianceData, xlim=xlim, ylim=ylim, fontsize=fontsize)
             case EnumMetrics.Metrics.MIN_AVG_MAX_NUMBER_NEIGHBOURS:
-                self.__createMinAvgMaxLinePlot(data, labels, xlim=xlim, ylim=ylim)
+                self.__createMinAvgMaxLinePlot(data, labels, xlim=xlim, ylim=ylim, fontsize=fontsize)
             case EnumMetrics.Metrics.AVG_DISTANCE_NEIGHBOURS:
-                self.__createStandardLineplot(data, labels, varianceData, xlim=xlim, ylim=ylim)
+                self.__createStandardLineplot(data, labels, varianceData, xlim=xlim, ylim=ylim, fontsize=fontsize)
             case EnumMetrics.Metrics.AVG_CENTROID_DISTANCE:
-                self.__createStandardLineplot(data, labels, varianceData, xlim=xlim, ylim=ylim)
+                self.__createStandardLineplot(data, labels, varianceData, xlim=xlim, ylim=ylim, fontsize=fontsize)
 
         ax = plt.gca()
         # reset axis to start at (0.0)
@@ -164,13 +164,14 @@ class EvaluatorMultiAvgComp(object):
             x = np.arange(start=0, stop=len(varianceData[0]), step=1)
             for i in range(len(varianceData)):
                 ax.fill_between(x, np.array(varianceData[i])[:,0], np.array(varianceData[i])[:,1], color=COLOURS[i], alpha=0.2)
+        ax.xaxis.set_major_locator(plt.MaxNLocator(np.round(fontsize/4)))
 
         if xLabel != None:
-            plt.xlabel(xLabel)
+            plt.xlabel(xLabel, fontsize=fontsize)
         if yLabel != None:
-            plt.ylabel(yLabel)
+            plt.ylabel(yLabel, fontsize=fontsize)
         if subtitle != None:
-            plt.title(f"""{subtitle}""")
+            plt.title(f"""{subtitle}""", fontsize=fontsize)
         if not any(ele is None for ele in colourBackgroundForTimesteps):
             ax = plt.gca()
             ylim = ax.get_ylim()
@@ -181,7 +182,7 @@ class EvaluatorMultiAvgComp(object):
         #plt.show()
         plt.close()
 
-    def evaluateAndVisualize(self, labels, xLabel=None, yLabel=None, subtitle=None, colourBackgroundForTimesteps=(None,None), showVariance=False, xlim=None, ylim=None, savePath=None):
+    def evaluateAndVisualize(self, labels, xLabel=None, yLabel=None, subtitle=None, colourBackgroundForTimesteps=(None,None), showVariance=False, xlim=None, ylim=None, fontsize=14, savePath=None):
         """
         Evaluates and subsequently visualises the results for multiple models.
 
@@ -196,9 +197,9 @@ class EvaluatorMultiAvgComp(object):
         data, varianceData = self.evaluate()
         if showVariance == False:
             varianceData = None
-        self.visualize(data, labels, xLabel=xLabel, yLabel=yLabel, subtitle=subtitle, colourBackgroundForTimesteps=colourBackgroundForTimesteps, varianceData=varianceData, xlim=xlim, ylim=ylim, savePath=savePath)
+        self.visualize(data, labels, xLabel=xLabel, yLabel=yLabel, subtitle=subtitle, colourBackgroundForTimesteps=colourBackgroundForTimesteps, varianceData=varianceData, xlim=xlim, ylim=ylim, fontsize=fontsize, savePath=savePath)
         
-    def __createStandardLineplot(self, data, labels, varianceData=None, xlim=None, ylim=None):
+    def __createStandardLineplot(self, data, labels, varianceData=None, xlim=None, ylim=None, fontsize=14):
         """
         Creates a bar plot for the number of clusters in the system for every model at every timestep
 
@@ -213,15 +214,15 @@ class EvaluatorMultiAvgComp(object):
         df = pd.DataFrame(data, index=labels).T
 
         if xlim != None and ylim != None:
-            df.plot.line(xlim=xlim, ylim=ylim)
+            df.plot.line(xlim=xlim, ylim=ylim, fontsize=fontsize)
         elif xlim != None:
-            df.plot.line(xlim=xlim)
+            df.plot.line(xlim=xlim, fontsize=fontsize)
         elif ylim != None:
-            df.plot.line(ylim=ylim)
+            df.plot.line(ylim=ylim, fontsize=fontsize)
         else:
-            df.plot.line()
+            df.plot.line(fontsize=fontsize)
 
-    def __createSwitchValuePlot(self, data, labels, varianceData=None, xlim=None, ylim=None):
+    def __createSwitchValuePlot(self, data, labels, varianceData=None, xlim=None, ylim=None, fontsize=14):
         """
         Creates a line plot for the percentage of particles choosing the order switch type value at any given timestep.
 
@@ -235,15 +236,15 @@ class EvaluatorMultiAvgComp(object):
         sorted(data.items())
         df = pd.DataFrame(data, index=labels).T
         if xlim != None and ylim != None:
-            df.plot.line(xlim=xlim, ylim=ylim)
+            df.plot.line(xlim=xlim, ylim=ylim, fontsize=fontsize)
         elif xlim != None:
-            df.plot.line(xlim=xlim)
+            df.plot.line(xlim=xlim, fontsize=fontsize)
         elif ylim != None:
-            df.plot.line(ylim=ylim)
+            df.plot.line(ylim=ylim, fontsize=fontsize)
         else:
-            df.plot.line()
+            df.plot.line(fontsize=fontsize)
 
-    def __createDualOrderPlot(self, data, labels=None, varianceData=None, xlim=None, ylim=None):
+    def __createDualOrderPlot(self, data, labels=None, varianceData=None, xlim=None, ylim=None, fontsize=14):
         """
         Creates a line plot overlaying the percentage of particles choosing the order switch type value and the order value. 
 
@@ -260,15 +261,15 @@ class EvaluatorMultiAvgComp(object):
         sorted(data.items())
         df = pd.DataFrame(data, index=labels).T
         if xlim != None and ylim != None:
-            df.plot.line(xlim=xlim, ylim=ylim)
+            df.plot.line(xlim=xlim, ylim=ylim, fontsize=fontsize)
         elif xlim != None:
-            df.plot.line(xlim=xlim)
+            df.plot.line(xlim=xlim, fontsize=fontsize)
         elif ylim != None:
-            df.plot.line(ylim=ylim)
+            df.plot.line(ylim=ylim, fontsize=fontsize)
         else:
-            df.plot.line()
+            df.plot.line(fontsize=fontsize)
 
-    def __createMinAvgMaxLinePlot(self, data, varianceData=None, xlim=None, ylim=None):
+    def __createMinAvgMaxLinePlot(self, data, varianceData=None, xlim=None, ylim=None, fontsize=14):
         """
         Creates a line plot overlaying minimum, average and maximum number of neighbours.
 
@@ -281,13 +282,13 @@ class EvaluatorMultiAvgComp(object):
         sorted(data.items())
         df = pd.DataFrame(data, index=["min", "avg", "max"]).T
         if xlim != None and ylim != None:
-            df.plot.line(xlim=xlim, ylim=ylim)
+            df.plot.line(xlim=xlim, ylim=ylim, fontsize=fontsize)
         elif xlim != None:
-            df.plot.line(xlim=xlim)
+            df.plot.line(xlim=xlim, fontsize=fontsize)
         elif ylim != None:
-            df.plot.line(ylim=ylim)
+            df.plot.line(ylim=ylim, fontsize=fontsize)
         else:
-            df.plot.line()
+            df.plot.line(fontsize=fontsize)
 
     def getMinAvgMaxNumberOfNeighboursOverWholeRun(self):
         self.metric = EnumMetrics.Metrics.MIN_AVG_MAX_NUMBER_NEIGHBOURS
