@@ -79,10 +79,9 @@ def eval(density, n, radius, eventEffect, metric, type, nsm=None, k=None, combo=
         modelParamsPaths = [f"{name}_modelParams.csv" for name in filenames]
         filenames = [f"{name}.csv" for name in filenames]
         
-        modelParamsDensity, simulationDataDensity, coloursDensity = ServiceSavedModel.loadModels(filenames, modelParamsPaths=modelParamsPaths, loadSwitchValues=False, fromCsv=True)
+        modelParamsDensity, simulationDataDensity = ServiceSavedModel.loadModels(filenames, modelParamsPaths=modelParamsPaths, loadSwitchValues=False, fromCsv=True)
         modelParams.append(modelParamsDensity)
         simulationData.append(simulationDataDensity)
-        colours.append(coloursDensity)
 
 #paths.append(f"density-vs-noise_ORDER_mode-comparision_n={n}_k=1_radius=10_density={density}_noise={noisePercentage}%_hierarchical_clustering_threshold=0.01.png")
 #createMultiPlotFromImages(title, numX, numY, rowLabels, colLabels, paths)
@@ -94,7 +93,7 @@ def eval(density, n, radius, eventEffect, metric, type, nsm=None, k=None, combo=
     if metric == Metrics.DUAL_OVERLAY_ORDER_AND_PERCENTAGE:
         labels = ["ordered - order", "ordered - percentage of order-inducing value", "disordered - order", "disordered - percentage of order-inducing value"]
 
-    savePath = f"{saveLocationPlot}hod_long_d={density}_n={n}_r={radius}_nsm={nsm.value}_k={k}_ee={eventEffect.val}"
+    savePath = f"{saveLocationPlot}hod_long_d={density}_n={n}_r={radius}_k={k}"
     evaluator.evaluateAndVisualize(labels=labels, xLabel=xAxisLabel, yLabel=yAxisLabel, colourBackgroundForTimesteps=[e1Start, e1Start+duration], showVariance=False, xlim=xlim, ylim=ylim, savePath=savePath)    
     endEval = time.time()
     print(f"Duration eval {ServiceGeneral.formatTime(endEval-startEval)}") 
