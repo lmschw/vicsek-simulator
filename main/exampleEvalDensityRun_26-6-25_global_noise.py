@@ -178,9 +178,9 @@ for density in densities:
     n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
     for radius in radii:
         tmax = 3000
-        iStop = 2
+        iStop = 11
         for nsm in neighbourSelectionModes:
-            for k in [1]:
+            for k in [1,2 ,3, 4, 5]:
                     for metric in metrics:
                         eval(density=density, n=n, radius=radius, eventEffect=None, metric=metric, type="global", nsm=nsm, k=k, evalInterval=interval, tmax=tmax)
 

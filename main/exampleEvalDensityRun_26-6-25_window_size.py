@@ -21,7 +21,7 @@ import AnimatorMatplotlib
 import Animator2D
 
 
-def eval(density, n, radius, eventEffect, metric, type, nsm=None, k=None, combo=None, evalInterval=1, tmax=15000):
+def eval(density, n, radius, eventEffect, metric, type, nsm=None, k=None, combo=None, evalInterval=1, tmax=15000, psteps=100, iStart=1, iStop=11):
     xlim = (0, tmax)
     threshold = 0.01
     if metric in [Metrics.ORDER, Metrics.DUAL_OVERLAY_ORDER_AND_PERCENTAGE]:
@@ -210,13 +210,13 @@ for density in densities:
                 for k in ks:
                     for eventEffect in eventEffects:
                         for metric in metrics:
-                            eval(density=density, n=n, radius=radius, eventEffect=eventEffect, metric=metric, type="nsmsw", k=k, combo=nsmCombo, evalInterval=interval, tmax=tmax)
+                            eval(density=density, n=n, radius=radius, eventEffect=eventEffect, metric=metric, type="nsmsw", k=k, combo=nsmCombo, evalInterval=interval, tmax=tmax, psteps=psteps)
             
-            for nsm in neighbourSelectionModes:
+            for nsm in [NeighbourSelectionMode.NEAREST, NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE]:
                 for kCombo in [[5,1]]:
                     for eventEffect in eventEffects:
                         for metric in metrics:
-                            eval(density=density, n=n, radius=radius, eventEffect=eventEffect, metric=metric, type="ksw", nsm=nsm, combo=kCombo, evalInterval=interval, tmax=tmax)
+                            eval(density=density, n=n, radius=radius, eventEffect=eventEffect, metric=metric, type="ksw", nsm=nsm, combo=kCombo, evalInterval=interval, tmax=tmax, psteps=psteps)
             
 endTime = time.time()
 print(f"Total duration: {ServiceGeneral.formatTime(endTime-startTime)}")

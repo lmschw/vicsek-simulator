@@ -13,29 +13,64 @@ import ServicePreparation as ServicePreparation
 import ServiceGeneral as ServiceGeneral
 
 
-dataLocation = "J:/kstaggering_old/"
-saveLocation = "results_stagger/"
+dataLocation = "J:/duration_tests/"
+saveLocation = "results_durations/"
 iStart = 1
-iStop = 2
+iStop = 11
 
-def eval(density, n, k, radius, eventEffect, metrics, type, nsm=None, combo=None, evalInterval=1, tmax=15000, duration=1000, noisePercentage=1, enforceSplit=True, percentageFirstValue=0):
+def eval(density, n, radius, eventEffect, metrics, type, nsm=None, k=None, combo=None, evalInterval=1, tmax=15000, duration=1000, noisePercentage=1):
 
     startEval = time.time()
-    ServiceGeneral.logWithTime(f"d={density}, r={radius}, nsm={nsm}, type={type}, enforceSplit={enforceSplit}") 
-
+    if type in ["noswnoev", "nsmswnoev", "kswnoev"]:
+        ServiceGeneral.logWithTime(f"d={density}, r={radius}, nsm={nsm}, k={k}, type={type}") 
+    else:
+        ServiceGeneral.logWithTime(f"d={density}, r={radius}, nsm={nsm}, k={k}, combo={combo}, eventEffect={eventEffect.val}, type={type}")
     modelParams = []
     simulationData = []
     colours = []
     switchTypes = []
 
     for initialStateString in ["ordered", "random"]:
-        baseFilename = f"{dataLocation}local_noev_nosw_kstaggering_es={enforceSplit}_pk0={percentageFirstValue}_{initialStateString}_st={nsm.value}_d={density}_n={n}_r={radius}_tmax={tmax}_k={k}_noise={noisePercentage}"
+        if type in ["nsmswnoev", "nsmsw", "kswnoev", "ksw"]:
+            orderValue, disorderValue = combo
+        if type in ["nsmswnoev", "nsmsw"]: 
+            if initialStateString == "ordered":
+                nsm = orderValue
+            else:
+                nsm = disorderValue
+        elif type in ["kswnoev", "ksw"]: 
+            if initialStateString == "ordered":
+                k = orderValue
+            else:
+                k = disorderValue
 
+        if type == "noswnoev":
+            baseFilename = f"{dataLocation}global_noev_nosw_{initialStateString}_st={nsm.value}_d={density}_n={n}_r={radius}_tmax={tmax}_k={k}_noise={noisePercentage}"
+            sTypes = []
+        elif type == "nosw":
+            baseFilename = f"{dataLocation}local_nosw_1ev_d={density}_r={radius}_{initialStateString}_nsm={nsm.value}_k={k}_ee={eventEffect.val}"
+            sTypes = []
+        elif type == "nsmswnoev":
+            baseFilename = f"{dataLocation}local_nsmsw_noev_d={density}_r={radius}_{initialStateString}_st={nsm.value}_nsmCombo={combo[0].value}-{combo[1].value}_k={k}"
+            sTypes = [SwitchType.NEIGHBOUR_SELECTION_MODE]
+        elif type == "nsmsw":
+            baseFilename = f"{dataLocation}local_nsmsw_1ev_d={density}_r={radius}_{initialStateString}_st={nsm.value}_nsmCombo={combo[0].value}-{combo[1].value}_k={k}_ee={eventEffect.val}"
+            sTypes = [SwitchType.NEIGHBOUR_SELECTION_MODE]
+        elif type == "kswnoev":
+            baseFilename = f"{dataLocation}local_ksw_noev_d={density}_r={radius}_{initialStateString}_st={k}_nsm={nsm.value}_kCombo={combo[0]}-{combo[1]}"
+            sTypes = [SwitchType.K]
+        elif type == "ksw":
+            baseFilename = f"{dataLocation}local_1e_switchType=K_{initialStateString}_st={k}_o={orderValue}_do={disorderValue}_d={density}_n={n}_r={radius}_nsm={nsm.value}_noise=1_ee={eventEffect.value}_duration={duration}"
+            sKey = "ks"
+
+        
         filenames = ServiceGeneral.createListOfFilenamesForI(baseFilename=baseFilename, minI=iStart, maxI=iStop, fileTypeString="csv")
-        #filenames = [f"{name}.csv" for name in filenames]
         filenamesModelParams = [f"{'.'.join(name.split('.')[:-1])}_modelParams.csv" for name in filenames]
-
-        modelParamsDensity, simulationDataDensity = ServiceSavedModel.loadModels(filenames, loadSwitchValues=False,  fromCsv=True, modelParamsPaths=filenamesModelParams)
+        if type not in ["nosw", "noswnoev"]:
+            modelParamsDensity, simulationDataDensity,colours, switchTypeValues = ServiceSavedModel.loadModels(filenames, modelParamsPaths=filenamesModelParams, loadSwitchValues=True, fromCsv=True)
+            switchTypes.append(switchTypeValues)
+        else:
+            modelParamsDensity, simulationDataDensity = ServiceSavedModel.loadModels(filenames,modelParamsPaths=filenamesModelParams, loadSwitchValues=False, fromCsv=True)
         modelParams.append(modelParamsDensity)
         simulationData.append(simulationDataDensity)
 
@@ -56,14 +91,12 @@ def eval(density, n, k, radius, eventEffect, metrics, type, nsm=None, combo=None
    
         yAxisLabel = metric.label
         threshold = 0.01
-        
+
         evaluator = EvaluatorMultiAvgComp(modelParams, metric, simulationData, evaluationTimestepInterval=evalInterval, threshold=threshold, switchTypeValues=switchTypes, switchTypeOptions=combo)
         
         labels = ["ordered", "random"]
-        if metric == Metrics.DUAL_OVERLAY_ORDER_AND_PERCENTAGE:
-            labels = ["ordered - order", "ordered - percentage of order-inducing value", "disordered - order", "disordered - percentage of order-inducing value"]
-            labels = ["order", "percentage of order-inducing value"]
-        savePath = f"{saveLocation}{metric.val}_local_noev_nosw_kstaggering_es={enforceSplit}_pk0={percentageFirstValue}_{initialStateString}_st={nsm.value}_d={density}_n={n}_r={radius}_tmax={tmax}_k={k}_noise={noisePercentage}.svg"
+
+        savePath = f"{saveLocation}{metric.val}_local_1e_switchType=K_{initialStateString}_st={k}_o={orderValue}_do={disorderValue}_d={density}_n={n}_r={radius}_nsm={nsm.value}_noise=1_ee={eventEffect.val}_duration={duration}.svg"
 
         evaluator.evaluateAndVisualize(labels=labels, xLabel=xAxisLabel, yLabel=yAxisLabel, colourBackgroundForTimesteps=[eventStart, eventStart+duration], showVariance=True, xlim=xlim, ylim=ylim, savePath=savePath)    
         endEval = time.time()
@@ -119,7 +152,7 @@ nsmsReduced = [NeighbourSelectionMode.NEAREST,
                NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE,
                NeighbourSelectionMode.HIGHEST_ORIENTATION_DIFFERENCE]
 
-ks = [1,5]
+ks = [1]
 
 eventEffects = [EventEffect.ALIGN_TO_FIXED_ANGLE,
                 EventEffect.AWAY_FROM_ORIGIN,
@@ -130,7 +163,7 @@ nsmCombos = [[NeighbourSelectionMode.FARTHEST, NeighbourSelectionMode.NEAREST],
 
 kCombos = [[1,5]]
 
-densities = [0.09]
+densities = [0.09, 0.01, 0.12]
 radii = [10]
 initialConditions = ["ordered", "random"]
 
@@ -142,38 +175,29 @@ metrics = [
            ]
 xAxisLabel = "timesteps"
 
-noisePercentages = [1, 2, 3, 4, 5]
+noisePercentage = 1
 
-percentageFirstValue = 0.5
+durations = [10, 50, 100, 200, 500, 1000]
+
+eventEffects = [EventEffect.ALIGN_TO_FIXED_ANGLE,
+                EventEffect.AWAY_FROM_ORIGIN,
+                EventEffect.RANDOM]
 
 startTime = time.time()
 startNoswnoev = time.time()
+combo = [5,1]
 ServiceGeneral.logWithTime("Starting eval for nosw noev")
-for noisePercentage in noisePercentages:
-    noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(noisePercentage)
-    # ------------------------ FIXED STRATEGIES ---------------------------------
-    enforceSplit = True
-    for density in densities:
-        n = ServicePreparation.getNumberOfParticlesForConstantDensity(density=density, domainSize=domainSize)
-        for radius in radii:
-            for nsm in nsmsReduced:
-                eval(density=density, n=n, k=1, radius=radius, eventEffect=None, metrics=metrics, type="enfsplit", nsm=nsm,  
-                    combo=None, evalInterval=evaluationInterval, tmax=tmax, noisePercentage=noisePercentage, percentageFirstValue=percentageFirstValue, enforceSplit=enforceSplit)
+for density in densities:
+    n = ServicePreparation.getNumberOfParticlesForConstantDensity(density=density, domainSize=domainSize)
+    for radius in radii:
+        for duration in durations:
+            for nsm in [NeighbourSelectionMode.NEAREST,
+                        NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE]:
+                for eventEffect in eventEffects:
+                    eval(density=density, n=n, radius=radius, eventEffect=eventEffect, metrics=metrics, type="ksw", nsm=nsm, k=1, 
+                        combo=combo, evalInterval=evaluationInterval, tmax=tmax, noisePercentage=noisePercentage, duration=duration)
 endNoswnoev = time.time()
-ServiceGeneral.logWithTime(f"Completed eval for enforceSplit={enforceSplit} in {ServiceGeneral.formatTime(endNoswnoev-startNoswnoev)}")
-
-for noisePercentage in noisePercentages:
-    noise = ServicePreparation.getNoiseAmplitudeValueForPercentage(noisePercentage)
-    # ------------------------ FIXED STRATEGIES ---------------------------------
-    enforceSplit = False
-    for density in densities:
-        n = ServicePreparation.getNumberOfParticlesForConstantDensity(density=density, domainSize=domainSize)
-        for radius in radii:
-            for nsm in nsmsReduced:
-                eval(density=density, n=n, k=1, radius=radius, eventEffect=None, metrics=metrics, type="prob", nsm=nsm,  
-                    combo=None, evalInterval=evaluationInterval, tmax=tmax, noisePercentage=noisePercentage,percentageFirstValue=percentageFirstValue, enforceSplit=enforceSplit)
-endNoswnoev = time.time()
-ServiceGeneral.logWithTime(f"Completed eval for enforceSplit={enforceSplit} in {ServiceGeneral.formatTime(endNoswnoev-startNoswnoev)}")
+ServiceGeneral.logWithTime(f"Completed eval for nosw noev in {ServiceGeneral.formatTime(endNoswnoev-startNoswnoev)}")
 
 endTime = time.time()
 print(f"Total duration: {ServiceGeneral.formatTime(endTime-startTime)}")

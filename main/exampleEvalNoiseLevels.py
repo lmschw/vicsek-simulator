@@ -13,8 +13,8 @@ import ServicePreparation as ServicePreparation
 import ServiceGeneral as ServiceGeneral
 
 
-dataLocation = "J:/noise2/"
-saveLocation = "results_noise/"
+dataLocation = "F:/noise_old_2/"
+saveLocation = "results_noise_2/"
 iStart = 1
 iStop = 11
 
@@ -45,7 +45,7 @@ def eval(density, n, radius, eventEffect, metrics, type, nsm=None, k=None, combo
                 k = disorderValue
 
         if type == "noswnoev":
-            baseFilename = f"{dataLocation}global_noev_nosw_{initialStateString}_st={nsm.value}_d={density}_n={n}_r={radius}_tmax={tmax}_k={k}_noise={noisePercentage}"
+            baseFilename = f"{dataLocation}global_nosw_noev_{initialStateString}_d={density}_n={n}_r={radius}_nsm={nsm.value}_k={k}_noise={noisePercentage}_speed={speed}"
             sTypes = []
         elif type == "nosw":
             baseFilename = f"{dataLocation}local_nosw_1ev_d={density}_r={radius}_{initialStateString}_nsm={nsm.value}_k={k}_ee={eventEffect.val}"
@@ -64,13 +64,13 @@ def eval(density, n, radius, eventEffect, metrics, type, nsm=None, k=None, combo
             sTypes = [SwitchType.K]
 
         
-        filenames = ServiceGeneral.createListOfFilenamesForI(baseFilename=baseFilename, minI=iStart, maxI=iStop, fileTypeString="csv")
+        filenames = ServiceGeneral.createListOfFilenamesForI(baseFilename=baseFilename, minI=iStart, maxI=iStop, fileTypeString="json")
         filenamesModelParams = [f"{'.'.join(name.split('.')[:-1])}_modelParams.csv" for name in filenames]
         if type not in ["nosw", "noswnoev"]:
-            modelParamsDensity, simulationDataDensity, switchTypeValues = ServiceSavedModel.loadModels(filenames, modelParamsPaths=filenamesModelParams, loadSwitchValues=True, fromCsv=True)
+            modelParamsDensity, simulationDataDensity, switchTypeValues = ServiceSavedModel.loadModels(filenames, modelParamsPaths=filenamesModelParams, loadSwitchValues=True, fromCsv=False)
             switchTypes.append([switchTypeValues[0][sTypes[0].switchTypeValueKey]])
         else:
-            modelParamsDensity, simulationDataDensity = ServiceSavedModel.loadModels(filenames,modelParamsPaths=filenamesModelParams, loadSwitchValues=False, fromCsv=True)
+            modelParamsDensity, simulationDataDensity = ServiceSavedModel.loadModels(filenames,modelParamsPaths=filenamesModelParams, loadSwitchValues=False, fromCsv=False)
         modelParams.append(modelParamsDensity)
         simulationData.append(simulationDataDensity)
 
@@ -158,7 +158,7 @@ eventAngle = np.pi
 eventNumberAffected = None
 
 # TEST VALS
-nsms = [NeighbourSelectionMode.ALL,
+nsms = [
         NeighbourSelectionMode.RANDOM,
         NeighbourSelectionMode.NEAREST,
         NeighbourSelectionMode.FARTHEST,
@@ -170,7 +170,7 @@ nsmsReduced = [NeighbourSelectionMode.NEAREST,
                NeighbourSelectionMode.LEAST_ORIENTATION_DIFFERENCE,
                NeighbourSelectionMode.HIGHEST_ORIENTATION_DIFFERENCE]
 
-ks = [1]
+ks = [1,2,3,4,5]
 
 eventEffects = [EventEffect.ALIGN_TO_FIXED_ANGLE,
                 EventEffect.AWAY_FROM_ORIGIN,
@@ -181,7 +181,7 @@ nsmCombos = [[NeighbourSelectionMode.FARTHEST, NeighbourSelectionMode.NEAREST],
 
 kCombos = [[1,5]]
 
-densities = [0.09, 0.01, 0.12]
+densities = [0.09]
 radii = [10]
 initialConditions = ["ordered", "random"]
 
@@ -202,7 +202,7 @@ for density in densities:
     n = ServicePreparation.getNumberOfParticlesForConstantDensity(density=density, domainSize=domainSize)
     for radius in radii:
         for noisePercentage in noisePercentages:
-            for nsm in nsmsReduced:
+            for nsm in nsms:
                 for k in ks:
                     eval(density=density, n=n, radius=radius, eventEffect=None, metrics=metrics, type="noswnoev", nsm=nsm, k=k, 
                         combo=None, evalInterval=evaluationInterval, tmax=tmax, noisePercentage=noisePercentage)

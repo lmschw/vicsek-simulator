@@ -168,7 +168,7 @@ saveLocation = f"results_240725/"
 iStart = 1
 iStop = 11
 
-baseDataLocation = "J:/threshold_investigation/"
+baseDataLocation = "F:/threshold_investigation/"
 
 densities = [0.09]
 radii = [10]
@@ -195,7 +195,7 @@ startTime = time.time()
 duration = 1000
 tmax = 15000
 
-thresholds = [0.1, 0.2, 0.3, 0.4, 0.5]
+thresholds = [0.2]
 
 for density in densities:
     n = int(ServicePreparation.getNumberOfParticlesForConstantDensity(density, domainSize))
